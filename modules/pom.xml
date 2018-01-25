@@ -5,8 +5,8 @@
 	<artifactId>blockchain-cryptocurrency</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<name>blockchain-custom</name>
-	<url>http://maven.apache.org</url>
+	<name>rachid coin</name>
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
