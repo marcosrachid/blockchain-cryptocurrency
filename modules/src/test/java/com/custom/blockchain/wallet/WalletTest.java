@@ -1,21 +1,23 @@
-package com.custom.blockchain;
+package com.custom.blockchain.wallet;
 
 import java.security.Security;
 import java.util.ArrayList;
 
+import org.junit.Test;
+
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.util.TransactionUtil;
-import com.custom.blockchain.wallet.Wallet;
 
-public class App {
-
+public class WalletTest {
+	
 	public static ArrayList<Block> blockchain = new ArrayList<Block>();
 	public static int difficulty = 5;
 	public static Wallet walletA;
 	public static Wallet walletB;
-
-	public static void main(String[] args) {
+	
+	@Test
+	public void test() {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
 		walletA = new Wallet();
