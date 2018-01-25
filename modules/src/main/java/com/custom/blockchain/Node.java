@@ -8,7 +8,7 @@ import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.util.TransactionUtil;
 import com.custom.blockchain.wallet.Wallet;
 
-public class App {
+public class Node {
 
 	public static ArrayList<Block> blockchain = new ArrayList<Block>();
 	public static int difficulty = 5;
