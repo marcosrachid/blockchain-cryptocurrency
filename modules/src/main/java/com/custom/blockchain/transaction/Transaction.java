@@ -1,12 +1,14 @@
 package com.custom.blockchain.transaction;
 
+import static com.custom.blockchain.constants.Properties.MINIMUM_TRANSACTION;
+import static com.custom.blockchain.constants.Properties.UNSPENT_TRANSACTIONS_OUTPUT;
+
 import java.math.BigDecimal;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.custom.blockchain.Node;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.TransactionUtil;
 
@@ -55,10 +57,10 @@ public class Transaction {
 		}
 
 		for (TransactionInput i : inputs) {
-			i.unspentTransactionOutput = Node.UTXOs.get(i.transactionOutputId);
+			i.unspentTransactionOutput = UNSPENT_TRANSACTIONS_OUTPUT.get(i.transactionOutputId);
 		}
 
-		if (getInputsValue().compareTo(Node.minimumTransaction) < 0) {
+		if (getInputsValue().compareTo(MINIMUM_TRANSACTION) < 0) {
 			System.out.println("#Transaction Inputs too small: " + getInputsValue());
 			return false;
 		}
@@ -69,13 +71,13 @@ public class Transaction {
 		outputs.add(new TransactionOutput(this.sender, leftOver, transactionId));
 
 		for (TransactionOutput o : outputs) {
-			Node.UTXOs.put(o.id, o);
+			UNSPENT_TRANSACTIONS_OUTPUT.put(o.id, o);
 		}
 
 		for (TransactionInput i : inputs) {
 			if (i.unspentTransactionOutput == null)
 				continue;
-			Node.UTXOs.remove(i.unspentTransactionOutput.id);
+			UNSPENT_TRANSACTIONS_OUTPUT.remove(i.unspentTransactionOutput.id);
 		}
 
 		return true;

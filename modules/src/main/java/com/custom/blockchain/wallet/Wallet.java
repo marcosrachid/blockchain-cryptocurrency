@@ -1,5 +1,7 @@
 package com.custom.blockchain.wallet;
 
+import static com.custom.blockchain.constants.Properties.UNSPENT_TRANSACTIONS_OUTPUT;
+
 import java.math.BigDecimal;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -12,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.custom.blockchain.Node;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
@@ -43,7 +44,7 @@ public class Wallet {
 
 	public BigDecimal getBalance() {
 		BigDecimal total = BigDecimal.ZERO;
-		for (Map.Entry<String, TransactionOutput> item : Node.UTXOs.entrySet()) {
+		for (Map.Entry<String, TransactionOutput> item : UNSPENT_TRANSACTIONS_OUTPUT.entrySet()) {
 			TransactionOutput unspentTransactionOutput = item.getValue();
 			if (unspentTransactionOutput.isMine(publicKey)) {
 				unspentTransactionsOutput.put(unspentTransactionOutput.id, unspentTransactionOutput);
