@@ -1,5 +1,6 @@
 package com.custom.blockchain.wallet;
 
+import java.math.BigDecimal;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
@@ -40,32 +41,32 @@ public class Wallet {
 		}
 	}
 
-	public float getBalance() {
-		float total = 0;
+	public BigDecimal getBalance() {
+		BigDecimal total = BigDecimal.ZERO;
 		for (Map.Entry<String, TransactionOutput> item : Node.UTXOs.entrySet()) {
 			TransactionOutput unspentTransactionOutput = item.getValue();
-			if (unspentTransactionOutput.isMine(publicKey)) { 
-				unspentTransactionsOutput.put(unspentTransactionOutput.id, unspentTransactionOutput); 
-				total += unspentTransactionOutput.value;
+			if (unspentTransactionOutput.isMine(publicKey)) {
+				unspentTransactionsOutput.put(unspentTransactionOutput.id, unspentTransactionOutput);
+				total = total.add(unspentTransactionOutput.value);
 			}
 		}
 		return total;
 	}
 
-	public Transaction sendFunds(PublicKey _recipient, float value) {
-		if (getBalance() < value) { 
+	public Transaction sendFunds(PublicKey _recipient, BigDecimal value) {
+		if (getBalance().compareTo(value) < 0) {
 			System.out.println("#Not Enough funds to send transaction. Transaction Discarded.");
 			return null;
 		}
-		
+
 		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
 
-		float total = 0;
+		BigDecimal total = BigDecimal.ZERO;
 		for (Map.Entry<String, TransactionOutput> item : unspentTransactionsOutput.entrySet()) {
 			TransactionOutput UTXO = item.getValue();
-			total += UTXO.value;
+			total = total.add(UTXO.value);
 			inputs.add(new TransactionInput(UTXO.id));
-			if (total > value)
+			if (total.compareTo(value) > 0)
 				break;
 		}
 

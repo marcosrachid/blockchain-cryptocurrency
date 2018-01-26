@@ -1,5 +1,6 @@
 package com.custom.blockchain.transaction;
 
+import java.math.BigDecimal;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ public class Transaction {
 	public String transactionId;
 	public PublicKey sender;
 	public PublicKey reciepient;
-	public float value;
+	public BigDecimal value;
 	public byte[] signature;
 
 	public List<TransactionInput> inputs = new ArrayList<TransactionInput>();
@@ -21,7 +22,7 @@ public class Transaction {
 
 	private static int sequence = 0;
 
-	public Transaction(PublicKey from, PublicKey to, float value, List<TransactionInput> inputs) {
+	public Transaction(PublicKey from, PublicKey to, BigDecimal value, List<TransactionInput> inputs) {
 		this.sender = from;
 		this.reciepient = to;
 		this.value = value;
@@ -30,20 +31,20 @@ public class Transaction {
 
 	public void generateSignature(PrivateKey privateKey) {
 		String data = TransactionUtil.getStringFromKey(sender) + TransactionUtil.getStringFromKey(reciepient)
-				+ Float.toString(value);
+				+ value.setScale(8).toString();
 		signature = TransactionUtil.applyECDSASig(privateKey, data);
 	}
 
 	public boolean verifiySignature() {
 		String data = TransactionUtil.getStringFromKey(sender) + TransactionUtil.getStringFromKey(reciepient)
-				+ Float.toString(value);
+				+ value.setScale(8).toString();
 		return TransactionUtil.verifyECDSASig(sender, data, signature);
 	}
 
 	public String calulateHash() {
 		sequence++;
 		return DigestUtil.applySha256(TransactionUtil.getStringFromKey(sender)
-				+ TransactionUtil.getStringFromKey(reciepient) + Float.toString(value) + sequence);
+				+ TransactionUtil.getStringFromKey(reciepient) + value.setScale(8).toString() + sequence);
 	}
 
 	public boolean processTransaction() {
@@ -57,12 +58,12 @@ public class Transaction {
 			i.unspentTransactionOutput = Node.UTXOs.get(i.transactionOutputId);
 		}
 
-		if (getInputsValue() < Node.minimumTransaction) {
+		if (getInputsValue().compareTo(Node.minimumTransaction) < 0) {
 			System.out.println("#Transaction Inputs too small: " + getInputsValue());
 			return false;
 		}
 
-		float leftOver = getInputsValue() - value;
+		BigDecimal leftOver = getInputsValue().subtract(value);
 		transactionId = calulateHash();
 		outputs.add(new TransactionOutput(this.reciepient, value, transactionId));
 		outputs.add(new TransactionOutput(this.sender, leftOver, transactionId));
@@ -80,20 +81,20 @@ public class Transaction {
 		return true;
 	}
 
-	public float getInputsValue() {
-		float total = 0;
+	public BigDecimal getInputsValue() {
+		BigDecimal total = BigDecimal.ZERO;
 		for (TransactionInput i : inputs) {
 			if (i.unspentTransactionOutput == null)
 				continue;
-			total += i.unspentTransactionOutput.value;
+			total = total.add(i.unspentTransactionOutput.value);
 		}
 		return total;
 	}
 
-	public float getOutputsValue() {
-		float total = 0;
+	public BigDecimal getOutputsValue() {
+		BigDecimal total = BigDecimal.ZERO;
 		for (TransactionOutput o : outputs) {
-			total += o.value;
+			total = total.add(o.value);
 		}
 		return total;
 	}
