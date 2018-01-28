@@ -15,19 +15,19 @@ public class WalletTest {
 
 	@Test
 	public void test() {
-		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-
-		walletA = new Wallet();
-		walletB = new Wallet();
-
-		System.out.println("Private and public keys:");
-		System.out.println(TransactionUtil.getStringFromKey(walletA.privateKey));
-		System.out.println(TransactionUtil.getStringFromKey(walletA.publicKey));
-
-		Transaction transaction = new Transaction(walletA.publicKey, walletB.publicKey, new BigDecimal(5f), null);
-		transaction.generateSignature(walletA.privateKey);
-
-		System.out.println("Is signature verified");
-		System.out.println(transaction.verifiySignature());
+//		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+//
+//		walletA = new Wallet();
+//		walletB = new Wallet();
+//
+//		System.out.println("Private and public keys:");
+//		System.out.println(TransactionUtil.getStringFromKey(walletA.privateKey));
+//		System.out.println(TransactionUtil.getStringFromKey(walletA.publicKey));
+//
+//		Transaction transaction = new Transaction(walletA.publicKey, walletB.publicKey, new BigDecimal(5f), null);
+//		transaction.generateSignature(walletA.privateKey);
+//
+//		System.out.println("Is signature verified");
+//		System.out.println(transaction.verifiySignature());
 	}
 }

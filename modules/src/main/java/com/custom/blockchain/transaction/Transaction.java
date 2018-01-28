@@ -1,28 +1,21 @@
 package com.custom.blockchain.transaction;
 
-import static com.custom.blockchain.constants.Properties.MINIMUM_TRANSACTION;
-import static com.custom.blockchain.constants.Properties.UNSPENT_TRANSACTIONS_OUTPUT;
-
 import java.math.BigDecimal;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.custom.blockchain.util.DigestUtil;
-import com.custom.blockchain.util.TransactionUtil;
-
 public class Transaction {
-	public String transactionId;
-	public PublicKey sender;
-	public PublicKey reciepient;
-	public BigDecimal value;
-	public byte[] signature;
+	private String transactionId;
+	private PublicKey sender;
+	private PublicKey reciepient;
+	private BigDecimal value;
+	private byte[] signature;
 
-	public List<TransactionInput> inputs = new ArrayList<TransactionInput>();
-	public List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
+	private List<TransactionInput> inputs = new ArrayList<TransactionInput>();
+	private List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
 
-	private static int sequence = 0;
+	public static int sequence = 0;
 
 	public Transaction(PublicKey from, PublicKey to, BigDecimal value, List<TransactionInput> inputs) {
 		this.sender = from;
@@ -31,56 +24,60 @@ public class Transaction {
 		this.inputs = inputs;
 	}
 
-	public void generateSignature(PrivateKey privateKey) {
-		String data = TransactionUtil.getStringFromKey(sender) + TransactionUtil.getStringFromKey(reciepient)
-				+ value.setScale(8).toString();
-		signature = TransactionUtil.applyECDSASig(privateKey, data);
+	public String getTransactionId() {
+		return transactionId;
 	}
 
-	public boolean verifiySignature() {
-		String data = TransactionUtil.getStringFromKey(sender) + TransactionUtil.getStringFromKey(reciepient)
-				+ value.setScale(8).toString();
-		return TransactionUtil.verifyECDSASig(sender, data, signature);
+	public void setTransactionId(String transactionId) {
+		this.transactionId = transactionId;
 	}
 
-	public String calulateHash() {
-		sequence++;
-		return DigestUtil.applySha256(TransactionUtil.getStringFromKey(sender)
-				+ TransactionUtil.getStringFromKey(reciepient) + value.setScale(8).toString() + sequence);
+	public PublicKey getSender() {
+		return sender;
 	}
 
-	public boolean processTransaction() {
+	public void setSender(PublicKey sender) {
+		this.sender = sender;
+	}
 
-		if (verifiySignature() == false) {
-			System.out.println("#Transaction Signature failed to verify");
-			return false;
-		}
+	public PublicKey getReciepient() {
+		return reciepient;
+	}
 
-		for (TransactionInput i : inputs) {
-			i.unspentTransactionOutput = UNSPENT_TRANSACTIONS_OUTPUT.get(i.transactionOutputId);
-		}
+	public void setReciepient(PublicKey reciepient) {
+		this.reciepient = reciepient;
+	}
 
-		if (getInputsValue().compareTo(MINIMUM_TRANSACTION) < 0) {
-			System.out.println("#Transaction Inputs too small: " + getInputsValue());
-			return false;
-		}
+	public BigDecimal getValue() {
+		return value;
+	}
 
-		BigDecimal leftOver = getInputsValue().subtract(value);
-		transactionId = calulateHash();
-		outputs.add(new TransactionOutput(this.reciepient, value, transactionId));
-		outputs.add(new TransactionOutput(this.sender, leftOver, transactionId));
+	public void setValue(BigDecimal value) {
+		this.value = value;
+	}
 
-		for (TransactionOutput o : outputs) {
-			UNSPENT_TRANSACTIONS_OUTPUT.put(o.id, o);
-		}
+	public byte[] getSignature() {
+		return signature;
+	}
 
-		for (TransactionInput i : inputs) {
-			if (i.unspentTransactionOutput == null)
-				continue;
-			UNSPENT_TRANSACTIONS_OUTPUT.remove(i.unspentTransactionOutput.id);
-		}
+	public void setSignature(byte[] signature) {
+		this.signature = signature;
+	}
 
-		return true;
+	public List<TransactionInput> getInputs() {
+		return inputs;
+	}
+
+	public void setInputs(List<TransactionInput> inputs) {
+		this.inputs = inputs;
+	}
+
+	public List<TransactionOutput> getOutputs() {
+		return outputs;
+	}
+
+	public void setOutputs(List<TransactionOutput> outputs) {
+		this.outputs = outputs;
 	}
 
 	public BigDecimal getInputsValue() {
