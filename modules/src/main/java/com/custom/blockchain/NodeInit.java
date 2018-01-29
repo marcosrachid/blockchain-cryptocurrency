@@ -2,6 +2,8 @@ package com.custom.blockchain;
 
 import static com.custom.blockchain.properties.BlockchainProperties.VERSION;
 
+import java.security.Security;
+
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +32,7 @@ public class NodeInit {
 
 	@PostConstruct
 	public void environment() {
+		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 		VERSION = this.version;
 	}
 
