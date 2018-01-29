@@ -13,7 +13,9 @@ import com.custom.blockchain.wallet.Wallet;
 @Service
 public class WalletService {
 
-	public BigDecimal getBalance(Wallet wallet) {
+	public BigDecimal getBalance(String privateKey) {
+		//TODO: find wallet transactions on blockchain
+		Wallet wallet = new Wallet();
 		BigDecimal total = BigDecimal.ZERO;
 		for (Map.Entry<String, TransactionOutput> item : UNSPENT_TRANSACTIONS_OUTPUT.entrySet()) {
 			TransactionOutput unspentTransactionOutput = item.getValue();

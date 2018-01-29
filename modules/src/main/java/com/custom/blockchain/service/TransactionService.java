@@ -33,7 +33,7 @@ public class TransactionService {
 	}
 
 	public void sendFunds(Wallet from, Wallet to, BigDecimal value) throws TransactionException {
-		if (walletService.getBalance(from).compareTo(value) < 0) {
+		if (walletService.getBalance(from.getPrivateKey().getFormat()).compareTo(value) < 0) {
 			throw new TransactionException("Not Enough funds to send transaction. Transaction Discarded");
 		}
 
