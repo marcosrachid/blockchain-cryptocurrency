@@ -83,9 +83,9 @@ public class Transaction {
 	public BigDecimal getInputsValue() {
 		BigDecimal total = BigDecimal.ZERO;
 		for (TransactionInput i : inputs) {
-			if (i.unspentTransactionOutput == null)
+			if (i.getUnspentTransactionOutput() == null)
 				continue;
-			total = total.add(i.unspentTransactionOutput.value);
+			total = total.add(i.getUnspentTransactionOutput().getValue());
 		}
 		return total;
 	}
@@ -93,7 +93,7 @@ public class Transaction {
 	public BigDecimal getOutputsValue() {
 		BigDecimal total = BigDecimal.ZERO;
 		for (TransactionOutput o : outputs) {
-			total = total.add(o.value);
+			total = total.add(o.getValue());
 		}
 		return total;
 	}

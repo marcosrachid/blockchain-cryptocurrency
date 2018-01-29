@@ -16,8 +16,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import com.custom.blockchain.transaction.TransactionOutput;
 
 public class Wallet {
-	public PrivateKey privateKey;
-	public PublicKey publicKey;
+	private PrivateKey privateKey;
+	private PublicKey publicKey;
 
 	public Map<String, TransactionOutput> unspentTransactionsOutput = new HashMap<String, TransactionOutput>();
 

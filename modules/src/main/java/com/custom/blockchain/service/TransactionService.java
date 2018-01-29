@@ -42,8 +42,8 @@ public class TransactionService {
 		BigDecimal total = BigDecimal.ZERO;
 		for (Map.Entry<String, TransactionOutput> item : from.getUnspentTransactionsOutput().entrySet()) {
 			TransactionOutput UTXO = item.getValue();
-			total = total.add(UTXO.value);
-			inputs.add(new TransactionInput(UTXO.id));
+			total = total.add(UTXO.getValue());
+			inputs.add(new TransactionInput(UTXO.getId()));
 			if (total.compareTo(value) > 0)
 				break;
 		}
@@ -52,7 +52,7 @@ public class TransactionService {
 		generateSignature(newTransaction, from);
 
 		for (TransactionInput input : inputs) {
-			from.getUnspentTransactionsOutput().remove(input.transactionOutputId);
+			from.getUnspentTransactionsOutput().remove(input.getTransactionOutputId());
 		}
 
 		addTransaction(blockManagement.getCurrentBlock(), newTransaction);
@@ -76,7 +76,7 @@ public class TransactionService {
 		}
 
 		for (TransactionInput i : transaction.getInputs()) {
-			i.unspentTransactionOutput = UNSPENT_TRANSACTIONS_OUTPUT.get(i.transactionOutputId);
+			i.setUnspentTransactionOutput(UNSPENT_TRANSACTIONS_OUTPUT.get(i.getTransactionOutputId()));
 		}
 
 		if (transaction.getInputsValue().compareTo(minimunTransaction) < 0) {
@@ -91,13 +91,13 @@ public class TransactionService {
 				.add(new TransactionOutput(transaction.getSender(), leftOver, transaction.getTransactionId()));
 
 		for (TransactionOutput o : transaction.getOutputs()) {
-			UNSPENT_TRANSACTIONS_OUTPUT.put(o.id, o);
+			UNSPENT_TRANSACTIONS_OUTPUT.put(o.getId(), o);
 		}
 
 		for (TransactionInput i : transaction.getInputs()) {
-			if (i.unspentTransactionOutput == null)
+			if (i.getUnspentTransactionOutput() == null)
 				continue;
-			UNSPENT_TRANSACTIONS_OUTPUT.remove(i.unspentTransactionOutput.id);
+			UNSPENT_TRANSACTIONS_OUTPUT.remove(i.getUnspentTransactionOutput().getId());
 		}
 
 		return true;

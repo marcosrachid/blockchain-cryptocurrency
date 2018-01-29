@@ -18,8 +18,8 @@ public class WalletService {
 		for (Map.Entry<String, TransactionOutput> item : UNSPENT_TRANSACTIONS_OUTPUT.entrySet()) {
 			TransactionOutput unspentTransactionOutput = item.getValue();
 			if (unspentTransactionOutput.isMine(wallet.getPublicKey())) {
-				wallet.getUnspentTransactionsOutput().put(unspentTransactionOutput.id, unspentTransactionOutput);
-				total = total.add(unspentTransactionOutput.value);
+				wallet.getUnspentTransactionsOutput().put(unspentTransactionOutput.getId(), unspentTransactionOutput);
+				total = total.add(unspentTransactionOutput.getValue());
 			}
 		}
 		return total;
