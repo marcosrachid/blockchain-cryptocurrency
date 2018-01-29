@@ -1,6 +1,6 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.constants.BlockchainConstants.UNSPENT_TRANSACTIONS_OUTPUT;
+import static com.custom.blockchain.properties.BlockchainImutableProperties.UNSPENT_TRANSACTIONS_OUTPUT;
 
 import java.math.BigDecimal;
 import java.util.Map;

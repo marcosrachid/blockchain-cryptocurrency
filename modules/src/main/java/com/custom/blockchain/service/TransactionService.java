@@ -1,7 +1,7 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.constants.BlockchainConstants.UNSPENT_TRANSACTIONS_OUTPUT;
-import static com.custom.blockchain.constants.GenesisConstants.GENESIS_PREVIOUS_HASH;
+import static com.custom.blockchain.properties.BlockchainImutableProperties.UNSPENT_TRANSACTIONS_OUTPUT;
+import static com.custom.blockchain.properties.GenesisProperties.GENESIS_PREVIOUS_HASH;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.Block;
-import com.custom.blockchain.block.components.BlockManagement;
+import com.custom.blockchain.block.management.BlockManagement;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;

@@ -1,18 +1,24 @@
 package com.custom.blockchain;
 
+import static com.custom.blockchain.properties.BlockchainProperties.VERSION;
+
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.BlockFactory;
 import com.custom.blockchain.block.BlockType;
 import com.custom.blockchain.block.Genesis;
-import com.custom.blockchain.block.components.BlockManagement;
 import com.custom.blockchain.block.exception.BlockException;
+import com.custom.blockchain.block.management.BlockManagement;
 import com.custom.blockchain.service.BlockService;
 
 @Component
 public class NodeInit {
+
+	@Value("${application.blockchain.version}")
+	private String version;
 
 	private BlockManagement blockManagement;
 	private BlockService blockService;
@@ -20,6 +26,11 @@ public class NodeInit {
 	public NodeInit(final BlockManagement blockManagement, final BlockService blockService) {
 		this.blockManagement = blockManagement;
 		this.blockService = blockService;
+	}
+
+	@PostConstruct
+	public void environment() {
+		VERSION = this.version;
 	}
 
 	@PostConstruct

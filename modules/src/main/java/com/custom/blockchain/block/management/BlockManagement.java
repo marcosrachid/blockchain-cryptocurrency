@@ -1,4 +1,4 @@
-package com.custom.blockchain.block.components;
+package com.custom.blockchain.block.management;
 
 import org.springframework.stereotype.Component;
 

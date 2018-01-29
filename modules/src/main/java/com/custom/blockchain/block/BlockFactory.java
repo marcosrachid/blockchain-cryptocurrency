@@ -1,6 +1,6 @@
 package com.custom.blockchain.block;
 
-import static com.custom.blockchain.constants.BlockchainConstants.BLOCKCHAIN;
+import static com.custom.blockchain.properties.BlockchainImutableProperties.BLOCKCHAIN;
 
 import com.custom.blockchain.block.exception.BlockException;
 
