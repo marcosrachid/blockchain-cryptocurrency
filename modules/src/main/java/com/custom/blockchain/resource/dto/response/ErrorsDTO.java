@@ -12,9 +12,15 @@ public class ErrorsDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	@NotNull
 	private Integer code;
+
 	@NotNull
 	private String message;
+
+	private String field;
+
+	private String acao;
 
 	public ErrorsDTO(String message) {
 		super();
@@ -25,6 +31,14 @@ public class ErrorsDTO implements Serializable {
 		super();
 		this.code = code;
 		this.message = message;
+	}
+
+	public ErrorsDTO(Integer code, String message, String field, String acao) {
+		super();
+		this.code = code;
+		this.message = message;
+		this.field = field;
+		this.acao = acao;
 	}
 
 	public Integer getCode() {
@@ -43,9 +57,25 @@ public class ErrorsDTO implements Serializable {
 		this.message = message;
 	}
 
+	public String getField() {
+		return field;
+	}
+
+	public void setField(String field) {
+		this.field = field;
+	}
+
+	public String getAcao() {
+		return acao;
+	}
+
+	public void setAcao(String acao) {
+		this.acao = acao;
+	}
+
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(code).append(message).hashCode();
+		return new HashCodeBuilder().append(code).append(message).append(field).append(acao).hashCode();
 	}
 
 	@Override
@@ -57,12 +87,14 @@ public class ErrorsDTO implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		ErrorsDTO other = (ErrorsDTO) obj;
-		return new EqualsBuilder().append(code, other.code).append(message, other.message).isEquals();
+		return new EqualsBuilder().append(code, other.code).append(message, other.message).append(field, other.field)
+				.append(acao, other.acao).isEquals();
 	}
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("code", code).append("message", message).build();
+		return new ToStringBuilder(this).append("code", code).append("message", message).append("field", field)
+				.append("acao", acao).build();
 	}
 
 }

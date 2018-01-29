@@ -12,18 +12,24 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
 
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.2.7.RELEASE</version>
+	</parent>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 			<version>1.5.9.RELEASE</version>
 		</dependency>
-		
+
 		<dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-            <version>1.5.9.RELEASE</version>
-        </dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+			<version>1.5.9.RELEASE</version>
+		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
@@ -77,6 +83,32 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<developers>
+		<developer>
+			<id>marcosrachid</id>
+			<name>Marcos Filipe Lopes Rachid de Oliveira</name>
+			<email>marcos.rachid@gmail.com</email>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>-3</timezone>
+		</developer>
+	</developers>
+
+	<repositories>
+		<repository>
+			<id>spring-releases</id>
+			<url>https://repo.spring.io/libs-release</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-releases</id>
+			<url>https://repo.spring.io/libs-release</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<profiles>
 		<profile>
