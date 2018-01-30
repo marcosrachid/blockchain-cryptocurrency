@@ -13,21 +13,21 @@ public class ResponseDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Object data;
-	private List<ErrorsDTO> errors;
+	private List<ResponseErrorsDTO> errors;
 
 	public ResponseDTO() {
 		super();
 		this.data = null;
-		this.errors = new ArrayList<ErrorsDTO>();
+		this.errors = new ArrayList<ResponseErrorsDTO>();
 	}
 
 	public ResponseDTO(Object data) {
 		super();
 		this.data = data;
-		this.errors = new ArrayList<ErrorsDTO>();
+		this.errors = new ArrayList<ResponseErrorsDTO>();
 	}
 
-	public ResponseDTO(Object data, List<ErrorsDTO> errors) {
+	public ResponseDTO(Object data, List<ResponseErrorsDTO> errors) {
 		super();
 		this.data = data;
 		this.errors = errors;
@@ -41,11 +41,11 @@ public class ResponseDTO implements Serializable {
 		this.data = data;
 	}
 
-	public List<ErrorsDTO> getErrors() {
+	public List<ResponseErrorsDTO> getErrors() {
 		return errors;
 	}
 
-	public void setErrors(List<ErrorsDTO> errors) {
+	public void setErrors(List<ResponseErrorsDTO> errors) {
 		this.errors = errors;
 	}
 
@@ -83,7 +83,7 @@ public class ResponseDTO implements Serializable {
 			dto = new ResponseDTO();
 		}
 
-		public ResponseDTOBuilder withError(ErrorsDTO error) {
+		public ResponseDTOBuilder withError(ResponseErrorsDTO error) {
 			dto.errors.add(error);
 			return this;
 		}

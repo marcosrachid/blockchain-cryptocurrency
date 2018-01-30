@@ -8,7 +8,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class ErrorsDTO implements Serializable {
+public class ResponseErrorsDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -22,18 +22,18 @@ public class ErrorsDTO implements Serializable {
 
 	private String acao;
 
-	public ErrorsDTO(String message) {
+	public ResponseErrorsDTO(String message) {
 		super();
 		this.message = message;
 	}
 
-	public ErrorsDTO(Integer code, String message) {
+	public ResponseErrorsDTO(Integer code, String message) {
 		super();
 		this.code = code;
 		this.message = message;
 	}
 
-	public ErrorsDTO(Integer code, String message, String field, String acao) {
+	public ResponseErrorsDTO(Integer code, String message, String field, String acao) {
 		super();
 		this.code = code;
 		this.message = message;
@@ -86,7 +86,7 @@ public class ErrorsDTO implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ErrorsDTO other = (ErrorsDTO) obj;
+		ResponseErrorsDTO other = (ResponseErrorsDTO) obj;
 		return new EqualsBuilder().append(code, other.code).append(message, other.message).append(field, other.field)
 				.append(acao, other.acao).isEquals();
 	}
