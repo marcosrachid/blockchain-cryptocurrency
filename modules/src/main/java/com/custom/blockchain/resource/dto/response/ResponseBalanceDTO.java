@@ -14,6 +14,12 @@ public class ResponseBalanceDTO implements Serializable {
 	private String publicKey;
 	private BigDecimal balance;
 
+	public ResponseBalanceDTO(String publicKey, BigDecimal balance) {
+		super();
+		this.publicKey = publicKey;
+		this.balance = balance;
+	}
+
 	public String getPublicKey() {
 		return publicKey;
 	}
