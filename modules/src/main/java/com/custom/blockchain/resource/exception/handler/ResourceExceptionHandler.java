@@ -23,13 +23,13 @@ public class ResourceExceptionHandler {
 				ResponseDTO.createBuilder().withError(new ErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
 	}
 	
-	@ExceptionHandler(BlockException.class)
+	@ExceptionHandler(TransactionException.class)
 	public ResponseEntity<ResponseDTO> handleTransactionException(TransactionException e) {
 		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON).body(
 				ResponseDTO.createBuilder().withError(new ErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
 	}
 	
-	@ExceptionHandler(BlockException.class)
+	@ExceptionHandler(WalletException.class)
 	public ResponseEntity<ResponseDTO> handleWalletException(WalletException e) {
 		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON).body(
 				ResponseDTO.createBuilder().withError(new ErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
