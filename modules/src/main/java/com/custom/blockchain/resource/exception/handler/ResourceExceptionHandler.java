@@ -3,7 +3,7 @@ package com.custom.blockchain.resource.exception.handler;
 import static com.custom.blockchain.costants.LogMessages.ERROR;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -29,21 +29,21 @@ public class ResourceExceptionHandler {
 	@ExceptionHandler(BlockException.class)
 	public ResponseEntity<ResponseDTO> handleBlockException(BlockException e) {
 		LOG.error(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
-		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON).body(ResponseDTO.createBuilder()
+		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON_UTF8).body(ResponseDTO.createBuilder()
 				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
 	}
 
 	@ExceptionHandler(TransactionException.class)
 	public ResponseEntity<ResponseDTO> handleTransactionException(TransactionException e) {
 		LOG.error(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
-		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON).body(ResponseDTO.createBuilder()
+		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON_UTF8).body(ResponseDTO.createBuilder()
 				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
 	}
 
 	@ExceptionHandler(WalletException.class)
 	public ResponseEntity<ResponseDTO> handleWalletException(WalletException e) {
 		LOG.error(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
-		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON).body(ResponseDTO.createBuilder()
+		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON_UTF8).body(ResponseDTO.createBuilder()
 				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
 	}
 
@@ -54,13 +54,13 @@ public class ResourceExceptionHandler {
 		e.getBindingResult().getFieldErrors().forEach(ex -> {
 			builder.withError(new ResponseFieldErrorsDTO(BAD_REQUEST.value(), ex.getDefaultMessage(), ex.getField()));
 		});
-		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON).body(builder.build());
+		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON_UTF8).body(builder.build());
 	}
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ResponseDTO> handleException(Exception e) {
 		LOG.error(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
-		return ResponseEntity.status(INTERNAL_SERVER_ERROR).contentType(APPLICATION_JSON)
+		return ResponseEntity.status(INTERNAL_SERVER_ERROR).contentType(APPLICATION_JSON_UTF8)
 				.body(ResponseDTO.createBuilder()
 						.withError(new ResponseErrorsDTO(INTERNAL_SERVER_ERROR.value(), e.getMessage())).build());
 	}

@@ -1,16 +1,31 @@
 package com.custom.blockchain.util;
 
+import java.math.BigInteger;
 import java.security.Key;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.jce.spec.ECPrivateKeySpec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.custom.blockchain.transaction.Transaction;
 
 public class TransactionUtil {
+
+	private static final Logger LOG = LoggerFactory.getLogger(TransactionUtil.class);
+
+	private static final ECNamedCurveParameterSpec ECCparam = ECNamedCurveTable.getParameterSpec("prime192v2");
 
 	public static byte[] applyECDSASig(PrivateKey privateKey, String input) {
 		Signature dsa;
@@ -41,6 +56,17 @@ public class TransactionUtil {
 
 	public static String getStringFromKey(Key key) {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
+	}
+
+	public static PrivateKey getKeyFromString(String privateKey)
+			throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+		byte[] keyEncoded = Base64.getDecoder().decode(privateKey);
+		LOG.debug("privateKey - Encoded: {}, String: {}", keyEncoded, privateKey);
+		ECPrivateKeySpec keySpec = new ECPrivateKeySpec(new BigInteger(keyEncoded), ECCparam);
+		KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
+		PrivateKey privKey = kf.generatePrivate(keySpec);
+		return privKey;
+
 	}
 
 	public static String getMerkleRoot(List<Transaction> transactions) {

@@ -1,11 +1,15 @@
 package com.custom.blockchain.wallet;
 
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.ECGenParameterSpec;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,15 +18,21 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.custom.blockchain.transaction.TransactionOutput;
+import com.custom.blockchain.util.TransactionUtil;
 
 public class Wallet {
+
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
 
 	public Map<String, TransactionOutput> unspentTransactionsOutput = new HashMap<String, TransactionOutput>();
 
-	public Wallet() {
+	public Wallet() throws Exception {
 		generateKeyPair();
+	}
+
+	public Wallet(String privateKey) throws Exception {
+		generateKeyPair(privateKey);
 	}
 
 	public PrivateKey getPrivateKey() {
@@ -73,17 +83,27 @@ public class Wallet {
 				.append("unspentTransactionsOutput", unspentTransactionsOutput).build();
 	}
 
-	private void generateKeyPair() {
+	private void generateKeyPair() throws Exception {
 		try {
-			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ECDSA", "BC");
-			SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-			ECGenParameterSpec ecSpec = new ECGenParameterSpec("prime192v1");
+			KeyPairGenerator keyGen;
+			keyGen = KeyPairGenerator.getInstance("ECDSA", "BC");
+			SecureRandom random;
+			random = SecureRandom.getInstance("SHA1PRNG");
+			ECGenParameterSpec ecSpec = new ECGenParameterSpec("prime192v2");
 			keyGen.initialize(ecSpec, random);
 			KeyPair keyPair = keyGen.generateKeyPair();
 			privateKey = keyPair.getPrivate();
 			publicKey = keyPair.getPublic();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException e) {
+			throw new Exception(e.getMessage());
+		}
+	}
+
+	private void generateKeyPair(String privateKeyString) throws Exception {
+		try {
+			privateKey = TransactionUtil.getKeyFromString(privateKeyString);
+		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
+			throw new Exception(e.getMessage());
 		}
 	}
 }

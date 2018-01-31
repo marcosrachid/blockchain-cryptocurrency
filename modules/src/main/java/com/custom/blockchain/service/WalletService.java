@@ -13,11 +13,19 @@ import com.custom.blockchain.wallet.Wallet;
 @Service
 public class WalletService {
 
-	public Wallet getWallet(String privateKey) {
+	public Wallet createWallet() throws Exception {
 		return new Wallet();
 	}
 
-	public BigDecimal getBalance(String privateKey) {
+	public Wallet getWalletFromStorage(String publicKey) throws Exception {
+		return new Wallet();
+	}
+
+	public Wallet getWalletFromPrivateKey(String privateKey) throws Exception {
+		return new Wallet(privateKey);
+	}
+
+	public BigDecimal getBalance(String publicKey) throws Exception {
 		// TODO: find wallet info and transactions on blockchain
 		Wallet wallet = new Wallet();
 		BigDecimal total = BigDecimal.ZERO;
