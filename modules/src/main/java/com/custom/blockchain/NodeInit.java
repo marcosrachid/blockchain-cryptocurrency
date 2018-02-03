@@ -1,12 +1,10 @@
 package com.custom.blockchain;
 
-import static com.custom.blockchain.properties.BlockchainProperties.VERSION;
-
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.BlockFactory;
@@ -19,9 +17,6 @@ import com.custom.blockchain.service.BlockService;
 @Component
 public class NodeInit {
 
-	@Value("${application.blockchain.version}")
-	private String version;
-
 	private BlockManagement blockManagement;
 	private BlockService blockService;
 
@@ -31,9 +26,9 @@ public class NodeInit {
 	}
 
 	@PostConstruct
-	public void environment() {
+	public void environment() throws NoSuchAlgorithmException {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-		VERSION = this.version;
+		Security.setProperty("crypto.policy", "unlimited");
 	}
 
 	@PostConstruct

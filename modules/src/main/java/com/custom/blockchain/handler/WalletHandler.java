@@ -17,7 +17,7 @@ import com.custom.blockchain.wallet.Wallet;
 
 @Component
 public class WalletHandler {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(WalletHandler.class);
 
 	private WalletService walletService;
@@ -44,8 +44,10 @@ public class WalletHandler {
 
 	public ResponseWalletDTO createWallet() throws Exception {
 		Wallet wallet = walletService.createWallet();
-		LOG.debug("PublicKey - Encoded: {}, String: {}", wallet.getPublicKey().getEncoded(), TransactionUtil.getStringFromKey(wallet.getPublicKey()));
-		LOG.debug("PrivateKey - Encoded: {}, String: {}", wallet.getPrivateKey().getEncoded(), TransactionUtil.getStringFromKey(wallet.getPrivateKey()));
+		LOG.debug("PublicKey - Encoded: {}, String: {}", wallet.getPublicKey().getEncoded(),
+				TransactionUtil.getStringFromKey(wallet.getPublicKey()));
+		LOG.debug("PrivateKey - Encoded: {}, String: {}", wallet.getPrivateKey().getEncoded(),
+				TransactionUtil.getStringFromKey(wallet.getPrivateKey()));
 		// TODO add to storage if not exist
 		return new ResponseWalletDTO(TransactionUtil.getStringFromKey(wallet.getPublicKey()),
 				TransactionUtil.getStringFromKey(wallet.getPrivateKey()));
@@ -54,7 +56,7 @@ public class WalletHandler {
 	public ResponseWalletDTO importWallet(String privateKey) throws Exception {
 		Wallet wallet = walletService.getWalletFromPrivateKey(privateKey);
 		// TODO add to storage if not exist
-		return new ResponseWalletDTO(null,
+		return new ResponseWalletDTO(TransactionUtil.getStringFromKey(wallet.getPublicKey()),
 				TransactionUtil.getStringFromKey(wallet.getPrivateKey()));
 	}
 }

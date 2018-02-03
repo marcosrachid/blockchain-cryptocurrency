@@ -47,7 +47,7 @@ public class WalletResource {
 				.body(new ResponseDTO(walletHandler.getBalances(privateKeys)));
 	}
 
-	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/create", method = RequestMethod.POST, produces = APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<ResponseDTO> create() throws Exception {
 		return ResponseEntity.status(HttpStatus.CREATED).contentType(APPLICATION_JSON_UTF8)
 				.body(new ResponseDTO(walletHandler.createWallet()));

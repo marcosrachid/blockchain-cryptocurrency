@@ -89,7 +89,7 @@ public class Wallet {
 			keyGen = KeyPairGenerator.getInstance("ECDSA", "BC");
 			SecureRandom random;
 			random = SecureRandom.getInstance("SHA1PRNG");
-			ECGenParameterSpec ecSpec = new ECGenParameterSpec("prime192v2");
+			ECGenParameterSpec ecSpec = new ECGenParameterSpec("prime192v1");
 			keyGen.initialize(ecSpec, random);
 			KeyPair keyPair = keyGen.generateKeyPair();
 			privateKey = keyPair.getPrivate();
@@ -101,7 +101,8 @@ public class Wallet {
 
 	private void generateKeyPair(String privateKeyString) throws Exception {
 		try {
-			privateKey = TransactionUtil.getKeyFromString(privateKeyString);
+			privateKey = TransactionUtil.getPrivateKeyFromString(privateKeyString);
+			publicKey = TransactionUtil.getPublicKeyFromPrivateKey(privateKey);
 		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
 			throw new Exception(e.getMessage());
 		}
