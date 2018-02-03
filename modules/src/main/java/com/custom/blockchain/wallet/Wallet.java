@@ -20,6 +20,11 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.TransactionUtil;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class Wallet {
 
 	private PrivateKey privateKey;
@@ -83,6 +88,10 @@ public class Wallet {
 				.append("unspentTransactionsOutput", unspentTransactionsOutput).build();
 	}
 
+	/**
+	 * 
+	 * @throws Exception
+	 */
 	private void generateKeyPair() throws Exception {
 		try {
 			KeyPairGenerator keyGen;
@@ -99,6 +108,11 @@ public class Wallet {
 		}
 	}
 
+	/**
+	 * 
+	 * @param privateKeyString
+	 * @throws Exception
+	 */
 	private void generateKeyPair(String privateKeyString) throws Exception {
 		try {
 			privateKey = TransactionUtil.getPrivateKeyFromString(privateKeyString);

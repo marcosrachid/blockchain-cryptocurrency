@@ -15,6 +15,11 @@ import com.custom.blockchain.service.WalletService;
 import com.custom.blockchain.util.TransactionUtil;
 import com.custom.blockchain.wallet.Wallet;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @Component
 public class WalletHandler {
 
@@ -26,12 +31,24 @@ public class WalletHandler {
 		this.walletService = walletService;
 	}
 
+	/**
+	 * 
+	 * @param publicKey
+	 * @return
+	 * @throws Exception
+	 */
 	public ResponseBalanceDTO getBalance(String publicKey) throws Exception {
 		Wallet wallet = walletService.getWalletFromStorage(publicKey);
 		BigDecimal balance = walletService.getBalance(publicKey);
 		return new ResponseBalanceDTO(TransactionUtil.getStringFromKey(wallet.getPublicKey()), balance);
 	}
 
+	/**
+	 * 
+	 * @param publicKeys
+	 * @return
+	 * @throws Exception
+	 */
 	public List<ResponseBalanceDTO> getBalances(RequestBalanceDTO publicKeys) throws Exception {
 		List<ResponseBalanceDTO> balances = new ArrayList<>();
 		for (String publicKey : publicKeys) {
@@ -42,6 +59,11 @@ public class WalletHandler {
 		return balances;
 	}
 
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
 	public ResponseWalletDTO createWallet() throws Exception {
 		Wallet wallet = walletService.createWallet();
 		LOG.debug("PublicKey - Encoded: {}, String: {}", wallet.getPublicKey().getEncoded(),
@@ -53,6 +75,12 @@ public class WalletHandler {
 				TransactionUtil.getStringFromKey(wallet.getPrivateKey()));
 	}
 
+	/**
+	 * 
+	 * @param privateKey
+	 * @return
+	 * @throws Exception
+	 */
 	public ResponseWalletDTO importWallet(String privateKey) throws Exception {
 		Wallet wallet = walletService.getWalletFromPrivateKey(privateKey);
 		// TODO add to storage if not exist

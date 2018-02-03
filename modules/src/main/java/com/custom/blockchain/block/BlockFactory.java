@@ -4,8 +4,20 @@ import static com.custom.blockchain.properties.BlockchainImutableProperties.BLOC
 
 import com.custom.blockchain.block.exception.BlockException;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class BlockFactory {
 
+	/**
+	 * 
+	 * @param blockType
+	 * @param previousBlock
+	 * @return
+	 * @throws BlockException
+	 */
 	public static Block getBlock(BlockType blockType, Block previousBlock) throws BlockException {
 		if (blockType == BlockType.GENESIS) {
 			if (!BLOCKCHAIN.isEmpty()) {
@@ -17,6 +29,11 @@ public class BlockFactory {
 		}
 	}
 
+	/**
+	 * 
+	 * @param previousBlock
+	 * @return
+	 */
 	public static Block getBlock(Block previousBlock) {
 		return new Block(previousBlock.getHash());
 	}

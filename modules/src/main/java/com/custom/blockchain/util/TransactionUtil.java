@@ -24,10 +24,21 @@ import org.slf4j.LoggerFactory;
 
 import com.custom.blockchain.transaction.Transaction;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class TransactionUtil {
 
 	private static final Logger LOG = LoggerFactory.getLogger(TransactionUtil.class);
 
+	/**
+	 * 
+	 * @param privateKey
+	 * @param input
+	 * @return
+	 */
 	public static byte[] applyECDSASig(PrivateKey privateKey, String input) {
 		Signature dsa;
 		byte[] output = new byte[0];
@@ -44,6 +55,13 @@ public class TransactionUtil {
 		return output;
 	}
 
+	/**
+	 * 
+	 * @param publicKey
+	 * @param data
+	 * @param signature
+	 * @return
+	 */
 	public static boolean verifyECDSASig(PublicKey publicKey, String data, byte[] signature) {
 		try {
 			Signature ecdsaVerify = Signature.getInstance("ECDSA", "BC");
@@ -55,10 +73,23 @@ public class TransactionUtil {
 		}
 	}
 
+	/**
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public static String getStringFromKey(Key key) {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
 	}
 
+	/**
+	 * 
+	 * @param privateKey
+	 * @return
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchProviderException
+	 * @throws InvalidKeySpecException
+	 */
 	public static PrivateKey getPrivateKeyFromString(String privateKey)
 			throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
 		byte[] keyEncoded = Base64.getDecoder().decode(privateKey);
@@ -68,6 +99,14 @@ public class TransactionUtil {
 		return privKey;
 	}
 
+	/**
+	 * 
+	 * @param privateKey
+	 * @return
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchProviderException
+	 * @throws InvalidKeySpecException
+	 */
 	public static PublicKey getPublicKeyFromPrivateKey(PrivateKey privateKey)
 			throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
 		KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "BC");
@@ -82,6 +121,11 @@ public class TransactionUtil {
 		return publicKeyGenerated;
 	}
 
+	/**
+	 * 
+	 * @param transactions
+	 * @return
+	 */
 	public static String getMerkleRoot(List<Transaction> transactions) {
 		int count = transactions.size();
 		List<String> previousTreeLayer = new ArrayList<String>();

@@ -5,6 +5,11 @@ import org.springframework.stereotype.Component;
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.Genesis;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @Component
 public class BlockManagement {
 

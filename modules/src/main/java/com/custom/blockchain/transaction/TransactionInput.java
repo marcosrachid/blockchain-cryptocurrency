@@ -1,5 +1,10 @@
 package com.custom.blockchain.transaction;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class TransactionInput {
 	private String transactionOutputId;
 	private TransactionOutput unspentTransactionOutput;

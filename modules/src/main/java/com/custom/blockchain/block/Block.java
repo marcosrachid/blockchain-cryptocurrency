@@ -12,6 +12,11 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.util.DigestUtil;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class Block implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -78,6 +83,9 @@ public class Block implements Serializable {
 		this.nonce = nonce;
 	}
 
+	/**
+	 * 
+	 */
 	public void calculateHash() {
 		hash = DigestUtil.applySha256(previousHash + Long.toString(timeStamp) + Integer.toString(nonce) + merkleRoot);
 	}

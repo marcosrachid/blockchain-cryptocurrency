@@ -8,6 +8,11 @@ import java.util.Map;
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.transaction.TransactionOutput;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class BlockchainImutableProperties {
 
 	public static final List<Block> BLOCKCHAIN = new ArrayList<Block>();

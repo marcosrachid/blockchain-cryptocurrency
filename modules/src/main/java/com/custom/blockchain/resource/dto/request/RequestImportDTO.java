@@ -7,6 +7,11 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.validator.constraints.NotEmpty;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class RequestImportDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;

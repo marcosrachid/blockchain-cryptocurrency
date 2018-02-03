@@ -21,11 +21,21 @@ import com.custom.blockchain.resource.dto.response.ResponseFieldErrorsDTO;
 import com.custom.blockchain.transaction.exception.TransactionException;
 import com.custom.blockchain.wallet.exception.WalletException;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @ControllerAdvice(basePackages = "com.custom.blockchain.resource")
 public class ResourceExceptionHandler {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ResourceExceptionHandler.class);
 
+	/**
+	 * 
+	 * @param e
+	 * @return
+	 */
 	@ExceptionHandler(BlockException.class)
 	public ResponseEntity<ResponseDTO> handleBlockException(BlockException e) {
 		LOG.error(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
@@ -33,6 +43,11 @@ public class ResourceExceptionHandler {
 				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
 	}
 
+	/**
+	 * 
+	 * @param e
+	 * @return
+	 */
 	@ExceptionHandler(TransactionException.class)
 	public ResponseEntity<ResponseDTO> handleTransactionException(TransactionException e) {
 		LOG.error(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
@@ -40,6 +55,11 @@ public class ResourceExceptionHandler {
 				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
 	}
 
+	/**
+	 * 
+	 * @param e
+	 * @return
+	 */
 	@ExceptionHandler(WalletException.class)
 	public ResponseEntity<ResponseDTO> handleWalletException(WalletException e) {
 		LOG.error(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
@@ -47,6 +67,11 @@ public class ResourceExceptionHandler {
 				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
 	}
 
+	/**
+	 * 
+	 * @param e
+	 * @return
+	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ResponseDTO> handleFieldsException(MethodArgumentNotValidException e) {
 		LOG.error(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
@@ -57,6 +82,11 @@ public class ResourceExceptionHandler {
 		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON_UTF8).body(builder.build());
 	}
 
+	/**
+	 * 
+	 * @param e
+	 * @return
+	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ResponseDTO> handleException(Exception e) {
 		LOG.error(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));

@@ -6,6 +6,11 @@ import java.security.PublicKey;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.TransactionUtil;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class TransactionOutput {
 	private String id;
 	private PublicKey reciepient;

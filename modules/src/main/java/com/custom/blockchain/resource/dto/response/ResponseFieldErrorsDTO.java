@@ -4,6 +4,11 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class ResponseFieldErrorsDTO extends ResponseErrorsDTO {
 
 	private static final long serialVersionUID = 1L;

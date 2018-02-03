@@ -5,6 +5,11 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class Transaction {
 	private String transactionId;
 	private PublicKey sender;
@@ -80,6 +85,10 @@ public class Transaction {
 		this.outputs = outputs;
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	public BigDecimal getInputsValue() {
 		BigDecimal total = BigDecimal.ZERO;
 		for (TransactionInput i : inputs) {
@@ -90,6 +99,10 @@ public class Transaction {
 		return total;
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	public BigDecimal getOutputsValue() {
 		BigDecimal total = BigDecimal.ZERO;
 		for (TransactionOutput o : outputs) {

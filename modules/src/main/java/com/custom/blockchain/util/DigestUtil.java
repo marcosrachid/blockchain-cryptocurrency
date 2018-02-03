@@ -2,8 +2,18 @@ package com.custom.blockchain.util;
 
 import java.security.MessageDigest;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class DigestUtil {
 
+	/**
+	 * 
+	 * @param input
+	 * @return
+	 */
 	public static String applySha256(String input) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");

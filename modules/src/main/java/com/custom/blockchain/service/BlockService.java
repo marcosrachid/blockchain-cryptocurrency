@@ -9,9 +9,18 @@ import com.custom.blockchain.block.Block;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @Service
 public class BlockService {
 
+	/**
+	 * 
+	 * @param block
+	 */
 	public void mineBlock(Block block) {
 		block.setMerkleRoot(TransactionUtil.getMerkleRoot(block.getTransactions()));
 		String target = StringUtil.getDificultyString(DIFFICULTY);

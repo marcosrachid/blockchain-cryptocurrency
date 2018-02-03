@@ -6,6 +6,11 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @SpringBootApplication
 @ComponentScan("com.custom.blockchain")
 @PropertySources(value = { @PropertySource("classpath:config/application.properties") })

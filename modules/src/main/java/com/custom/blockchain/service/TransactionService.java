@@ -20,6 +20,11 @@ import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.TransactionUtil;
 import com.custom.blockchain.wallet.Wallet;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @Service
 public class TransactionService {
 
@@ -32,6 +37,13 @@ public class TransactionService {
 		this.walletService = walletService;
 	}
 
+	/**
+	 * 
+	 * @param from
+	 * @param to
+	 * @param value
+	 * @throws Exception
+	 */
 	public void sendFunds(Wallet from, Wallet to, BigDecimal value) throws Exception {
 		if (walletService.getBalance(from.getPrivateKey().getFormat()).compareTo(value) < 0) {
 			throw new TransactionException("Not Enough funds to send transaction. Transaction Discarded");
@@ -58,6 +70,12 @@ public class TransactionService {
 		addTransaction(blockManagement.getCurrentBlock(), newTransaction);
 	}
 
+	/**
+	 * 
+	 * @param block
+	 * @param transaction
+	 * @throws TransactionException
+	 */
 	private void addTransaction(Block block, Transaction transaction) throws TransactionException {
 		if (transaction == null)
 			throw new TransactionException("Non existent transaction");
@@ -68,6 +86,13 @@ public class TransactionService {
 		System.out.println("Transaction Successfully added to Block");
 	}
 
+	/**
+	 * 
+	 * @param transaction
+	 * @param minimunTransaction
+	 * @return
+	 * @throws TransactionException
+	 */
 	private boolean processTransaction(Transaction transaction, BigDecimal minimunTransaction)
 			throws TransactionException {
 
@@ -103,6 +128,11 @@ public class TransactionService {
 		return true;
 	}
 
+	/**
+	 * 
+	 * @param transaction
+	 * @param wallet
+	 */
 	private void generateSignature(Transaction transaction, Wallet wallet) {
 		String data = TransactionUtil.getStringFromKey(transaction.getSender())
 				+ TransactionUtil.getStringFromKey(transaction.getReciepient())
@@ -110,6 +140,11 @@ public class TransactionService {
 		transaction.setSignature(TransactionUtil.applyECDSASig(wallet.getPrivateKey(), data));
 	}
 
+	/**
+	 * 
+	 * @param transaction
+	 * @return
+	 */
 	private boolean verifiySignature(Transaction transaction) {
 		String data = TransactionUtil.getStringFromKey(transaction.getSender())
 				+ TransactionUtil.getStringFromKey(transaction.getReciepient())
@@ -117,6 +152,11 @@ public class TransactionService {
 		return TransactionUtil.verifyECDSASig(transaction.getSender(), data, transaction.getSignature());
 	}
 
+	/**
+	 * 
+	 * @param transaction
+	 * @return
+	 */
 	private String calulateHash(Transaction transaction) {
 		Transaction.sequence++;
 		return DigestUtil.applySha256(TransactionUtil.getStringFromKey(transaction.getSender())

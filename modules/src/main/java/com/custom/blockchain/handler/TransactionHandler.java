@@ -4,6 +4,11 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.service.TransactionService;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @Component
 public class TransactionHandler {
 

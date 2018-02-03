@@ -14,6 +14,11 @@ import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.block.management.BlockManagement;
 import com.custom.blockchain.service.BlockService;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @Component
 public class NodeInit {
 
@@ -25,12 +30,20 @@ public class NodeInit {
 		this.blockService = blockService;
 	}
 
+	/**
+	 * 
+	 * @throws NoSuchAlgorithmException
+	 */
 	@PostConstruct
 	public void environment() throws NoSuchAlgorithmException {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 		Security.setProperty("crypto.policy", "unlimited");
 	}
 
+	/**
+	 * 
+	 * @throws BlockException
+	 */
 	@PostConstruct
 	public void genesis() throws BlockException {
 		Genesis genesis = (Genesis) BlockFactory.getBlock(BlockType.GENESIS, null);

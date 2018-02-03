@@ -4,6 +4,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.custom.blockchain.handler.BlockHandler;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @RestController
 public class BlockResource {
 	

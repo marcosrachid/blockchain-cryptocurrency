@@ -21,6 +21,11 @@ import com.custom.blockchain.resource.dto.request.RequestBalanceDTO;
 import com.custom.blockchain.resource.dto.request.RequestImportDTO;
 import com.custom.blockchain.resource.dto.response.ResponseDTO;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @RestController
 @RequestMapping(value = "/wallet")
 public class WalletResource {
@@ -33,6 +38,12 @@ public class WalletResource {
 		this.walletHandler = walletHandler;
 	}
 
+	/**
+	 * 
+	 * @param publicKey
+	 * @return
+	 * @throws Exception
+	 */
 	@RequestMapping(value = "/balance/{public-key}", method = RequestMethod.GET, produces = APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<ResponseDTO> getBalance(@PathParam("public-key") String publicKey) throws Exception {
 		LOG.debug(REQUEST, publicKey);
@@ -40,6 +51,12 @@ public class WalletResource {
 				.body(new ResponseDTO(walletHandler.getBalance(publicKey)));
 	}
 
+	/**
+	 * 
+	 * @param privateKeys
+	 * @return
+	 * @throws Exception
+	 */
 	@RequestMapping(value = "/balances", method = RequestMethod.POST, consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<ResponseDTO> getBalances(@Valid @RequestBody RequestBalanceDTO privateKeys) throws Exception {
 		LOG.debug(REQUEST, privateKeys);
@@ -47,12 +64,23 @@ public class WalletResource {
 				.body(new ResponseDTO(walletHandler.getBalances(privateKeys)));
 	}
 
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
 	@RequestMapping(value = "/create", method = RequestMethod.POST, produces = APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<ResponseDTO> create() throws Exception {
 		return ResponseEntity.status(HttpStatus.CREATED).contentType(APPLICATION_JSON_UTF8)
 				.body(new ResponseDTO(walletHandler.createWallet()));
 	}
 
+	/**
+	 * 
+	 * @param privateKey
+	 * @return
+	 * @throws Exception
+	 */
 	@RequestMapping(value = "/import", method = RequestMethod.POST, produces = APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<ResponseDTO> importWallet(@Valid @RequestBody RequestImportDTO privateKey) throws Exception {
 		LOG.debug(REQUEST, privateKey);
