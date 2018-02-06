@@ -53,15 +53,15 @@ public class WalletResource {
 
 	/**
 	 * 
-	 * @param privateKeys
+	 * @param publicKeys
 	 * @return
 	 * @throws Exception
 	 */
 	@RequestMapping(value = "/balances", method = RequestMethod.POST, consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<ResponseDTO> getBalances(@Valid @RequestBody RequestBalanceDTO privateKeys) throws Exception {
-		LOG.debug(REQUEST, privateKeys);
+	public ResponseEntity<ResponseDTO> getBalances(@Valid @RequestBody RequestBalanceDTO publicKeys) throws Exception {
+		LOG.debug(REQUEST, publicKeys);
 		return ResponseEntity.status(HttpStatus.OK).contentType(APPLICATION_JSON_UTF8)
-				.body(new ResponseDTO(walletHandler.getBalances(privateKeys)));
+				.body(new ResponseDTO(walletHandler.getBalances(publicKeys)));
 	}
 
 	/**
