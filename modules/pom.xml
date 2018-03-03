@@ -44,11 +44,17 @@
 			<version>2.8.2</version>
 		</dependency>
 
-		<!-- Berkley DB -->
+		<!-- LevelDB -->
 		<dependency>
-			<groupId>berkeleydb</groupId>
-			<artifactId>je</artifactId>
-			<version>3.2.76</version>
+			<groupId>org.iq80.leveldb</groupId>
+			<artifactId>leveldb-api</artifactId>
+			<version>0.10</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.iq80.leveldb</groupId>
+			<artifactId>leveldb</artifactId>
+			<version>0.10</version>
 		</dependency>
 
 		<!-- commons -->
