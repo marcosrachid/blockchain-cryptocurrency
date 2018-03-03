@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.custom.blockchain.handler.WalletHandler;
-import com.custom.blockchain.resource.dto.request.RequestBalanceDTO;
 import com.custom.blockchain.resource.dto.request.RequestImportDTO;
 import com.custom.blockchain.resource.dto.response.ResponseDTO;
 
@@ -53,15 +52,15 @@ public class WalletResource {
 
 	/**
 	 * 
-	 * @param publicKeys
+	 * @param privateKey
 	 * @return
 	 * @throws Exception
 	 */
-	@RequestMapping(value = "/balances", method = RequestMethod.POST, consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<ResponseDTO> getBalances(@Valid @RequestBody RequestBalanceDTO publicKeys) throws Exception {
-		LOG.debug(REQUEST, publicKeys);
-		return ResponseEntity.status(HttpStatus.OK).contentType(APPLICATION_JSON_UTF8)
-				.body(new ResponseDTO(walletHandler.getBalances(publicKeys)));
+	@RequestMapping(value = "/import", method = RequestMethod.POST, consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<ResponseDTO> importWallet(@Valid @RequestBody RequestImportDTO privateKey) throws Exception {
+		LOG.debug(REQUEST, privateKey);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(APPLICATION_JSON_UTF8)
+				.body(new ResponseDTO(walletHandler.importWallet(privateKey.getPrivateKey())));
 	}
 
 	/**
@@ -69,7 +68,7 @@ public class WalletResource {
 	 * @return
 	 * @throws Exception
 	 */
-	@RequestMapping(value = "/create", method = RequestMethod.POST, produces = APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(method = RequestMethod.POST, produces = APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<ResponseDTO> create() throws Exception {
 		return ResponseEntity.status(HttpStatus.CREATED).contentType(APPLICATION_JSON_UTF8)
 				.body(new ResponseDTO(walletHandler.createWallet()));
@@ -77,15 +76,26 @@ public class WalletResource {
 
 	/**
 	 * 
-	 * @param privateKey
+	 * @param publicKeys
 	 * @return
 	 * @throws Exception
 	 */
-	@RequestMapping(value = "/import", method = RequestMethod.POST, produces = APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<ResponseDTO> importWallet(@Valid @RequestBody RequestImportDTO privateKey) throws Exception {
-		LOG.debug(REQUEST, privateKey);
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(APPLICATION_JSON_UTF8)
-				.body(new ResponseDTO(walletHandler.importWallet(privateKey.getPrivateKey())));
+	@RequestMapping(value = "/current", method = RequestMethod.GET, produces = APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<ResponseDTO> getCurrentWallet() throws Exception {
+		return ResponseEntity.status(HttpStatus.OK).contentType(APPLICATION_JSON_UTF8)
+				.body(new ResponseDTO(walletHandler.getCurrentWallet()));
+	}
+
+	/**
+	 * 
+	 * @param publicKeys
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/current/balance", method = RequestMethod.GET, produces = APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<ResponseDTO> getCurrentBalance() throws Exception {
+		return ResponseEntity.status(HttpStatus.OK).contentType(APPLICATION_JSON_UTF8)
+				.body(new ResponseDTO(walletHandler.getCurrentWalletBalance()));
 	}
 
 }

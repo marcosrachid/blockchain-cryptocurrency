@@ -1,14 +1,11 @@
 package com.custom.blockchain.handler;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.resource.dto.request.RequestBalanceDTO;
 import com.custom.blockchain.resource.dto.response.ResponseBalanceDTO;
 import com.custom.blockchain.resource.dto.response.ResponseWalletDTO;
 import com.custom.blockchain.service.WalletService;
@@ -45,27 +42,12 @@ public class WalletHandler {
 
 	/**
 	 * 
-	 * @param publicKeys
-	 * @return
-	 * @throws Exception
-	 */
-	public List<ResponseBalanceDTO> getBalances(RequestBalanceDTO publicKeys) throws Exception {
-		List<ResponseBalanceDTO> balances = new ArrayList<>();
-		for (String publicKey : publicKeys) {
-			Wallet wallet = walletService.getWalletFromStorage(publicKey);
-			BigDecimal balance = walletService.getBalance(publicKey);
-			balances.add(new ResponseBalanceDTO(TransactionUtil.getStringFromKey(wallet.getPublicKey()), balance));
-		}
-		return balances;
-	}
-
-	/**
-	 * 
 	 * @return
 	 * @throws Exception
 	 */
 	public ResponseWalletDTO createWallet() throws Exception {
 		Wallet wallet = walletService.createWallet();
+		walletService.useNewWallet(wallet);
 		LOG.debug("PublicKey - Encoded: {}, String: {}", wallet.getPublicKey().getEncoded(),
 				TransactionUtil.getStringFromKey(wallet.getPublicKey()));
 		LOG.debug("PrivateKey - Encoded: {}, String: {}", wallet.getPrivateKey().getEncoded(),
@@ -83,8 +65,31 @@ public class WalletHandler {
 	 */
 	public ResponseWalletDTO importWallet(String privateKey) throws Exception {
 		Wallet wallet = walletService.getWalletFromPrivateKey(privateKey);
-		// TODO add to storage if not exist
+		walletService.useNewWallet(wallet);
 		return new ResponseWalletDTO(TransactionUtil.getStringFromKey(wallet.getPublicKey()),
 				TransactionUtil.getStringFromKey(wallet.getPrivateKey()));
+	}
+
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public ResponseWalletDTO getCurrentWallet() throws Exception {
+		Wallet wallet = walletService.getCurrentWallet();
+		return new ResponseWalletDTO(TransactionUtil.getStringFromKey(wallet.getPublicKey()),
+				TransactionUtil.getStringFromKey(wallet.getPrivateKey()));
+	}
+
+	/**
+	 * 
+	 * @param publicKeys
+	 * @return
+	 * @throws Exception
+	 */
+	public ResponseBalanceDTO getCurrentWalletBalance() throws Exception {
+		Wallet wallet = walletService.getCurrentWallet();
+		BigDecimal balance = walletService.getBalance(TransactionUtil.getStringFromKey(wallet.getPublicKey()));
+		return new ResponseBalanceDTO(TransactionUtil.getStringFromKey(wallet.getPublicKey()), balance);
 	}
 }

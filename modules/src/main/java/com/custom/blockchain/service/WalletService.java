@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.wallet.Wallet;
+import com.custom.blockchain.wallet.exception.WalletException;
+import com.custom.blockchain.wallet.selection.CurrentWallet;
 
 /**
  * 
@@ -17,6 +19,12 @@ import com.custom.blockchain.wallet.Wallet;
  */
 @Service
 public class WalletService {
+
+	private CurrentWallet currentWallet;
+
+	public WalletService(final CurrentWallet currentWallet) {
+		this.currentWallet = currentWallet;
+	}
 
 	/**
 	 * 
@@ -65,6 +73,27 @@ public class WalletService {
 			}
 		}
 		return total;
+	}
+
+	/**
+	 * 
+	 * @param wallet
+	 */
+	public void useNewWallet(Wallet wallet) {
+		this.currentWallet.setCurrentWallet(wallet);
+	}
+
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public Wallet getCurrentWallet() throws Exception {
+		Wallet wallet = this.currentWallet.getCurrentWallet();
+		if (wallet == null) {
+			throw new WalletException("No wallet selected yet.");
+		}
+		return wallet;
 	}
 
 }
