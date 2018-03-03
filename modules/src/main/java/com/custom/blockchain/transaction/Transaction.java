@@ -11,6 +11,7 @@ import java.util.List;
  *
  */
 public class Transaction {
+	
 	private String transactionId;
 	private PublicKey sender;
 	private PublicKey reciepient;

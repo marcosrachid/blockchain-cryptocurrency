@@ -52,7 +52,6 @@ public class WalletHandler {
 				TransactionUtil.getStringFromKey(wallet.getPublicKey()));
 		LOG.debug("PrivateKey - Encoded: {}, String: {}", wallet.getPrivateKey().getEncoded(),
 				TransactionUtil.getStringFromKey(wallet.getPrivateKey()));
-		// TODO add to storage if not exist
 		return new ResponseWalletDTO(TransactionUtil.getStringFromKey(wallet.getPublicKey()),
 				TransactionUtil.getStringFromKey(wallet.getPrivateKey()));
 	}
