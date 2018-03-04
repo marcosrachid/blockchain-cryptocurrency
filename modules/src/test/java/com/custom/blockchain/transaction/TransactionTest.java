@@ -2,7 +2,7 @@ package com.custom.blockchain.transaction;
 
 import static com.custom.blockchain.properties.BlockchainImutableProperties.BLOCKCHAIN;
 import static com.custom.blockchain.properties.BlockchainProperties.DIFFICULTY;
-import static com.custom.blockchain.properties.BlockchainImutableProperties.UNSPENT_TRANSACTIONS_OUTPUT;
+import static com.custom.blockchain.properties.BlockchainImutableProperties.UTXOs;
 
 import java.math.BigDecimal;
 import java.security.Security;

@@ -1,6 +1,6 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.properties.BlockchainImutableProperties.UNSPENT_TRANSACTIONS_OUTPUT;
+import static com.custom.blockchain.properties.BlockchainImutableProperties.UTXOs;
 import static com.custom.blockchain.properties.GenesisProperties.GENESIS_PREVIOUS_HASH;
 
 import java.math.BigDecimal;
@@ -101,7 +101,7 @@ public class TransactionService {
 		}
 
 		for (TransactionInput i : transaction.getInputs()) {
-			i.setUnspentTransactionOutput(UNSPENT_TRANSACTIONS_OUTPUT.get(i.getTransactionOutputId()));
+			i.setUnspentTransactionOutput(UTXOs.get(i.getTransactionOutputId()));
 		}
 
 		if (transaction.getInputsValue().compareTo(minimunTransaction) < 0) {
@@ -116,13 +116,13 @@ public class TransactionService {
 				.add(new TransactionOutput(transaction.getSender(), leftOver, transaction.getTransactionId()));
 
 		for (TransactionOutput o : transaction.getOutputs()) {
-			UNSPENT_TRANSACTIONS_OUTPUT.put(o.getId(), o);
+			UTXOs.put(o.getId(), o);
 		}
 
 		for (TransactionInput i : transaction.getInputs()) {
 			if (i.getUnspentTransactionOutput() == null)
 				continue;
-			UNSPENT_TRANSACTIONS_OUTPUT.remove(i.getUnspentTransactionOutput().getId());
+			UTXOs.remove(i.getUnspentTransactionOutput().getId());
 		}
 
 		return true;

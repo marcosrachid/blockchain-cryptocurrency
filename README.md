@@ -1,6 +1,7 @@
 # blockchain-cryptocurrency
 
 Basic example of a cryptocurrency node in java
+**STILL INCOMPLETE**
 
 ## Source
 

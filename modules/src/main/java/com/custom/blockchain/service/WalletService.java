@@ -1,6 +1,6 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.properties.BlockchainImutableProperties.UNSPENT_TRANSACTIONS_OUTPUT;
+import static com.custom.blockchain.properties.BlockchainImutableProperties.UTXOs;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -65,7 +65,7 @@ public class WalletService {
 		// TODO: find wallet info and transactions on blockchain
 		Wallet wallet = new Wallet();
 		BigDecimal total = BigDecimal.ZERO;
-		for (Map.Entry<String, TransactionOutput> item : UNSPENT_TRANSACTIONS_OUTPUT.entrySet()) {
+		for (Map.Entry<String, TransactionOutput> item : UTXOs.entrySet()) {
 			TransactionOutput unspentTransactionOutput = item.getValue();
 			if (unspentTransactionOutput.isMine(wallet.getPublicKey())) {
 				wallet.getUnspentTransactionsOutput().put(unspentTransactionOutput.getId(), unspentTransactionOutput);

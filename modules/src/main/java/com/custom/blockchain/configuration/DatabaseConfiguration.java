@@ -22,9 +22,12 @@ public class DatabaseConfiguration {
 		String homeDir = System.getProperty("user.home");
 		if (OsUtil.isWindows())
 			return factory.open(new File(homeDir + File.separator + "AppData" + File.separator + "Local"
-					+ File.separator + coinName + File.separator + "data"), options);
+					+ File.separator + coinName + File.separator + "blocks" + File.separator + "index"), options);
 		else
-			return factory.open(new File(homeDir + File.separator + coinName + File.separator + "data"), options);
+			return factory.open(
+					new File(
+							homeDir + File.separator + coinName + File.separator + "blocks" + File.separator + "index"),
+					options);
 	}
 
 }

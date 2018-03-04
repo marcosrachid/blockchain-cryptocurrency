@@ -17,6 +17,6 @@ public class BlockchainImutableProperties {
 
 	public static final List<Block> BLOCKCHAIN = new ArrayList<Block>();
 
-	public static final Map<String, TransactionOutput> UNSPENT_TRANSACTIONS_OUTPUT = new HashMap<String, TransactionOutput>();
+	public static final Map<String, TransactionOutput> UTXOs = new HashMap<String, TransactionOutput>();
 
 }
