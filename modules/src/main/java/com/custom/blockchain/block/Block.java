@@ -1,5 +1,7 @@
 package com.custom.blockchain.block;
 
+import static com.custom.blockchain.properties.GenesisProperties.GENESIS_PREVIOUS_HASH;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,18 +23,29 @@ public class Block implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	protected String hash;
-	protected String previousHash;
-	protected String merkleRoot;
-	protected List<Transaction> transactions = new ArrayList<Transaction>();
-	protected long timeStamp;
-	protected int nonce;
+	private boolean genesis = false;
+	private String hash;
+	private String previousHash;
+	private String merkleRoot;
+	private List<Transaction> transactions = new ArrayList<Transaction>();
+	private long timeStamp;
+	private int nonce;
 
 	public Block(String previousHash) {
 		super();
+		if (previousHash.equals(GENESIS_PREVIOUS_HASH))
+			this.genesis = true;
 		this.previousHash = previousHash;
 		this.timeStamp = new Date().getTime();
 		calculateHash();
+	}
+
+	public boolean isGenesis() {
+		return genesis;
+	}
+
+	public void setGenesis(boolean genesis) {
+		this.genesis = genesis;
 	}
 
 	public String getHash() {

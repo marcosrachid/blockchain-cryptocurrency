@@ -34,7 +34,7 @@ public class TransactionHandler {
 		Wallet currentWallet = walletService.getCurrentWallet();
 		PublicKey receipientPublicKey = TransactionUtil.getPublicKeyFromString(funds.getReciepientPublicKey());
 		BigDecimal currentBalance = walletService
-				.getBalance(TransactionUtil.getStringFromKey(currentWallet.getPrivateKey()));
+				.getBalance(TransactionUtil.getStringFromKey(currentWallet.getPublicKey()));
 		Transaction newTransaction = transactionService.sendFunds(currentWallet, receipientPublicKey, currentBalance,
 				funds.getValue());
 		transactionService.addTransaction(newTransaction);

@@ -10,14 +10,11 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.TransactionUtil;
 
 /**
@@ -29,8 +26,6 @@ public class Wallet {
 
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
-
-	public Map<String, TransactionOutput> unspentTransactionsOutput = new HashMap<String, TransactionOutput>();
 
 	public Wallet() throws Exception {
 		generateKeyPair();
@@ -54,38 +49,6 @@ public class Wallet {
 
 	public void setPublicKey(PublicKey publicKey) {
 		this.publicKey = publicKey;
-	}
-
-	public Map<String, TransactionOutput> getUnspentTransactionsOutput() {
-		return unspentTransactionsOutput;
-	}
-
-	public void setUnspentTransactionsOutput(Map<String, TransactionOutput> unspentTransactionsOutput) {
-		this.unspentTransactionsOutput = unspentTransactionsOutput;
-	}
-
-	@Override
-	public int hashCode() {
-		return new HashCodeBuilder().append(privateKey).append(publicKey).append(unspentTransactionsOutput).hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Wallet other = (Wallet) obj;
-		return new EqualsBuilder().append(privateKey, other.privateKey).append(publicKey, other.publicKey)
-				.append(unspentTransactionsOutput, other.unspentTransactionsOutput).isEquals();
-	}
-
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this).append("privateKey", privateKey).append("publicKey", publicKey)
-				.append("unspentTransactionsOutput", unspentTransactionsOutput).build();
 	}
 
 	/**
@@ -120,5 +83,28 @@ public class Wallet {
 		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
 			throw new Exception(e.getMessage());
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder().append(privateKey).append(publicKey).hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Wallet other = (Wallet) obj;
+		return new EqualsBuilder().append(privateKey, other.privateKey).append(publicKey, other.publicKey).isEquals();
+	}
+
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this).append("privateKey", TransactionUtil.getStringFromKey(privateKey))
+				.append("publicKey", TransactionUtil.getStringFromKey(publicKey)).build();
 	}
 }

@@ -58,6 +58,6 @@ public class TransactionOutput {
 	}
 
 	public boolean isMine(PublicKey publicKey) {
-		return (publicKey == reciepient);
+		return (publicKey.equals(reciepient));
 	}
 }

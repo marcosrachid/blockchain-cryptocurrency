@@ -14,13 +14,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.Block;
-import com.custom.blockchain.block.management.BlockManagement;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.transaction.exception.TransactionException;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.TransactionUtil;
+import com.custom.blockchain.util.components.BlockManagement;
 import com.custom.blockchain.wallet.Wallet;
 
 /**
@@ -57,20 +57,18 @@ public class TransactionService {
 		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
 
 		BigDecimal total = BigDecimal.ZERO;
-		for (Map.Entry<String, TransactionOutput> item : from.getUnspentTransactionsOutput().entrySet()) {
+		for (Map.Entry<String, TransactionOutput> item : UTXOs.entrySet()) {
 			TransactionOutput UTXO = item.getValue();
-			total = total.add(UTXO.getValue());
-			inputs.add(new TransactionInput(UTXO.getId()));
-			if (total.compareTo(value) > 0)
-				break;
+			if (UTXO.isMine(from.getPublicKey())) {
+				total = total.add(UTXO.getValue());
+				inputs.add(new TransactionInput(UTXO.getId()));
+				if (total.compareTo(value) > 0)
+					break;
+			}
 		}
 
 		Transaction newTransaction = new Transaction(from.getPublicKey(), to, value, inputs);
 		generateSignature(newTransaction, from);
-
-		for (TransactionInput input : inputs) {
-			from.getUnspentTransactionsOutput().remove(input.getTransactionOutputId());
-		}
 
 		return newTransaction;
 	}
@@ -85,7 +83,7 @@ public class TransactionService {
 		Block block = blockManagement.getCurrentBlock();
 		if (transaction == null)
 			throw new TransactionException("Non existent transaction");
-		processTransaction(transaction, minimunTransaction);
+		processTransaction(transaction);
 		block.getTransactions().add(transaction);
 		LOG.debug("Transaction Successfully added to Block");
 	}
@@ -97,8 +95,7 @@ public class TransactionService {
 	 * @return
 	 * @throws TransactionException
 	 */
-	private boolean processTransaction(Transaction transaction, BigDecimal minimunTransaction)
-			throws TransactionException {
+	private boolean processTransaction(Transaction transaction) throws TransactionException {
 
 		if (verifiySignature(transaction) == false) {
 			throw new TransactionException("Transaction Signature failed to verify");
@@ -137,7 +134,7 @@ public class TransactionService {
 	 * @param transaction
 	 * @param wallet
 	 */
-	private void generateSignature(Transaction transaction, Wallet wallet) {
+	public void generateSignature(Transaction transaction, Wallet wallet) {
 		String data = TransactionUtil.getStringFromKey(transaction.getSender())
 				+ TransactionUtil.getStringFromKey(transaction.getReciepient())
 				+ transaction.getValue().setScale(8).toString();
