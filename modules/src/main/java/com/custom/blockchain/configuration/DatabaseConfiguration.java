@@ -13,6 +13,11 @@ import org.springframework.context.annotation.Configuration;
 
 import com.custom.blockchain.util.OsUtil;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @Configuration
 public class DatabaseConfiguration {
 

@@ -1,13 +1,16 @@
 package com.custom.blockchain.service;
 
 import static com.custom.blockchain.properties.BlockchainImutableProperties.UTXOs;
-import static com.custom.blockchain.properties.GenesisProperties.GENESIS_PREVIOUS_HASH;
 
 import java.math.BigDecimal;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.Block;
@@ -28,13 +31,15 @@ import com.custom.blockchain.wallet.Wallet;
 @Service
 public class TransactionService {
 
+	private static final Logger LOG = LoggerFactory.getLogger(TransactionService.class);
+
+	@Value("${application.blockchain.minimun.transaction}")
+	private BigDecimal minimunTransaction;
+
 	private BlockManagement blockManagement;
 
-	private WalletService walletService;
-
-	public TransactionService(final BlockManagement blockManagement, final WalletService walletService) {
+	public TransactionService(final BlockManagement blockManagement) {
 		this.blockManagement = blockManagement;
-		this.walletService = walletService;
 	}
 
 	/**
@@ -44,8 +49,8 @@ public class TransactionService {
 	 * @param value
 	 * @throws Exception
 	 */
-	public void sendFunds(Wallet from, Wallet to, BigDecimal value) throws Exception {
-		if (walletService.getBalance(from.getPrivateKey().getFormat()).compareTo(value) < 0) {
+	public Transaction sendFunds(Wallet from, PublicKey to, BigDecimal fromBalance, BigDecimal value) throws Exception {
+		if (fromBalance.compareTo(value) < 0) {
 			throw new TransactionException("Not Enough funds to send transaction. Transaction Discarded");
 		}
 
@@ -60,14 +65,14 @@ public class TransactionService {
 				break;
 		}
 
-		Transaction newTransaction = new Transaction(from.getPublicKey(), to.getPublicKey(), value, inputs);
+		Transaction newTransaction = new Transaction(from.getPublicKey(), to, value, inputs);
 		generateSignature(newTransaction, from);
 
 		for (TransactionInput input : inputs) {
 			from.getUnspentTransactionsOutput().remove(input.getTransactionOutputId());
 		}
 
-		addTransaction(blockManagement.getCurrentBlock(), newTransaction);
+		return newTransaction;
 	}
 
 	/**
@@ -76,14 +81,13 @@ public class TransactionService {
 	 * @param transaction
 	 * @throws TransactionException
 	 */
-	private void addTransaction(Block block, Transaction transaction) throws TransactionException {
+	public void addTransaction(Transaction transaction) throws TransactionException {
+		Block block = blockManagement.getCurrentBlock();
 		if (transaction == null)
 			throw new TransactionException("Non existent transaction");
-		if ((block.getPreviousHash() != GENESIS_PREVIOUS_HASH)) {
-			processTransaction(transaction, this.blockManagement.getGenesisBlock().getMinimunTransaction());
-		}
+		processTransaction(transaction, minimunTransaction);
 		block.getTransactions().add(transaction);
-		System.out.println("Transaction Successfully added to Block");
+		LOG.debug("Transaction Successfully added to Block");
 	}
 
 	/**

@@ -9,6 +9,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -97,6 +98,23 @@ public class TransactionUtil {
 		KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
 		PrivateKey privKey = kf.generatePrivate(new PKCS8EncodedKeySpec(keyEncoded));
 		return privKey;
+	}
+
+	/**
+	 * 
+	 * @param publicKey
+	 * @return
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchProviderException
+	 * @throws InvalidKeySpecException
+	 */
+	public static PublicKey getPublicKeyFromString(String publicKey)
+			throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+		byte[] keyEncoded = Base64.getDecoder().decode(publicKey);
+		LOG.debug("publicKey - Encoded: {}, String: {}", keyEncoded, publicKey);
+		KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
+		PublicKey pubKey = kf.generatePublic(new X509EncodedKeySpec(keyEncoded));
+		return pubKey;
 	}
 
 	/**

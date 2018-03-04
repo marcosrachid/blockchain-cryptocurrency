@@ -1,6 +1,7 @@
 package com.custom.blockchain.block;
 
 import static com.custom.blockchain.properties.BlockchainImutableProperties.BLOCKCHAIN;
+import static com.custom.blockchain.properties.GenesisProperties.GENESIS_PREVIOUS_HASH;
 
 import com.custom.blockchain.block.exception.BlockException;
 
@@ -23,7 +24,7 @@ public class BlockFactory {
 			if (!BLOCKCHAIN.isEmpty()) {
 				throw new BlockException("Blockchain already started to create genesis block");
 			}
-			return new Genesis();
+			return new Block(GENESIS_PREVIOUS_HASH);
 		} else {
 			return new Block(previousBlock.getHash());
 		}

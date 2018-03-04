@@ -21,6 +21,15 @@ public class ResponseTransaction implements Serializable {
 	private String reciepientPublicKey;
 	private BigDecimal value;
 
+	public ResponseTransaction(String transactionId, String senderPublicKey, String reciepientPublicKey,
+			BigDecimal value) {
+		super();
+		this.transactionId = transactionId;
+		this.senderPublicKey = senderPublicKey;
+		this.reciepientPublicKey = reciepientPublicKey;
+		this.value = value;
+	}
+
 	public String getTransactionId() {
 		return transactionId;
 	}

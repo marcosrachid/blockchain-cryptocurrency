@@ -3,6 +3,8 @@ package com.custom.blockchain.service;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.BLOCKCHAIN;
 import static com.custom.blockchain.properties.BlockchainProperties.DIFFICULTY;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.Block;
@@ -17,6 +19,8 @@ import com.custom.blockchain.util.TransactionUtil;
 @Service
 public class BlockService {
 
+	private static final Logger LOG = LoggerFactory.getLogger(BlockService.class);
+
 	/**
 	 * 
 	 * @param block
@@ -29,7 +33,7 @@ public class BlockService {
 			block.calculateHash();
 		}
 		BLOCKCHAIN.add(block);
-		System.out.println("Block Mined!!! : " + block.getHash());
+		LOG.debug("Block Mined!!! : " + block.getHash());
 	}
 
 }

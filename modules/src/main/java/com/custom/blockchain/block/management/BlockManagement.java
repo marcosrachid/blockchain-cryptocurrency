@@ -3,7 +3,6 @@ package com.custom.blockchain.block.management;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.Block;
-import com.custom.blockchain.block.Genesis;
 
 /**
  * 
@@ -13,15 +12,15 @@ import com.custom.blockchain.block.Genesis;
 @Component
 public class BlockManagement {
 
-	private Genesis genesisBlock;
+	private Block genesisBlock;
 	private Block previousBlock;
 	private Block currentBlock;
 
-	public Genesis getGenesisBlock() {
+	public Block getGenesisBlock() {
 		return genesisBlock;
 	}
 
-	public void setGenesisBlock(Genesis genesisBlock) {
+	public void setGenesisBlock(Block genesisBlock) {
 		this.genesisBlock = genesisBlock;
 	}
 
