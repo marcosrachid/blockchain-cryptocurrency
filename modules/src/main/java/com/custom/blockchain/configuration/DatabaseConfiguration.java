@@ -1,5 +1,7 @@
 package com.custom.blockchain.configuration;
 
+import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_BLOCKS_INDEX_DIRECTORY;
+import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
 import static org.iq80.leveldb.impl.Iq80DBFactory.factory;
 
 import java.io.File;
@@ -21,18 +23,19 @@ import com.custom.blockchain.util.OsUtil;
 @Configuration
 public class DatabaseConfiguration {
 
-	@Bean("LevelDB")
-	public DB createDatabase(@Value("${application.name}") String coinName) throws IOException {
+	@Bean("BlockIndexDB")
+	public DB createBlockIndex(@Value("${application.name}") String coinName) throws IOException {
 		Options options = new Options();
-		String homeDir = System.getProperty("user.home");
-		if (OsUtil.isWindows())
-			return factory.open(new File(homeDir + File.separator + "AppData" + File.separator + "Local"
-					+ File.separator + coinName + File.separator + "blocks" + File.separator + "index"), options);
-		else
-			return factory.open(
-					new File(
-							homeDir + File.separator + coinName + File.separator + "blocks" + File.separator + "index"),
-					options);
+		return factory.open(
+				new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_BLOCKS_INDEX_DIRECTORY, coinName)),
+				options);
+	}
+
+	@Bean("ChainStateDB")
+	public DB createChainState(@Value("${application.name}") String coinName) throws IOException {
+		Options options = new Options();
+		return factory.open(
+				new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY, coinName)), options);
 	}
 
 }

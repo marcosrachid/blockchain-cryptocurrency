@@ -1,6 +1,6 @@
 package com.custom.blockchain.resource;
 
-import static com.custom.blockchain.costants.LogMessages.REQUEST;
+import static com.custom.blockchain.costants.LogMessagesConstants.REQUEST;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 

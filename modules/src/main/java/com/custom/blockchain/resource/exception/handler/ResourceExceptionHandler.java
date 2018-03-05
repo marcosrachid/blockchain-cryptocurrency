@@ -1,6 +1,6 @@
 package com.custom.blockchain.resource.exception.handler;
 
-import static com.custom.blockchain.costants.LogMessages.ERROR;
+import static com.custom.blockchain.costants.LogMessagesConstants.ERROR;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;

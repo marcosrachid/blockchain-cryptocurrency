@@ -1,6 +1,5 @@
 package com.custom.blockchain.properties;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,10 +15,12 @@ import com.custom.blockchain.transaction.TransactionOutput;
  */
 public class BlockchainImutableProperties {
 
+	public static final Long BLK_DAT_MAX_FILE_SIZE = 134217728L;
+
+	// TODO: will be removed
 	public static final List<Block> BLOCKCHAIN = new ArrayList<Block>();
 
+	// TODO: will be removed
 	public static final Map<String, TransactionOutput> UTXOs = new HashMap<String, TransactionOutput>();
-
-	public static final BigDecimal PREMINED = new BigDecimal(10000f);
 
 }

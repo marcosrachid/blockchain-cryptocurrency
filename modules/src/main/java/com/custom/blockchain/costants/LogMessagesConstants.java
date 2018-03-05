@@ -5,7 +5,7 @@ package com.custom.blockchain.costants;
  * @author marcosrachid
  *
  */
-public class LogMessages {
+public class LogMessagesConstants {
 	
 	public static final String REQUEST = "[Crypto] Request: {}";
 
