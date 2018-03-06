@@ -4,6 +4,7 @@
 # eclipse
 .classpath
 .project
+.settings/
 target/
 
 # Log file

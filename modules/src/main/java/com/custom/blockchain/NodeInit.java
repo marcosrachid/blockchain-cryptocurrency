@@ -1,8 +1,11 @@
 package com.custom.blockchain;
 
+import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_BLOCKS_INDEX_DIRECTORY;
+import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.UTXOs;
 import static com.custom.blockchain.properties.GenesisProperties.GENESIS_TX_ID;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.security.Security;
 
@@ -19,6 +22,7 @@ import com.custom.blockchain.block.BlockType;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.FileUtil;
+import com.custom.blockchain.util.OsUtil;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
 import com.custom.blockchain.util.components.BlockManagement;
@@ -59,13 +63,21 @@ public class NodeInit {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 		Security.setProperty("crypto.policy", "unlimited");
 
+		// creating data storage path if not exists
+		File blockIndexes = new File(
+				String.format(OsUtil.getRootDirectory() + LEVEL_DB_BLOCKS_INDEX_DIRECTORY, coinName));
+		blockIndexes.mkdirs();
+		File chainstate = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY, coinName));
+		chainstate.mkdirs();
+
 		// TODO: syncing
 
 		if (!FileUtil.isBlockchainStarted(coinName)) {
 			LOG.info("Starting first block on Blockchain");
 			Block genesis = BlockFactory.getBlock(BlockType.GENESIS, null);
 			Wallet owner = new Wallet();
-			int ownerLength = StringUtil.getBiggestLength(TransactionUtil.getStringFromKey(owner.getPublicKey()), TransactionUtil.getStringFromKey(owner.getPrivateKey())) - 1;
+			int ownerLength = StringUtil.getBiggestLength(TransactionUtil.getStringFromKey(owner.getPublicKey()),
+					TransactionUtil.getStringFromKey(owner.getPrivateKey())) - 1;
 
 			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
 			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
