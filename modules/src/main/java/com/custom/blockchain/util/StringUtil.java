@@ -18,4 +18,12 @@ public class StringUtil extends StringUtils {
 		return repeat('0', difficulty);
 	}
 	
+	public static int getBiggestLength(String... strings) {
+		int biggest = 0;
+		for (String s : strings) {
+			biggest = (biggest > s.length()) ? biggest : s.length();
+		}
+		return biggest;
+	}
+	
 }
