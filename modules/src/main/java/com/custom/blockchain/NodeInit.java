@@ -16,12 +16,10 @@ import org.springframework.stereotype.Component;
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
 import com.custom.blockchain.block.BlockType;
-import com.custom.blockchain.service.TransactionService;
-import com.custom.blockchain.transaction.Transaction;
+import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.FileUtil;
 import com.custom.blockchain.util.components.BlockManagement;
-import com.custom.blockchain.util.components.WalletManagement;
 import com.custom.blockchain.wallet.Wallet;
 
 /**
@@ -34,22 +32,20 @@ public class NodeInit {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeInit.class);
 
-	@Value("${application.name}")
+	@Value("${application.name:'Rachid Coin'}")
 	private String coinName;
 
-	@Value("${application.blockchain.premined}")
+	@Value("${application.blockchain.coinbase:'default'}")
+	private String coinbase;
+
+	@Value("${application.blockchain.premined:100}")
 	private BigDecimal premined;
 
-	private WalletManagement walletManagement;
 	private BlockManagement blockManagement;
-	private TransactionService transactionService;
 
-	public NodeInit(final WalletManagement walletManagement, final BlockManagement blockManagement,
-			final TransactionService transactionService) {
+	public NodeInit(final BlockManagement blockManagement) {
 		super();
-		this.walletManagement = walletManagement;
 		this.blockManagement = blockManagement;
-		this.transactionService = transactionService;
 	}
 
 	/**
@@ -63,29 +59,25 @@ public class NodeInit {
 
 		// TODO: syncing
 
-		if (!FileUtil.isBlockchainStarted(coinName) && premined != null && premined.compareTo(BigDecimal.ZERO) > 0) {
+		if (!FileUtil.isBlockchainStarted(coinName)) {
 			LOG.info("Starting first block on Blockchain");
 			Block genesis = BlockFactory.getBlock(BlockType.GENESIS, null);
-			Wallet coinbase = new Wallet();
 			Wallet owner = new Wallet();
 
-			LOG.info("Coinbase wallet: " + coinbase);
 			LOG.info("Ower wallet: " + owner);
 
-			Transaction genesisTransaction = new Transaction(coinbase.getPublicKey(), owner.getPublicKey(), premined,
-					null);
-			transactionService.generateSignature(genesisTransaction, coinbase);
-			genesisTransaction.setTransactionId(GENESIS_TX_ID);
-			genesisTransaction.getOutputs().add(new TransactionOutput(genesisTransaction.getReciepient(),
-					genesisTransaction.getValue(), genesisTransaction.getTransactionId()));
-			UTXOs.put(genesisTransaction.getOutputs().get(0).getId(), genesisTransaction.getOutputs().get(0));
+			RewardTransaction genesisTransaction = new RewardTransaction(coinbase, owner.getPublicKey(), premined);
 
-			walletManagement.setCoinbase(coinbase);
+			genesisTransaction.setTransactionId(GENESIS_TX_ID);
+			genesisTransaction.setOutput(new TransactionOutput(genesisTransaction.getReciepient(),
+					genesisTransaction.getValue(), genesisTransaction.getTransactionId()));
+			UTXOs.put(genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
+
 			blockManagement.setGenesisBlock(genesis);
 			blockManagement.setPreviousBlock(genesis);
 			blockManagement.setCurrentBlock(BlockFactory.getBlock(genesis));
 		} else {
-			LOG.info("Blockchain already started");
+			LOG.info("Blockchain already started or premined is 0");
 		}
 	}
 

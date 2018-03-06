@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.Block;
+import com.custom.blockchain.signature.SignatureFactory;
+import com.custom.blockchain.signature.SignatureVerifier;
+import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
@@ -49,7 +52,7 @@ public class TransactionService {
 	 * @param value
 	 * @throws Exception
 	 */
-	public Transaction sendFunds(Wallet from, PublicKey to, BigDecimal fromBalance, BigDecimal value) throws Exception {
+	public SimpleTransaction sendFunds(Wallet from, PublicKey to, BigDecimal fromBalance, BigDecimal value) throws Exception {
 		if (fromBalance.compareTo(value) < 0) {
 			throw new TransactionException("Not Enough funds to send transaction. Transaction Discarded");
 		}
@@ -67,8 +70,8 @@ public class TransactionService {
 			}
 		}
 
-		Transaction newTransaction = new Transaction(from.getPublicKey(), to, value, inputs);
-		generateSignature(newTransaction, from);
+		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), to, value, inputs);
+		SignatureFactory.generateSignature(newTransaction, from);
 
 		return newTransaction;
 	}
@@ -79,7 +82,7 @@ public class TransactionService {
 	 * @param transaction
 	 * @throws TransactionException
 	 */
-	public void addTransaction(Transaction transaction) throws TransactionException {
+	public void addTransaction(SimpleTransaction transaction) throws TransactionException {
 		Block block = blockManagement.getCurrentBlock();
 		if (transaction == null)
 			throw new TransactionException("Non existent transaction");
@@ -95,9 +98,9 @@ public class TransactionService {
 	 * @return
 	 * @throws TransactionException
 	 */
-	private boolean processTransaction(Transaction transaction) throws TransactionException {
+	private boolean processTransaction(SimpleTransaction transaction) throws TransactionException {
 
-		if (verifiySignature(transaction) == false) {
+		if (SignatureVerifier.verifiySignature(transaction) == false) {
 			throw new TransactionException("Transaction Signature failed to verify");
 		}
 
@@ -132,33 +135,9 @@ public class TransactionService {
 	/**
 	 * 
 	 * @param transaction
-	 * @param wallet
-	 */
-	public void generateSignature(Transaction transaction, Wallet wallet) {
-		String data = TransactionUtil.getStringFromKey(transaction.getSender())
-				+ TransactionUtil.getStringFromKey(transaction.getReciepient())
-				+ transaction.getValue().setScale(8).toString();
-		transaction.setSignature(TransactionUtil.applyECDSASig(wallet.getPrivateKey(), data));
-	}
-
-	/**
-	 * 
-	 * @param transaction
 	 * @return
 	 */
-	private boolean verifiySignature(Transaction transaction) {
-		String data = TransactionUtil.getStringFromKey(transaction.getSender())
-				+ TransactionUtil.getStringFromKey(transaction.getReciepient())
-				+ transaction.getValue().setScale(8).toString();
-		return TransactionUtil.verifyECDSASig(transaction.getSender(), data, transaction.getSignature());
-	}
-
-	/**
-	 * 
-	 * @param transaction
-	 * @return
-	 */
-	private String calulateHash(Transaction transaction) {
+	private String calulateHash(SimpleTransaction transaction) {
 		Transaction.sequence++;
 		return DigestUtil.applySha256(TransactionUtil.getStringFromKey(transaction.getSender())
 				+ TransactionUtil.getStringFromKey(transaction.getReciepient())

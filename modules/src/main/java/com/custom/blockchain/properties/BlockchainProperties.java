@@ -9,6 +9,6 @@ public class BlockchainProperties {
 	
 	public static String VERSION = "0.1.0";
 
-	public static int DIFFICULTY = 5;
+	public static Integer DIFFICULTY = 5;
 
 }

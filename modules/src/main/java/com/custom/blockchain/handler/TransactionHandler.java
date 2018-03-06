@@ -9,7 +9,7 @@ import com.custom.blockchain.resource.dto.request.RequestSendFundsDTO;
 import com.custom.blockchain.resource.dto.response.ResponseTransaction;
 import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.service.WalletService;
-import com.custom.blockchain.transaction.Transaction;
+import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.util.TransactionUtil;
 import com.custom.blockchain.wallet.Wallet;
 
@@ -35,8 +35,8 @@ public class TransactionHandler {
 		PublicKey receipientPublicKey = TransactionUtil.getPublicKeyFromString(funds.getReciepientPublicKey());
 		BigDecimal currentBalance = walletService
 				.getBalance(TransactionUtil.getStringFromKey(currentWallet.getPublicKey()));
-		Transaction newTransaction = transactionService.sendFunds(currentWallet, receipientPublicKey, currentBalance,
-				funds.getValue());
+		SimpleTransaction newTransaction = transactionService.sendFunds(currentWallet, receipientPublicKey,
+				currentBalance, funds.getValue());
 		transactionService.addTransaction(newTransaction);
 		return new ResponseTransaction(newTransaction.getTransactionId(),
 				TransactionUtil.getStringFromKey(newTransaction.getSender()),
