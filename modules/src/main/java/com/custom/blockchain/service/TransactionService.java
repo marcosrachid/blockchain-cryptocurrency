@@ -1,5 +1,6 @@
 package com.custom.blockchain.service;
 
+import static com.custom.blockchain.properties.BlockchainImutableProperties.TRANSACTION_MEMPOOL;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.UTXOs;
 
 import java.math.BigDecimal;
@@ -52,7 +53,8 @@ public class TransactionService {
 	 * @param value
 	 * @throws Exception
 	 */
-	public SimpleTransaction sendFunds(Wallet from, PublicKey to, BigDecimal fromBalance, BigDecimal value) throws Exception {
+	public SimpleTransaction sendFunds(Wallet from, PublicKey to, BigDecimal fromBalance, BigDecimal value)
+			throws Exception {
 		if (fromBalance.compareTo(value) < 0) {
 			throw new TransactionException("Not Enough funds to send transaction. Transaction Discarded");
 		}
@@ -72,6 +74,8 @@ public class TransactionService {
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), to, value, inputs);
 		SignatureFactory.generateSignature(newTransaction, from);
+
+		TRANSACTION_MEMPOOL.add(newTransaction);
 
 		return newTransaction;
 	}

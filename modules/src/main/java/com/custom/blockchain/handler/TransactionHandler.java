@@ -37,7 +37,6 @@ public class TransactionHandler {
 				.getBalance(TransactionUtil.getStringFromKey(currentWallet.getPublicKey()));
 		SimpleTransaction newTransaction = transactionService.sendFunds(currentWallet, receipientPublicKey,
 				currentBalance, funds.getValue());
-		transactionService.addTransaction(newTransaction);
 		return new ResponseTransaction(newTransaction.getTransactionId(),
 				TransactionUtil.getStringFromKey(newTransaction.getSender()),
 				TransactionUtil.getStringFromKey(newTransaction.getReciepient()), funds.getValue());

@@ -1,6 +1,5 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.properties.BlockchainImutableProperties.BLOCKCHAIN;
 import static com.custom.blockchain.properties.BlockchainProperties.DIFFICULTY;
 
 import org.slf4j.Logger;
@@ -32,7 +31,7 @@ public class BlockService {
 			block.setNonce(block.getNonce() + 1);
 			block.calculateHash();
 		}
-		BLOCKCHAIN.add(block);
+		// TODO: CREATE BLOCK .dat
 		LOG.debug("Block Mined!!! : " + block.getHash());
 	}
 
