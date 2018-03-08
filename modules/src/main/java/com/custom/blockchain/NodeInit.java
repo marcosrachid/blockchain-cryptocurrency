@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
 import com.custom.blockchain.block.BlockType;
+import com.custom.blockchain.network.client.Client;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.FileUtil;
@@ -64,6 +65,8 @@ public class NodeInit {
 		blockIndexes.mkdirs();
 		File chainstate = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY, coinName));
 		chainstate.mkdirs();
+
+		Client.start();
 
 		// TODO: syncing
 

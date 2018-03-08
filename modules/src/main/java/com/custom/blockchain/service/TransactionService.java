@@ -96,7 +96,7 @@ public class TransactionService {
 	 */
 	public void checkTransactionBlocked() throws TransactionException {
 		if (BLOCKED) {
-			throw new TransactionException("Node is currently syncing. Transactions are blocked");
+			throw new TransactionException("Transactions are currenctly blocked. Node is syncing");
 		}
 	}
 
