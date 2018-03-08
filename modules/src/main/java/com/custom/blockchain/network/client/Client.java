@@ -1,7 +1,5 @@
 package com.custom.blockchain.network.client;
 
-import static com.custom.blockchain.costants.SystemConstants.NETWORK_PORT;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -13,7 +11,7 @@ public class Client {
 
 	public static void start() {
 		Runnable runnable = () -> {
-			try (MulticastSocket clientSocket = new MulticastSocket(NETWORK_PORT)) {
+			try (MulticastSocket clientSocket = new MulticastSocket(8888)) {
 				InetAddress address = InetAddress.getByName("224.0.0.3");
 				byte[] buf = new byte[256];
 				clientSocket.joinGroup(address);

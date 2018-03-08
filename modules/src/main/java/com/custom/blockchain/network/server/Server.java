@@ -1,7 +1,5 @@
 package com.custom.blockchain.network.server;
 
-import static com.custom.blockchain.costants.SystemConstants.NETWORK_PORT;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -33,9 +31,13 @@ public class Server extends DatagramSocket {
 		if (instance == null) {
 			instance = new Server();
 		}
-		InetAddress addr = InetAddress.getByName("224.0.0.3"); // TODO: remove mocked, search on SEED DNS SERVER
+		InetAddress addr = InetAddress.getByName("224.0.0.3"); // TODO: remove
+																// mocked,
+																// search on
+																// SEED DNS
+																// SERVER
 		DatagramPacket msgPacket = new DatagramPacket(fullMessage.getBytes(), fullMessage.getBytes().length, addr,
-				NETWORK_PORT);
+				8888);
 		instance.send(msgPacket);
 		Thread.sleep(500);
 	}
