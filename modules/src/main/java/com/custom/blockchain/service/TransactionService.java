@@ -2,6 +2,7 @@ package com.custom.blockchain.service;
 
 import static com.custom.blockchain.properties.BlockchainImutableProperties.TRANSACTION_MEMPOOL;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.UTXOs;
+import static com.custom.blockchain.properties.BlockchainProperties.BLOCKED;
 
 import java.math.BigDecimal;
 import java.security.PublicKey;
@@ -78,6 +79,31 @@ public class TransactionService {
 		TRANSACTION_MEMPOOL.add(newTransaction);
 
 		return newTransaction;
+	}
+	
+	/**
+	 * 
+	 */
+	public void blockTransactions() {
+		BLOCKED = true;
+	}
+	
+	/**
+	 * 
+	 */
+	public void unblockTransactions() {
+		BLOCKED = false;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 * @throws TransactionException 
+	 */
+	public void checkTransactionBlocked() throws TransactionException {
+		if (BLOCKED) {
+			throw new TransactionException("Node is currently syncing. Transactions are blocked");
+		}
 	}
 
 	/**

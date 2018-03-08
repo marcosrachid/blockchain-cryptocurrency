@@ -31,6 +31,7 @@ public class TransactionHandler {
 	}
 
 	public ResponseTransaction sendFunds(RequestSendFundsDTO funds) throws Exception {
+		transactionService.checkTransactionBlocked();
 		Wallet currentWallet = walletService.getCurrentWallet();
 		PublicKey receipientPublicKey = TransactionUtil.getPublicKeyFromString(funds.getReciepientPublicKey());
 		BigDecimal currentBalance = walletService
