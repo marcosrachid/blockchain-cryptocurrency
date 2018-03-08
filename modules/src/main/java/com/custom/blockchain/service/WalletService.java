@@ -1,6 +1,7 @@
 package com.custom.blockchain.service;
 
 import static com.custom.blockchain.properties.BlockchainImutableProperties.UTXOs;
+import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_WALLET;
 
 import java.math.BigDecimal;
 import java.security.PublicKey;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.TransactionUtil;
-import com.custom.blockchain.util.components.WalletManagement;
 import com.custom.blockchain.wallet.Wallet;
 import com.custom.blockchain.wallet.exception.WalletException;
 
@@ -21,12 +21,6 @@ import com.custom.blockchain.wallet.exception.WalletException;
  */
 @Service
 public class WalletService {
-
-	private WalletManagement currentWallet;
-
-	public WalletService(final WalletManagement currentWallet) {
-		this.currentWallet = currentWallet;
-	}
 
 	/**
 	 * 
@@ -80,7 +74,7 @@ public class WalletService {
 	 * @param wallet
 	 */
 	public void useNewWallet(Wallet wallet) {
-		this.currentWallet.setCurrentWallet(wallet);
+		CURRENT_WALLET = wallet;
 	}
 
 	/**
@@ -89,7 +83,7 @@ public class WalletService {
 	 * @throws Exception
 	 */
 	public Wallet getCurrentWallet() throws Exception {
-		Wallet wallet = this.currentWallet.getCurrentWallet();
+		Wallet wallet = CURRENT_WALLET;
 		if (wallet == null) {
 			throw new WalletException("No wallet selected yet.");
 		}

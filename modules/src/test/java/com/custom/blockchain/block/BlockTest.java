@@ -1,7 +1,7 @@
 package com.custom.blockchain.block;
 
 import static com.custom.blockchain.properties.BlockchainImutableProperties.BLOCKCHAIN;
-import static com.custom.blockchain.properties.BlockchainProperties.DIFFICULTY;
+import static com.custom.blockchain.properties.BlockchainMutableProperties.DIFFICULTY;
 
 import org.junit.Test;
 

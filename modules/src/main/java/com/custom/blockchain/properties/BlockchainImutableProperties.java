@@ -21,6 +21,10 @@ public class BlockchainImutableProperties {
 
 	public static final LinkedList<Transaction> TRANSACTION_MEMPOOL = new LinkedList<Transaction>();
 
+	public static final String GENESIS_TX_ID = "0";
+	
+	public static final String GENESIS_PREVIOUS_HASH = "0";
+
 	// TODO: will be removed
 	public static final List<Block> BLOCKCHAIN = new ArrayList<Block>();
 

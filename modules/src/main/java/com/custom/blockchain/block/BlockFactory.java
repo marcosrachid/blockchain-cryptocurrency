@@ -1,7 +1,7 @@
 package com.custom.blockchain.block;
 
 import static com.custom.blockchain.properties.BlockchainImutableProperties.BLOCKCHAIN;
-import static com.custom.blockchain.properties.GenesisProperties.GENESIS_PREVIOUS_HASH;
+import static com.custom.blockchain.properties.BlockchainImutableProperties.GENESIS_PREVIOUS_HASH;
 
 import com.custom.blockchain.block.exception.BlockException;
 

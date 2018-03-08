@@ -2,7 +2,8 @@ package com.custom.blockchain.service;
 
 import static com.custom.blockchain.properties.BlockchainImutableProperties.TRANSACTION_MEMPOOL;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.UTXOs;
-import static com.custom.blockchain.properties.BlockchainProperties.BLOCKED;
+import static com.custom.blockchain.properties.BlockchainMutableProperties.BLOCKED;
+import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_BLOCK;
 
 import java.math.BigDecimal;
 import java.security.PublicKey;
@@ -25,7 +26,6 @@ import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.transaction.exception.TransactionException;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.TransactionUtil;
-import com.custom.blockchain.util.components.BlockManagement;
 import com.custom.blockchain.wallet.Wallet;
 
 /**
@@ -40,12 +40,6 @@ public class TransactionService {
 
 	@Value("${application.blockchain.minimun.transaction}")
 	private BigDecimal minimunTransaction;
-
-	private BlockManagement blockManagement;
-
-	public TransactionService(final BlockManagement blockManagement) {
-		this.blockManagement = blockManagement;
-	}
 
 	/**
 	 * 
@@ -80,25 +74,25 @@ public class TransactionService {
 
 		return newTransaction;
 	}
-	
+
 	/**
 	 * 
 	 */
 	public void blockTransactions() {
 		BLOCKED = true;
 	}
-	
+
 	/**
 	 * 
 	 */
 	public void unblockTransactions() {
 		BLOCKED = false;
 	}
-	
+
 	/**
 	 * 
 	 * @return
-	 * @throws TransactionException 
+	 * @throws TransactionException
 	 */
 	public void checkTransactionBlocked() throws TransactionException {
 		if (BLOCKED) {
@@ -113,7 +107,7 @@ public class TransactionService {
 	 * @throws TransactionException
 	 */
 	public void addTransaction(SimpleTransaction transaction) throws TransactionException {
-		Block block = blockManagement.getCurrentBlock();
+		Block block = CURRENT_BLOCK;
 		if (transaction == null)
 			throw new TransactionException("Non existent transaction");
 		processTransaction(transaction);

@@ -2,8 +2,11 @@ package com.custom.blockchain;
 
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_BLOCKS_INDEX_DIRECTORY;
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
+import static com.custom.blockchain.properties.BlockchainImutableProperties.GENESIS_TX_ID;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.UTXOs;
-import static com.custom.blockchain.properties.GenesisProperties.GENESIS_TX_ID;
+import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_BLOCK;
+import static com.custom.blockchain.properties.BlockchainMutableProperties.GENESIS_BLOCK;
+import static com.custom.blockchain.properties.BlockchainMutableProperties.PREVIOUS_BLOCK;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -25,7 +28,6 @@ import com.custom.blockchain.util.FileUtil;
 import com.custom.blockchain.util.OsUtil;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
-import com.custom.blockchain.util.components.BlockManagement;
 import com.custom.blockchain.wallet.Wallet;
 
 /**
@@ -46,13 +48,6 @@ public class NodeInit {
 
 	@Value("${application.blockchain.premined:100}")
 	private BigDecimal premined;
-
-	private BlockManagement blockManagement;
-
-	public NodeInit(final BlockManagement blockManagement) {
-		super();
-		this.blockManagement = blockManagement;
-	}
 
 	/**
 	 * 
@@ -95,9 +90,9 @@ public class NodeInit {
 					genesisTransaction.getValue(), genesisTransaction.getTransactionId()));
 			UTXOs.put(genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
 
-			blockManagement.setGenesisBlock(genesis);
-			blockManagement.setPreviousBlock(genesis);
-			blockManagement.setCurrentBlock(BlockFactory.getBlock(genesis));
+			GENESIS_BLOCK = genesis;
+			PREVIOUS_BLOCK = genesis;
+			CURRENT_BLOCK = BlockFactory.getBlock(genesis);
 		} else {
 			LOG.info("Blockchain already started or premined is 0");
 		}
