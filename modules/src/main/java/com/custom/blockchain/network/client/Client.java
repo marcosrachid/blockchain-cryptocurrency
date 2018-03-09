@@ -19,7 +19,7 @@ public class Client {
 					DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
 					clientSocket.receive(msgPacket);
 					String msg = new String(buf, 0, buf.length);
-					// TODO: case for each message type
+					ClientDispatcher.launch(msg);
 				}
 			} catch (IOException ex) {
 				ex.printStackTrace();
