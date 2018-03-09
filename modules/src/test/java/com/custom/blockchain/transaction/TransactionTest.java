@@ -1,18 +1,5 @@
 package com.custom.blockchain.transaction;
 
-import static com.custom.blockchain.properties.BlockchainImutableProperties.BLOCKCHAIN;
-import static com.custom.blockchain.properties.BlockchainMutableProperties.DIFFICULTY;
-import static com.custom.blockchain.properties.BlockchainImutableProperties.UTXOs;
-
-import java.math.BigDecimal;
-import java.security.Security;
-import java.util.HashMap;
-
-import org.junit.Test;
-
-import com.custom.blockchain.block.Block;
-import com.custom.blockchain.wallet.Wallet;
-
 public class TransactionTest {
 
 //	public static Wallet walletA;

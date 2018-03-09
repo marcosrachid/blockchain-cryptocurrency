@@ -1,12 +1,5 @@
 package com.custom.blockchain.block;
 
-import static com.custom.blockchain.properties.BlockchainImutableProperties.BLOCKCHAIN;
-import static com.custom.blockchain.properties.BlockchainMutableProperties.DIFFICULTY;
-
-import org.junit.Test;
-
-import com.google.gson.GsonBuilder;
-
 public class BlockTest {
 
 //	@Test
