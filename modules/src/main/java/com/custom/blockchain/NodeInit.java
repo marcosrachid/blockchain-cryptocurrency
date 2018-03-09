@@ -3,7 +3,6 @@ package com.custom.blockchain;
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_BLOCKS_INDEX_DIRECTORY;
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.GENESIS_TX_ID;
-import static com.custom.blockchain.properties.BlockchainImutableProperties.UTXOs;
 import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_BLOCK;
 import static com.custom.blockchain.properties.BlockchainMutableProperties.GENESIS_BLOCK;
 import static com.custom.blockchain.properties.BlockchainMutableProperties.PREVIOUS_BLOCK;
@@ -91,7 +90,7 @@ public class NodeInit {
 			genesisTransaction.setTransactionId(GENESIS_TX_ID);
 			genesisTransaction.setOutput(new TransactionOutput(genesisTransaction.getReciepient(),
 					genesisTransaction.getValue(), genesisTransaction.getTransactionId()));
-			UTXOs.put(genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
+			// TODO: add first transaction to blk0.dat
 
 			GENESIS_BLOCK = genesis;
 			PREVIOUS_BLOCK = genesis;
