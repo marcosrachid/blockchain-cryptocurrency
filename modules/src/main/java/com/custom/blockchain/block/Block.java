@@ -21,8 +21,8 @@ import com.custom.blockchain.util.DigestUtil;
  */
 public class Block implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-
+	private static final long serialVersionUID = 3050609047223755104L;
+	
 	private boolean genesis = false;
 	private String hash;
 	private String previousHash;

@@ -4,7 +4,7 @@ import com.custom.blockchain.network.exception.NetworkException;
 
 public enum Messages {
 
-	TRANSACTION_UPDATE('t'), BLOCK_UPDATE('b'), SEED_UPDATE('s');
+	TRANSACTION_UPDATE('t'), BLOCK_UPDATE('b'), PEER_UPDATE('p');
 
 	private char prefix;
 
@@ -18,8 +18,8 @@ public enum Messages {
 			return TRANSACTION_UPDATE;
 		case 'b':
 			return BLOCK_UPDATE;
-		case 's':
-			return SEED_UPDATE;
+		case 'p':
+			return PEER_UPDATE;
 		}
 		throw new NetworkException("Non mapped prefix on message");
 	}

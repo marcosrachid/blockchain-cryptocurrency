@@ -5,33 +5,39 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
-public class Client {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-	private static Thread thread;
+import com.custom.blockchain.network.peer.Peer;
+import com.custom.blockchain.util.StringUtil;
 
-	public static void start() {
-		Runnable runnable = () -> {
-			try (MulticastSocket clientSocket = new MulticastSocket(8888)) {
-				InetAddress address = InetAddress.getByName("224.0.0.3");
-				byte[] buf = new byte[256];
-				clientSocket.joinGroup(address);
-				while (true) {
-					DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
-					clientSocket.receive(msgPacket);
-					String msg = new String(buf, 0, buf.length);
-					ClientDispatcher.launch(msg);
-				}
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		};
+public class Client implements Runnable {
 
-		thread = new Thread(runnable);
-		thread.start();
+	private static final Logger LOG = LoggerFactory.getLogger(Client.class);
+
+	private Peer peer;
+
+	public Client(Peer peer) {
+		this.peer = peer;
 	}
 
-	public static void end() {
-		thread.interrupt();
+	@Override
+	public void run() {
+		LOG.debug("Client for Peer {} starting...", peer);
+		try (MulticastSocket clientSocket = new MulticastSocket(peer.getServerPort())) {
+			InetAddress address = InetAddress.getByName(peer.getIp());
+			byte[] buf = new byte[256];
+			clientSocket.joinGroup(address);
+			while (true) {
+				DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
+				clientSocket.receive(msgPacket);
+				String msg = new String(buf, 0, buf.length);
+				if (StringUtil.isNotEmpty(msg))
+					ClientDispatcher.launch(msg);
+			}
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
 	}
 
 }

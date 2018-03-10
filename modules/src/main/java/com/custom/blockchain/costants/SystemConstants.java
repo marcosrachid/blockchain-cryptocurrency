@@ -14,5 +14,7 @@ public class SystemConstants {
 	public static final String LEVEL_DB_BLOCKS_INDEX_DIRECTORY = BLOCKS_DIRECTORY + File.separator + "index";
 	
 	public static final String LEVEL_DB_CHAINSTATE_DIRECTORY = File.separator + "chainstate";
+	
+	public static final int MAXIMUM_SEEDS = 8;
 
 }
