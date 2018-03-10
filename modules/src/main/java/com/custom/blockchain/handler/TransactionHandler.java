@@ -11,6 +11,7 @@ import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.service.WalletService;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.util.TransactionUtil;
+import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 
 /**
@@ -31,15 +32,14 @@ public class TransactionHandler {
 	}
 
 	public ResponseTransaction sendFunds(RequestSendFundsDTO funds) throws Exception {
-		transactionService.checkTransactionBlocked();
+		TransactionUtil.checkTransactionBlocked();
 		Wallet currentWallet = walletService.getCurrentWallet();
-		PublicKey receipientPublicKey = TransactionUtil.getPublicKeyFromString(funds.getReciepientPublicKey());
-		BigDecimal currentBalance = walletService
-				.getBalance(TransactionUtil.getStringFromKey(currentWallet.getPublicKey()));
+		PublicKey receipientPublicKey = WalletUtil.getPublicKeyFromString(funds.getReciepientPublicKey());
+		BigDecimal currentBalance = walletService.getBalance(WalletUtil.getStringFromKey(currentWallet.getPublicKey()));
 		SimpleTransaction newTransaction = transactionService.sendFunds(currentWallet, receipientPublicKey,
 				currentBalance, funds.getValue());
 		return new ResponseTransaction(newTransaction.getTransactionId(),
-				TransactionUtil.getStringFromKey(newTransaction.getSender()),
-				TransactionUtil.getStringFromKey(newTransaction.getReciepient()), funds.getValue());
+				WalletUtil.getStringFromKey(newTransaction.getSender()),
+				WalletUtil.getStringFromKey(newTransaction.getReciepient()), funds.getValue());
 	}
 }

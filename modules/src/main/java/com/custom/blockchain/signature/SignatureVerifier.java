@@ -4,7 +4,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 
 import com.custom.blockchain.transaction.SimpleTransaction;
-import com.custom.blockchain.util.TransactionUtil;
+import com.custom.blockchain.util.WalletUtil;
 
 /**
  * 
@@ -19,8 +19,8 @@ public class SignatureVerifier {
 	 * @return
 	 */
 	public static boolean verifiySignature(SimpleTransaction transaction) {
-		String data = TransactionUtil.getStringFromKey(transaction.getSender())
-				+ TransactionUtil.getStringFromKey(transaction.getReciepient())
+		String data = WalletUtil.getStringFromKey(transaction.getSender())
+				+ WalletUtil.getStringFromKey(transaction.getReciepient())
 				+ transaction.getValue().setScale(8).toString();
 		return verifyECDSASig(transaction.getSender(), data, transaction.getSignature());
 	}

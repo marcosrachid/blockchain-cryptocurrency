@@ -1,11 +1,18 @@
 package com.custom.blockchain.transaction;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimpleTransaction extends Transaction {
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+public class SimpleTransaction extends Transaction implements Serializable {
+
+	private static final long serialVersionUID = 7034357259560766328L;
 
 	private PublicKey sender;
 	private byte[] signature;
@@ -76,6 +83,29 @@ public class SimpleTransaction extends Transaction {
 			total = total.add(o.getValue());
 		}
 		return total;
+	}
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder().append(sender).append(signature).append(inputs).append(outputs).hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SimpleTransaction other = (SimpleTransaction) obj;
+		return new EqualsBuilder().append(sender, other.sender).append(signature, other.signature).isEquals();
+	}
+
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this).append("sender", sender).append("signature", signature)
+				.append("inputs", inputs).append("outputs", outputs).build();
 	}
 
 }

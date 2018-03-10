@@ -4,7 +4,7 @@ import java.security.PrivateKey;
 import java.security.Signature;
 
 import com.custom.blockchain.transaction.SimpleTransaction;
-import com.custom.blockchain.util.TransactionUtil;
+import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 
 public class SignatureFactory {
@@ -15,8 +15,8 @@ public class SignatureFactory {
 	 * @param wallet
 	 */
 	public static void generateSignature(final SimpleTransaction transaction, Wallet wallet) {
-		String data = TransactionUtil.getStringFromKey(transaction.getSender())
-				+ TransactionUtil.getStringFromKey(transaction.getReciepient())
+		String data = WalletUtil.getStringFromKey(transaction.getSender())
+				+ WalletUtil.getStringFromKey(transaction.getReciepient())
 				+ transaction.getValue().setScale(8).toString();
 		transaction.setSignature(applyECDSASig(wallet.getPrivateKey(), data));
 	}

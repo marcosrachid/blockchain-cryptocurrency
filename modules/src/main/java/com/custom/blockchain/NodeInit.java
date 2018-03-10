@@ -27,7 +27,7 @@ import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.FileUtil;
 import com.custom.blockchain.util.OsUtil;
 import com.custom.blockchain.util.StringUtil;
-import com.custom.blockchain.util.TransactionUtil;
+import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 
 /**
@@ -73,14 +73,14 @@ public class NodeInit {
 			LOG.info("Starting first block on Blockchain");
 			Block genesis = BlockFactory.getBlock(BlockType.GENESIS, null);
 			Wallet owner = new Wallet();
-			int ownerLength = StringUtil.getBiggestLength(TransactionUtil.getStringFromKey(owner.getPublicKey()),
-					TransactionUtil.getStringFromKey(owner.getPrivateKey())) - 1;
+			int ownerLength = StringUtil.getBiggestLength(WalletUtil.getStringFromKey(owner.getPublicKey()),
+					WalletUtil.getStringFromKey(owner.getPrivateKey())) - 1;
 
 			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
 			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
 			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
-			LOG.info("### Owner public key:  " + TransactionUtil.getStringFromKey(owner.getPublicKey()) + " ###");
-			LOG.info("### Owner private key: " + TransactionUtil.getStringFromKey(owner.getPrivateKey()) + " ###");
+			LOG.info("### Owner public key:  " + WalletUtil.getStringFromKey(owner.getPublicKey()) + " ###");
+			LOG.info("### Owner private key: " + WalletUtil.getStringFromKey(owner.getPrivateKey()) + " ###");
 			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
 			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
 			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");

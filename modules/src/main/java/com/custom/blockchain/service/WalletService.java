@@ -7,7 +7,7 @@ import java.security.PublicKey;
 
 import org.springframework.stereotype.Service;
 
-import com.custom.blockchain.util.TransactionUtil;
+import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.custom.blockchain.wallet.exception.WalletException;
 
@@ -55,7 +55,7 @@ public class WalletService {
 	 * @throws Exception
 	 */
 	public BigDecimal getBalance(String publicKey) throws Exception {
-		PublicKey key = TransactionUtil.getPublicKeyFromString(publicKey);
+		PublicKey key = WalletUtil.getPublicKeyFromString(publicKey);
 		BigDecimal total = BigDecimal.ZERO;
 		// TODO: get unspent transaction output from publickey
 		// for (Map.Entry<String, TransactionOutput> item : UTXOs.entrySet()) {

@@ -1,7 +1,6 @@
 package com.custom.blockchain.service;
 
 import static com.custom.blockchain.properties.BlockchainImutableProperties.TRANSACTION_MEMPOOL;
-import static com.custom.blockchain.properties.BlockchainMutableProperties.BLOCKED;
 import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_BLOCK;
 
 import java.math.BigDecimal;
@@ -23,7 +22,7 @@ import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.transaction.exception.TransactionException;
 import com.custom.blockchain.util.DigestUtil;
-import com.custom.blockchain.util.TransactionUtil;
+import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 
 /**
@@ -72,31 +71,6 @@ public class TransactionService {
 		TRANSACTION_MEMPOOL.add(newTransaction);
 
 		return newTransaction;
-	}
-
-	/**
-	 * 
-	 */
-	public void blockTransactions() {
-		BLOCKED = true;
-	}
-
-	/**
-	 * 
-	 */
-	public void unblockTransactions() {
-		BLOCKED = false;
-	}
-
-	/**
-	 * 
-	 * @return
-	 * @throws TransactionException
-	 */
-	public void checkTransactionBlocked() throws TransactionException {
-		if (BLOCKED) {
-			throw new TransactionException("Transactions are currenctly blocked. Node is syncing");
-		}
 	}
 
 	/**
@@ -165,8 +139,8 @@ public class TransactionService {
 	 */
 	private String calulateHash(SimpleTransaction transaction) {
 		Transaction.sequence++;
-		return DigestUtil.applySha256(TransactionUtil.getStringFromKey(transaction.getSender())
-				+ TransactionUtil.getStringFromKey(transaction.getReciepient())
+		return DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender())
+				+ WalletUtil.getStringFromKey(transaction.getReciepient())
 				+ transaction.getValue().setScale(8).toString() + Transaction.sequence);
 	}
 

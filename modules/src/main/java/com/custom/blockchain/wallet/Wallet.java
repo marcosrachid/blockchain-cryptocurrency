@@ -15,7 +15,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.custom.blockchain.util.TransactionUtil;
+import com.custom.blockchain.util.WalletUtil;
 
 /**
  * 
@@ -78,8 +78,8 @@ public class Wallet {
 	 */
 	private void generateKeyPair(String privateKeyString) throws Exception {
 		try {
-			privateKey = TransactionUtil.getPrivateKeyFromString(privateKeyString);
-			publicKey = TransactionUtil.getPublicKeyFromPrivateKey(privateKey);
+			privateKey = WalletUtil.getPrivateKeyFromString(privateKeyString);
+			publicKey = WalletUtil.getPublicKeyFromPrivateKey(privateKey);
 		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
 			throw new Exception(e.getMessage());
 		}
@@ -104,7 +104,7 @@ public class Wallet {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("privateKey", TransactionUtil.getStringFromKey(privateKey))
-				.append("publicKey", TransactionUtil.getStringFromKey(publicKey)).build();
+		return new ToStringBuilder(this).append("privateKey", WalletUtil.getStringFromKey(privateKey))
+				.append("publicKey", WalletUtil.getStringFromKey(publicKey)).build();
 	}
 }
