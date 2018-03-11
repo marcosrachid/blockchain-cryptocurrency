@@ -1,6 +1,5 @@
 package com.custom.blockchain.network.peer.component;
 
-import static com.custom.blockchain.costants.SystemConstants.MAXIMUM_SEEDS;
 import static com.custom.blockchain.costants.SystemConstants.PEERS_FILE;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.PEERS;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.PEERS_STATUS;
@@ -9,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,6 +29,9 @@ public class PeerFinder {
 
 	@Value("${application.name:'Rachid Coin'}")
 	private String coinName;
+
+	@Value("${application.blockchain.network.maximum-seeds}")
+	private Integer maximumSeeds;
 
 	public ObjectMapper objectMapper;
 
@@ -66,13 +69,18 @@ public class PeerFinder {
 	}
 
 	private void findFromDNS() {
-		if (PEERS.size() >= MAXIMUM_SEEDS)
+		if (isPeerConnectionsFull())
 			return;
 	}
 
 	private void findFromPeers() {
-		if (PEERS.size() >= MAXIMUM_SEEDS)
+		if (isPeerConnectionsFull())
 			return;
+	}
+
+	private boolean isPeerConnectionsFull() {
+		return PEERS_STATUS.values().stream().filter(v -> v.equals(true)).collect(Collectors.toList())
+				.size() >= maximumSeeds;
 	}
 
 }

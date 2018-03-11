@@ -1,11 +1,11 @@
 package com.custom.blockchain.network.client.component;
 
-import static com.custom.blockchain.costants.SystemConstants.MAXIMUM_SEEDS;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.PEERS;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.PEERS_STATUS;
 
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +17,9 @@ import com.custom.blockchain.network.peer.component.PeerFinder;
 @Component
 public class ClientManagement {
 
+	@Value("${application.blockchain.network.maximum-seeds}")
+	private Integer maximumSeeds;
+
 	private static Thread thread;
 
 	private PeerFinder peerFinder;
@@ -27,7 +30,7 @@ public class ClientManagement {
 
 	@Scheduled(fixedRate = 300000)
 	public void searchActions() {
-		if (getConnectedPeersNumber() >= MAXIMUM_SEEDS) {
+		if (getConnectedPeersNumber() >= maximumSeeds) {
 			return;
 		}
 
@@ -35,7 +38,7 @@ public class ClientManagement {
 			this.peerFinder.findPeers();
 
 			PeerIterator iterator = PEERS.iterator();
-			while (iterator.hasNext() && getConnectedPeersNumber() < MAXIMUM_SEEDS) {
+			while (iterator.hasNext() && getConnectedPeersNumber() < maximumSeeds) {
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e) {

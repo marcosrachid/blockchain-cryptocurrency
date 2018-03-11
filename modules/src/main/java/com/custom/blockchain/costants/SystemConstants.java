@@ -24,6 +24,4 @@ public class SystemConstants {
 
 	public static final String PEERS_FILE = "peers.json";
 
-	public static final int MAXIMUM_SEEDS = 8;
-
 }
