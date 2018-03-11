@@ -1,5 +1,6 @@
 package com.custom.blockchain;
 
+import static com.custom.blockchain.costants.ChainConstants.UTXOS;
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_BLOCKS_INDEX_DIRECTORY;
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.GENESIS_TX_ID;
@@ -47,9 +48,9 @@ public class NodeInit {
 
 	@Value("${application.blockchain.premined:100}")
 	private BigDecimal premined;
-	
+
 	private ClientManagement clientManagement;
-	
+
 	public NodeInit(final ClientManagement clientManagement) {
 		this.clientManagement = clientManagement;
 	}
@@ -95,7 +96,7 @@ public class NodeInit {
 			genesisTransaction.setTransactionId(GENESIS_TX_ID);
 			genesisTransaction.setOutput(new TransactionOutput(genesisTransaction.getReciepient(),
 					genesisTransaction.getValue(), genesisTransaction.getTransactionId()));
-			// TODO: add first transaction to blk0.dat
+			UTXOS.put(genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
 
 			GENESIS_BLOCK = genesis;
 			PREVIOUS_BLOCK = genesis;

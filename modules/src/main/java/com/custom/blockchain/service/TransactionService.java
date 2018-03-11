@@ -1,12 +1,13 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.properties.BlockchainImutableProperties.TRANSACTION_MEMPOOL;
+import static com.custom.blockchain.costants.ChainConstants.UTXOS;
 import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_BLOCK;
 
 import java.math.BigDecimal;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,21 +55,22 @@ public class TransactionService {
 		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
 
 		BigDecimal total = BigDecimal.ZERO;
-		// TODO: get unspent transaction output from publickey
-		// for (Map.Entry<String, TransactionOutput> item : UTXOs.entrySet()) {
-		// TransactionOutput UTXO = item.getValue();
-		// if (UTXO.isMine(from.getPublicKey())) {
-		// total = total.add(UTXO.getValue());
-		// inputs.add(new TransactionInput(UTXO.getId()));
-		// if (total.compareTo(value) > 0)
-		// break;
-		// }
-		// }
+		for (Map.Entry<String, TransactionOutput> item : UTXOS.entrySet()) {
+			TransactionOutput UTXO = item.getValue();
+			if (UTXO.isMine(from.getPublicKey())) {
+				total = total.add(UTXO.getValue());
+				inputs.add(new TransactionInput(UTXO.getId()));
+				if (total.compareTo(value) > 0)
+					break;
+			}
+		}
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), to, value, inputs);
 		SignatureFactory.generateSignature(newTransaction, from);
 
-		TRANSACTION_MEMPOOL.add(newTransaction);
+		// TODO: change to mempool and process on mining
+		// TRANSACTION_MEMPOOL.add(newTransaction);
+		addTransaction(newTransaction);
 
 		return newTransaction;
 	}
@@ -102,8 +104,7 @@ public class TransactionService {
 		}
 
 		for (TransactionInput i : transaction.getInputs()) {
-			// TODO: relate last unspent transaction output to the input
-			// i.setUnspentTransactionOutput(UTXOs.get(i.getTransactionOutputId()));
+			i.setUnspentTransactionOutput(UTXOS.get(i.getTransactionOutputId()));
 		}
 
 		if (transaction.getInputsValue().compareTo(minimunTransaction) < 0) {
@@ -118,15 +119,13 @@ public class TransactionService {
 				.add(new TransactionOutput(transaction.getSender(), leftOver, transaction.getTransactionId()));
 
 		for (TransactionOutput o : transaction.getOutputs()) {
-			// TODO: register new unspent transaction output
-			// UTXOs.put(o.getId(), o);
+			UTXOS.put(o.getId(), o);
 		}
 
 		for (TransactionInput i : transaction.getInputs()) {
 			if (i.getUnspentTransactionOutput() == null)
 				continue;
-			// TODO: remove last unspent transaction output
-			// UTXOs.remove(i.getUnspentTransactionOutput().getId());
+			UTXOS.remove(i.getUnspentTransactionOutput().getId());
 		}
 
 		return true;

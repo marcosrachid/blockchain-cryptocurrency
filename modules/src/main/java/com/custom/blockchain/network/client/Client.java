@@ -1,6 +1,6 @@
 package com.custom.blockchain.network.client;
 
-import static com.custom.blockchain.properties.BlockchainImutableProperties.PEERS_STATUS;
+import static com.custom.blockchain.costants.ChainConstants.PEERS_STATUS;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

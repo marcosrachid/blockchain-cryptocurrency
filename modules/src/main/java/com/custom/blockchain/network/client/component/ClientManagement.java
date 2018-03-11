@@ -1,7 +1,7 @@
 package com.custom.blockchain.network.client.component;
 
-import static com.custom.blockchain.properties.BlockchainImutableProperties.PEERS;
-import static com.custom.blockchain.properties.BlockchainImutableProperties.PEERS_STATUS;
+import static com.custom.blockchain.costants.ChainConstants.PEERS;
+import static com.custom.blockchain.costants.ChainConstants.PEERS_STATUS;
 
 import java.util.stream.Collectors;
 
