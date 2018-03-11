@@ -8,8 +8,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +20,8 @@ import org.slf4j.LoggerFactory;
 public class FileUtil {
 
 	private static final Logger LOG = LoggerFactory.getLogger(FileUtil.class);
+
+	private static final String EMPTY_LIST = "[]";
 
 	/**
 	 * 
@@ -54,16 +54,23 @@ public class FileUtil {
 		printer.write(peerJson);
 		printer.close();
 	}
-	
+
 	/**
 	 * 
 	 * @param coinName
 	 * @return
 	 * @throws IOException
 	 */
-	public static String readPeer(String coinName) throws IOException {
+	public static File readPeer(String coinName) throws IOException {
 		String path = String.format(OsUtil.getRootDirectory(), coinName);
-		return new String(Files.readAllBytes(Paths.get(path + PEERS_FILE)));
+		File file = new File(path + PEERS_FILE);
+		if (!file.exists()) {
+			FileWriter writer = new FileWriter(file, false);
+			PrintWriter printer = new PrintWriter(writer);
+			printer.write(EMPTY_LIST);
+			printer.close();
+		}
+		return file;
 	}
 
 	/**
