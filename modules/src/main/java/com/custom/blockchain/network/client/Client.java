@@ -1,5 +1,7 @@
 package com.custom.blockchain.network.client;
 
+import static com.custom.blockchain.properties.BlockchainImutableProperties.PEERS_STATUS;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -23,18 +25,21 @@ public class Client implements Runnable {
 
 	@Override
 	public void run() {
-		LOG.debug("Client for Peer {} starting...", peer);
+		LOG.info("[Crypto] Client for Peer {} starting connection...", peer);
 		try (MulticastSocket clientSocket = new MulticastSocket(peer.getServerPort())) {
 			InetAddress address = InetAddress.getByName(peer.getIp());
 			byte[] buf = new byte[256];
 			clientSocket.joinGroup(address);
-			while (true) {
+			while (clientSocket.isConnected()) {
+				PEERS_STATUS.put(peer, true);
 				DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
 				clientSocket.receive(msgPacket);
 				String msg = new String(buf, 0, buf.length);
 				if (StringUtil.isNotEmpty(msg))
 					ClientDispatcher.launch(msg);
 			}
+			PEERS_STATUS.put(peer, false);
+			LOG.info("[Crypto] Client for Peer {} ending connection...", peer);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}

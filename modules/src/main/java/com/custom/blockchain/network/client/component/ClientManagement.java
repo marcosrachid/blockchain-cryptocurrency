@@ -1,59 +1,60 @@
 package com.custom.blockchain.network.client.component;
 
 import static com.custom.blockchain.costants.SystemConstants.MAXIMUM_SEEDS;
+import static com.custom.blockchain.properties.BlockchainImutableProperties.PEERS;
+import static com.custom.blockchain.properties.BlockchainImutableProperties.PEERS_STATUS;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.network.client.Client;
 import com.custom.blockchain.network.peer.Peer;
-import com.custom.blockchain.network.peer.PeerCollection;
 import com.custom.blockchain.network.peer.PeerIterator;
 import com.custom.blockchain.network.peer.component.PeerFinder;
 
 @Component
 public class ClientManagement {
 
-	public static final PeerCollection peers = new PeerCollection();
-	public static final Map<Peer, Boolean> peersStatus = new HashMap<>();
-
 	private static Thread thread;
-	
+
 	private PeerFinder peerFinder;
-	
+
 	public ClientManagement(final PeerFinder peerFinder) {
 		this.peerFinder = peerFinder;
 	}
 
+	@Scheduled(fixedRate = 300000)
 	public void searchActions() {
-		if (peersStatus.size() >= MAXIMUM_SEEDS)
+		if (getConnectedPeersNumber() >= MAXIMUM_SEEDS) {
 			return;
+		}
 
 		Runnable runnable = () -> {
-			this.peerFinder.findPeers(peers);
+			this.peerFinder.findPeers();
 
-			PeerIterator iterator = peers.iterator();
-			while (iterator.hasNext() && peersStatus.size() < MAXIMUM_SEEDS) {
+			PeerIterator iterator = PEERS.iterator();
+			while (iterator.hasNext() && getConnectedPeersNumber() < MAXIMUM_SEEDS) {
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+				}
 				Peer peer = iterator.next();
-				if (!peersStatus.containsKey(peer)) {
+				if (!PEERS_STATUS.containsKey(peer)) {
 					Client client = new Client(peer);
 					Thread thread = new Thread(client);
 					thread.start();
-					peersStatus.put(peer, true);
 				}
 			}
-			end();
-			searchActions();
 		};
 
 		thread = new Thread(runnable);
 		thread.start();
 	}
 
-	public void end() {
-		thread.interrupt();
+	private int getConnectedPeersNumber() {
+		return PEERS_STATUS.values().stream().filter(v -> v.equals(true)).collect(Collectors.toList()).size();
 	}
 
 }

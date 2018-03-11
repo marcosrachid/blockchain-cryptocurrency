@@ -23,11 +23,15 @@ public class PeerCollection {
 	public boolean isEmpty() {
 		return peers.isEmpty();
 	}
-	
+
 	public boolean contains(Peer peer) {
 		return peers.contains(peer);
 	}
-	
+
+	public int size() {
+		return peers.size();
+	}
+
 	public Set<Peer> getList() {
 		return peers;
 	}

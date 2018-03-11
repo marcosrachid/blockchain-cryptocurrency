@@ -71,24 +71,24 @@ public class NodeInit {
 		chainstate.mkdirs();
 
 		// start thread for searching blocks and transactions
-		LOG.info("Starting peer and actions searching thread...");
+		LOG.info("[Crypto] Starting peer and actions searching thread...");
 		this.clientManagement.searchActions();
 
 		if (!FileUtil.isBlockchainStarted(coinName)) {
-			LOG.info("Starting first block on Blockchain");
+			LOG.info("[Crypto] Starting first block on Blockchain");
 			Block genesis = BlockFactory.getGenesisBlock(coinName);
 			Wallet owner = new Wallet();
 			int ownerLength = StringUtil.getBiggestLength(WalletUtil.getStringFromKey(owner.getPublicKey()),
 					WalletUtil.getStringFromKey(owner.getPrivateKey())) - 1;
 
-			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
-			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
-			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
-			LOG.info("### Owner public key:  " + WalletUtil.getStringFromKey(owner.getPublicKey()) + " ###");
-			LOG.info("### Owner private key: " + WalletUtil.getStringFromKey(owner.getPrivateKey()) + " ###");
-			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
-			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
-			LOG.info("##################" + StringUtil.repeat('#', ownerLength) + "####");
+			LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
+			LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
+			LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
+			LOG.info("[Crypto] ### Owner public key:  " + WalletUtil.getStringFromKey(owner.getPublicKey()) + " ###");
+			LOG.info("[Crypto] ### Owner private key: " + WalletUtil.getStringFromKey(owner.getPrivateKey()) + " ###");
+			LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
+			LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
+			LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
 
 			RewardTransaction genesisTransaction = new RewardTransaction(coinbase, owner.getPublicKey(), premined);
 
@@ -101,7 +101,7 @@ public class NodeInit {
 			PREVIOUS_BLOCK = genesis;
 			CURRENT_BLOCK = BlockFactory.getBlock(genesis);
 		} else {
-			LOG.info("Blockchain already started or premined is 0");
+			LOG.info("[Crypto] Blockchain already started or premined is 0");
 		}
 	}
 

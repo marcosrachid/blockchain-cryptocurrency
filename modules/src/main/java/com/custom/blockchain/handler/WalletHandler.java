@@ -48,9 +48,9 @@ public class WalletHandler {
 	public ResponseWalletDTO createWallet() throws Exception {
 		Wallet wallet = walletService.createWallet();
 		walletService.useNewWallet(wallet);
-		LOG.debug("PublicKey - Encoded: {}, String: {}", wallet.getPublicKey().getEncoded(),
+		LOG.debug("[Crypto] PublicKey - Encoded: {}, String: {}", wallet.getPublicKey().getEncoded(),
 				WalletUtil.getStringFromKey(wallet.getPublicKey()));
-		LOG.debug("PrivateKey - Encoded: {}, String: {}", wallet.getPrivateKey().getEncoded(),
+		LOG.debug("[Crypto] PrivateKey - Encoded: {}, String: {}", wallet.getPrivateKey().getEncoded(),
 				WalletUtil.getStringFromKey(wallet.getPrivateKey()));
 		return new ResponseWalletDTO(WalletUtil.getStringFromKey(wallet.getPublicKey()),
 				WalletUtil.getStringFromKey(wallet.getPrivateKey()));

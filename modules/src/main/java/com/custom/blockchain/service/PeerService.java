@@ -1,11 +1,13 @@
 package com.custom.blockchain.service;
 
+import static com.custom.blockchain.properties.BlockchainImutableProperties.PEERS;
+import static com.custom.blockchain.properties.BlockchainImutableProperties.PEERS_STATUS;
+
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.custom.blockchain.network.client.component.ClientManagement;
 import com.custom.blockchain.network.peer.Peer;
 import com.custom.blockchain.network.peer.exception.PeerException;
 import com.custom.blockchain.util.FileUtil;
@@ -36,12 +38,16 @@ public class PeerService {
 	 */
 	public void addPeer(String ip, int serverPort) throws PeerException {
 		Peer peer = new Peer(ip, serverPort);
-		if (ClientManagement.peers.contains(peer)) {
+		if (PEERS.contains(peer) && PEERS_STATUS.containsKey(peer) && PEERS_STATUS.get(peer)) {
 			throw new PeerException(String.format("Peer %s is already registered on peer's list", peer));
 		}
-		ClientManagement.peers.addPeer(peer);
+		if (PEERS.contains(peer) && !PEERS_STATUS.containsKey(peer)) {
+			throw new PeerException(String.format("Peer %s is on queue to try a connection", peer));
+		}
+		PEERS.addPeer(peer);
+		PEERS_STATUS.remove(peer);
 		try {
-			FileUtil.addPeer(coinName, this.objectMapper.writeValueAsString(ClientManagement.peers.getList()));
+			FileUtil.addPeer(coinName, this.objectMapper.writeValueAsString(PEERS.getList()));
 		} catch (IOException e) {
 			throw new PeerException("It was not possible deserialize peer request");
 		}

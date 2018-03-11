@@ -4,6 +4,8 @@ import java.io.File;
 
 public class SystemConstants {
 
+	public static final String TEMP_DIRECTORY = System.getProperty("java.io.tmpdir");
+
 	public static final String COIN_ROOT_WINDOWS_DIRECTORY = System.getProperty("user.home") + File.separator
 			+ "AppData" + File.separator + "Local" + File.separator + "%s" + File.separator;
 

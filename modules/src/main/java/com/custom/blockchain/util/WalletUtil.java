@@ -49,7 +49,7 @@ public class WalletUtil {
 	public static PrivateKey getPrivateKeyFromString(String privateKey)
 			throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
 		byte[] keyEncoded = Base64.getDecoder().decode(privateKey);
-		LOG.debug("privateKey - Encoded: {}, String: {}", keyEncoded, privateKey);
+		LOG.debug("[Crypto] privateKey - Encoded: {}, String: {}", keyEncoded, privateKey);
 		KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
 		PrivateKey privKey = kf.generatePrivate(new PKCS8EncodedKeySpec(keyEncoded));
 		return privKey;
@@ -66,7 +66,7 @@ public class WalletUtil {
 	public static PublicKey getPublicKeyFromString(String publicKey)
 			throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
 		byte[] keyEncoded = Base64.getDecoder().decode(publicKey);
-		LOG.debug("publicKey - Encoded: {}, String: {}", keyEncoded, publicKey);
+		LOG.debug("[Crypto] publicKey - Encoded: {}, String: {}", keyEncoded, publicKey);
 		KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
 		PublicKey pubKey = kf.generatePublic(new X509EncodedKeySpec(keyEncoded));
 		return pubKey;

@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * 
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.PropertySources;
 @SpringBootApplication
 @ComponentScan("com.custom.blockchain")
 @PropertySources(value = { @PropertySource("classpath:config/application.properties") })
+@EnableScheduling
 public class Node {
 
 	public static void main(String[] args) {

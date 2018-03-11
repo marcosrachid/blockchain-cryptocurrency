@@ -32,7 +32,7 @@ public class BlockService {
 			block.calculateHash();
 		}
 		// TODO: CREATE BLOCK .dat
-		LOG.debug("Block Mined!!! : " + block.getHash());
+		LOG.debug("[Crypto] Block Mined!!! : " + block.getHash());
 	}
 
 }
