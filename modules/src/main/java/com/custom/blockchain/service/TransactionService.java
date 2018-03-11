@@ -87,7 +87,7 @@ public class TransactionService {
 			throw new TransactionException("Non existent transaction");
 		processTransaction(transaction);
 		block.getTransactions().add(transaction);
-		LOG.debug("[Crypto] Transaction Successfully added to Block");
+		LOG.info("[Crypto] Transaction Successfully added to Block");
 	}
 
 	/**

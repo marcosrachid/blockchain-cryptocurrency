@@ -26,7 +26,7 @@ public class Block implements Serializable {
 	private boolean genesis = false;
 	private long blockNumber;
 	private String hash;
-	private Block previousBlock;
+	private String previousHash;
 	private String merkleRoot;
 	private List<Transaction> transactions = new ArrayList<Transaction>();
 	private long timeStamp;
@@ -43,7 +43,7 @@ public class Block implements Serializable {
 	public Block(Block previousBlock) {
 		super();
 		this.blockNumber = previousBlock.getBlockNumber() + 1;
-		this.previousBlock = previousBlock;
+		this.previousHash = previousBlock.getHash();
 		this.timeStamp = new Date().getTime();
 		calculateHash();
 	}
@@ -72,16 +72,12 @@ public class Block implements Serializable {
 		this.hash = hash;
 	}
 
-	public Block getPreviousBlock() {
-		return previousBlock;
-	}
-
-	public void setPreviousBlock(Block previousBlock) {
-		this.previousBlock = previousBlock;
+	public void setPreviousHash(String previousHash) {
+		this.previousHash = previousHash;
 	}
 
 	public String getPreviousHash() {
-		return (previousBlock != null) ? previousBlock.getHash() : GENESIS_PREVIOUS_HASH;
+		return (previousHash != null) ? previousHash : GENESIS_PREVIOUS_HASH;
 	}
 
 	public String getMerkleRoot() {
