@@ -50,6 +50,8 @@ public class PeerFinder {
 	}
 
 	private void findFromFile() {
+		if (isPeerConnectionsFull())
+			return;
 		String path = String.format(OsUtil.getRootDirectory(), coinName);
 		List<Peer> filePeers;
 		try {
