@@ -1,30 +1,28 @@
-package com.custom.blockchain.network.peer;
+package com.custom.blockchain.resource.dto.request;
 
 import java.io.Serializable;
+
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * 
  * @author marcosrachid
  *
  */
-public class Peer implements Serializable {
+public class RequestPeerImportDTO implements Serializable {
 
-	private static final long serialVersionUID = -6246549703936086338L;
+	private static final long serialVersionUID = 1L;
 
+	@NotEmpty
 	private String ip;
-	private int serverPort;
-	
-	public Peer() {
-	}
 
-	public Peer(String ip, int serverPort) {
-		this.ip = ip;
-		this.serverPort = serverPort;
-	}
+	@NotNull
+	private int serverPort;
 
 	public String getIp() {
 		return ip;
@@ -55,7 +53,7 @@ public class Peer implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Peer other = (Peer) obj;
+		RequestPeerImportDTO other = (RequestPeerImportDTO) obj;
 		return new EqualsBuilder().append(ip, other.ip).append(serverPort, other.serverPort).isEquals();
 	}
 

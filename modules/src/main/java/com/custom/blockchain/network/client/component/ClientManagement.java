@@ -1,28 +1,38 @@
-package com.custom.blockchain.network.client;
+package com.custom.blockchain.network.client.component;
 
 import static com.custom.blockchain.costants.SystemConstants.MAXIMUM_SEEDS;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.stereotype.Component;
+
+import com.custom.blockchain.network.client.Client;
 import com.custom.blockchain.network.peer.Peer;
 import com.custom.blockchain.network.peer.PeerCollection;
-import com.custom.blockchain.network.peer.PeerFinder;
 import com.custom.blockchain.network.peer.PeerIterator;
+import com.custom.blockchain.network.peer.component.PeerFinder;
 
+@Component
 public class ClientManagement {
 
 	public static final PeerCollection peers = new PeerCollection();
 	public static final Map<Peer, Boolean> peersStatus = new HashMap<>();
 
 	private static Thread thread;
+	
+	private PeerFinder peerFinder;
+	
+	public ClientManagement(final PeerFinder peerFinder) {
+		this.peerFinder = peerFinder;
+	}
 
-	public static void searchActions() {
+	public void searchActions() {
 		if (peersStatus.size() >= MAXIMUM_SEEDS)
 			return;
 
 		Runnable runnable = () -> {
-			PeerFinder.findPeers(peers);
+			this.peerFinder.findPeers(peers);
 
 			PeerIterator iterator = peers.iterator();
 			while (iterator.hasNext() && peersStatus.size() < MAXIMUM_SEEDS) {
@@ -42,7 +52,7 @@ public class ClientManagement {
 		thread.start();
 	}
 
-	public static void end() {
+	public void end() {
 		thread.interrupt();
 	}
 

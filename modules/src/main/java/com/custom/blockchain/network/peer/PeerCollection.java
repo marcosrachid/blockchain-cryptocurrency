@@ -3,6 +3,11 @@ package com.custom.blockchain.network.peer;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class PeerCollection {
 
 	private static Set<Peer> peers = new HashSet<>();
@@ -17,6 +22,14 @@ public class PeerCollection {
 
 	public boolean isEmpty() {
 		return peers.isEmpty();
+	}
+	
+	public boolean contains(Peer peer) {
+		return peers.contains(peer);
+	}
+	
+	public Set<Peer> getList() {
+		return peers;
 	}
 
 	public PeerIterator iterator() {

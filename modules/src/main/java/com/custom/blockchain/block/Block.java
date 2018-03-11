@@ -22,20 +22,28 @@ import com.custom.blockchain.util.DigestUtil;
 public class Block implements Serializable {
 
 	private static final long serialVersionUID = 3050609047223755104L;
-	
+
 	private boolean genesis = false;
+	private long blockNumber;
 	private String hash;
-	private String previousHash;
+	private Block previousBlock;
 	private String merkleRoot;
 	private List<Transaction> transactions = new ArrayList<Transaction>();
 	private long timeStamp;
 	private int nonce;
 
-	public Block(String previousHash) {
+	public Block() {
 		super();
-		if (previousHash.equals(GENESIS_PREVIOUS_HASH))
-			this.genesis = true;
-		this.previousHash = previousHash;
+		this.genesis = true;
+		this.blockNumber = 1L;
+		this.timeStamp = new Date().getTime();
+		calculateHash();
+	}
+
+	public Block(Block previousBlock) {
+		super();
+		this.blockNumber = previousBlock.getBlockNumber() + 1;
+		this.previousBlock = previousBlock;
 		this.timeStamp = new Date().getTime();
 		calculateHash();
 	}
@@ -48,6 +56,14 @@ public class Block implements Serializable {
 		this.genesis = genesis;
 	}
 
+	public long getBlockNumber() {
+		return blockNumber;
+	}
+
+	public void setBlockNumber(long blockNumber) {
+		this.blockNumber = blockNumber;
+	}
+
 	public String getHash() {
 		return hash;
 	}
@@ -56,12 +72,16 @@ public class Block implements Serializable {
 		this.hash = hash;
 	}
 
-	public String getPreviousHash() {
-		return previousHash;
+	public Block getPreviousBlock() {
+		return previousBlock;
 	}
 
-	public void setPreviousHash(String previousHash) {
-		this.previousHash = previousHash;
+	public void setPreviousBlock(Block previousBlock) {
+		this.previousBlock = previousBlock;
+	}
+
+	public String getPreviousHash() {
+		return (previousBlock != null) ? previousBlock.getHash() : GENESIS_PREVIOUS_HASH;
 	}
 
 	public String getMerkleRoot() {
@@ -100,13 +120,14 @@ public class Block implements Serializable {
 	 * 
 	 */
 	public void calculateHash() {
-		hash = DigestUtil.applySha256(previousHash + Long.toString(timeStamp) + Integer.toString(nonce) + merkleRoot);
+		hash = DigestUtil
+				.applySha256(getPreviousHash() + Long.toString(timeStamp) + Integer.toString(nonce) + merkleRoot);
 	}
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(hash).append(merkleRoot).append(nonce).append(previousHash)
-				.append(timeStamp).append(transactions).hashCode();
+		return new HashCodeBuilder().append(blockNumber).append(hash).append(merkleRoot).append(nonce)
+				.append(getPreviousHash()).append(timeStamp).append(transactions).hashCode();
 	}
 
 	@Override
@@ -118,16 +139,14 @@ public class Block implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Block other = (Block) obj;
-		return new EqualsBuilder().append(hash, other.hash).append(merkleRoot, other.merkleRoot)
-				.append(nonce, other.nonce).append(previousHash, other.previousHash).append(timeStamp, other.timeStamp)
-				.append(transactions, other.transactions).isEquals();
+		return new EqualsBuilder().append(hash, other.hash).isEquals();
 	}
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("hash", hash).append("merkleRoot", merkleRoot).append("nonce", nonce)
-				.append("previousHash", previousHash).append("timeStamp", timeStamp)
-				.append("transactions", transactions).build();
+		return new ToStringBuilder(this).append("blockNumber", blockNumber).append("hash", hash)
+				.append("merkleRoot", merkleRoot).append("nonce", nonce).append("previousHash", getPreviousHash())
+				.append("timeStamp", timeStamp).append("transactions", transactions).build();
 	}
 
 }

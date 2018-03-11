@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.custom.blockchain.block.exception.BlockException;
+import com.custom.blockchain.network.peer.exception.PeerException;
 import com.custom.blockchain.resource.dto.response.ResponseDTO;
 import com.custom.blockchain.resource.dto.response.ResponseDTO.ResponseDTOBuilder;
 import com.custom.blockchain.resource.dto.response.ResponseErrorsDTO;
@@ -62,6 +63,18 @@ public class ResourceExceptionHandler {
 	 */
 	@ExceptionHandler(WalletException.class)
 	public ResponseEntity<ResponseDTO> handleWalletException(WalletException e) {
+		LOG.error(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
+		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON_UTF8).body(ResponseDTO.createBuilder()
+				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
+	}
+
+	/**
+	 * 
+	 * @param e
+	 * @return
+	 */
+	@ExceptionHandler(PeerException.class)
+	public ResponseEntity<ResponseDTO> handlePeerException(PeerException e) {
 		LOG.error(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
 		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON_UTF8).body(ResponseDTO.createBuilder()
 				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());

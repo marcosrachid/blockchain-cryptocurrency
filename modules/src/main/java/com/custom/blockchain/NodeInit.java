@@ -20,8 +20,7 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
-import com.custom.blockchain.block.BlockType;
-import com.custom.blockchain.network.client.ClientManagement;
+import com.custom.blockchain.network.client.component.ClientManagement;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.FileUtil;
@@ -48,6 +47,12 @@ public class NodeInit {
 
 	@Value("${application.blockchain.premined:100}")
 	private BigDecimal premined;
+	
+	private ClientManagement clientManagement;
+	
+	public NodeInit(final ClientManagement clientManagement) {
+		this.clientManagement = clientManagement;
+	}
 
 	/**
 	 * 
@@ -66,15 +71,12 @@ public class NodeInit {
 		chainstate.mkdirs();
 
 		// start thread for searching blocks and transactions
-
 		LOG.info("Starting peer and actions searching thread...");
-		ClientManagement.searchActions();
-
-		// TODO: syncing
+		this.clientManagement.searchActions();
 
 		if (!FileUtil.isBlockchainStarted(coinName)) {
 			LOG.info("Starting first block on Blockchain");
-			Block genesis = BlockFactory.getBlock(BlockType.GENESIS, null);
+			Block genesis = BlockFactory.getGenesisBlock(coinName);
 			Wallet owner = new Wallet();
 			int ownerLength = StringUtil.getBiggestLength(WalletUtil.getStringFromKey(owner.getPublicKey()),
 					WalletUtil.getStringFromKey(owner.getPrivateKey())) - 1;
