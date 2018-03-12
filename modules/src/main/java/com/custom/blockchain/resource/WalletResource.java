@@ -5,7 +5,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import javax.validation.Valid;
-import javax.websocket.server.PathParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.custom.blockchain.handler.WalletHandler;
+import com.custom.blockchain.resource.dto.request.RequestBalanceDTO;
 import com.custom.blockchain.resource.dto.request.RequestImportDTO;
 import com.custom.blockchain.resource.dto.response.ResponseDTO;
 
@@ -45,11 +45,11 @@ public class WalletResource {
 	 * @return
 	 * @throws Exception
 	 */
-	@RequestMapping(value = "/balance/{public-key}", method = RequestMethod.GET, produces = APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<ResponseDTO> getBalance(@PathParam("public-key") String publicKey) throws Exception {
+	@RequestMapping(value = "/balance", method = RequestMethod.POST, produces = APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<ResponseDTO> getBalance(@Valid @RequestBody RequestBalanceDTO publicKey) throws Exception {
 		LOG.debug(REQUEST, publicKey);
 		return ResponseEntity.status(HttpStatus.OK).contentType(APPLICATION_JSON_UTF8)
-				.body(new ResponseDTO(walletHandler.getBalance(publicKey)));
+				.body(new ResponseDTO(walletHandler.getBalance(publicKey.getPublicKey())));
 	}
 
 	/**

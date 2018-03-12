@@ -36,16 +36,6 @@ public class WalletService {
 
 	/**
 	 * 
-	 * @param publicKey
-	 * @return
-	 * @throws Exception
-	 */
-	public Wallet getWalletFromStorage(String publicKey) throws Exception {
-		return new Wallet();
-	}
-
-	/**
-	 * 
 	 * @param privateKey
 	 * @return
 	 * @throws Exception

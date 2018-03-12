@@ -35,9 +35,8 @@ public class WalletHandler {
 	 * @throws Exception
 	 */
 	public ResponseBalanceDTO getBalance(String publicKey) throws Exception {
-		Wallet wallet = walletService.getWalletFromStorage(publicKey);
 		BigDecimal balance = walletService.getBalance(publicKey);
-		return new ResponseBalanceDTO(WalletUtil.getStringFromKey(wallet.getPublicKey()), balance);
+		return new ResponseBalanceDTO(publicKey, balance);
 	}
 
 	/**
