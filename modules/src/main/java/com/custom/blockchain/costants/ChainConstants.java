@@ -8,7 +8,6 @@ import com.custom.blockchain.block.Block;
 import com.custom.blockchain.network.peer.Peer;
 import com.custom.blockchain.network.peer.PeerCollection;
 import com.custom.blockchain.transaction.Transaction;
-import com.custom.blockchain.transaction.TransactionOutput;
 
 /**
  * 
@@ -18,8 +17,6 @@ import com.custom.blockchain.transaction.TransactionOutput;
 public class ChainConstants {
 
 	public static Set<Block> BLOCKCHAIN = null;
-
-	public static Map<String, TransactionOutput> UTXOS = new HashMap<>();
 
 	public static Set<Transaction> TRANSACTION_MEMPOOL = null;
 

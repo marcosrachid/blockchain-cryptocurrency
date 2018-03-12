@@ -1,7 +1,6 @@
 package com.custom.blockchain;
 
 import static com.custom.blockchain.costants.ChainConstants.TRANSACTION_MEMPOOL;
-import static com.custom.blockchain.costants.ChainConstants.UTXOS;
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_BLOCKS_INDEX_DIRECTORY;
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.GENESIS_TX_ID;
@@ -16,15 +15,15 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
-import org.iq80.leveldb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
+import com.custom.blockchain.data.blockindex.BlockIndexDB;
+import com.custom.blockchain.data.chainstate.ChainstateDB;
 import com.custom.blockchain.network.client.component.ClientManagement;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.Transaction;
@@ -56,16 +55,16 @@ public class NodeInit {
 	@Value("${application.blockchain.premined:100}")
 	private BigDecimal premined;
 
-	private DB blockIndexDb;
+	private BlockIndexDB blockIndexDb;
 
-	private DB chainstateDb;
+	private ChainstateDB chainstateDb;
 
 	private ObjectMapper objectMapper;
 
 	private ClientManagement clientManagement;
 
-	public NodeInit(final @Qualifier("BlockIndexDB") DB blockIndexDb, final @Qualifier("ChainStateDB") DB chainstateDb,
-			final ObjectMapper objectMapper, final ClientManagement clientManagement) {
+	public NodeInit(final BlockIndexDB blockIndexDb, final ChainstateDB chainstateDb, final ObjectMapper objectMapper,
+			final ClientManagement clientManagement) {
 		this.blockIndexDb = blockIndexDb;
 		this.chainstateDb = chainstateDb;
 		this.objectMapper = objectMapper;
@@ -118,18 +117,14 @@ public class NodeInit {
 			genesisTransaction.setTransactionId(GENESIS_TX_ID);
 			genesisTransaction.setOutput(new TransactionOutput(genesisTransaction.getReciepient(),
 					genesisTransaction.getValue(), genesisTransaction.getTransactionId()));
-			chainstateDb.put(genesisTransaction.getOutput().getId().getBytes(),
-					objectMapper.writeValueAsBytes(genesisTransaction.getOutput().serializable()));
-			UTXOS.put(genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
-			LOG.info("Premined transaction: {}",
-					objectMapper.readValue(chainstateDb.get(genesisTransaction.getOutput().getId().getBytes()),
-							TransactionOutput.TransactionOutputSerializable.class));
+			chainstateDb.put(genesisTransaction.getOutput().getReciepient(), genesisTransaction.getOutput());
+			LOG.info("Premined transaction: {}", chainstateDb.get(genesisTransaction.getOutput().getReciepient()));
 
 			GENESIS_BLOCK = genesis;
 			PREVIOUS_BLOCK = genesis;
 			CURRENT_BLOCK = BlockFactory.getBlock(genesis);
 		} else {
-			LOG.info("[Crypto] Blockchain already started or premined is 0");
+			LOG.info("[Crypto] Blockchain already");
 		}
 	}
 

@@ -1,16 +1,15 @@
 package com.custom.blockchain.transaction;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import com.custom.blockchain.data.serializers.LevelDbSerializable;
+import com.custom.blockchain.data.serializers.LevelDbUnserializable;
+import com.custom.blockchain.transaction.TransactionOutput.TransactionOutputSerializable;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
 
@@ -19,7 +18,7 @@ import com.custom.blockchain.util.WalletUtil;
  * @author marcosrachid
  *
  */
-public class TransactionOutput {
+public class TransactionOutput implements LevelDbUnserializable<TransactionOutputSerializable> {
 
 	private String id;
 	private PublicKey reciepient;
@@ -100,12 +99,13 @@ public class TransactionOutput {
 				.append("parentTransactionId", parentTransactionId).build();
 	}
 
+	@Override
 	public TransactionOutputSerializable serializable() {
 		return new TransactionOutputSerializable(id, WalletUtil.getStringFromKey(reciepient), value,
 				parentTransactionId);
 	}
 
-	public static class TransactionOutputSerializable implements Serializable {
+	public static class TransactionOutputSerializable implements LevelDbSerializable<TransactionOutput> {
 
 		private static final long serialVersionUID = 6623612896188220785L;
 
@@ -158,8 +158,8 @@ public class TransactionOutput {
 			this.parentTransactionId = parentTransactionId;
 		}
 
-		public TransactionOutput unserializable()
-				throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+		@Override
+		public TransactionOutput unserializable() throws Exception {
 			return new TransactionOutput(id, WalletUtil.getPublicKeyFromString(reciepient), value, parentTransactionId);
 		}
 

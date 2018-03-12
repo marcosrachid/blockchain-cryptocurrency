@@ -1,16 +1,13 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.costants.ChainConstants.UTXOS;
 import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_WALLET;
 
 import java.math.BigDecimal;
-import java.security.PublicKey;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.custom.blockchain.data.chainstate.ChainstateDB;
 import com.custom.blockchain.transaction.TransactionOutput;
-import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.custom.blockchain.wallet.exception.WalletException;
 
@@ -21,6 +18,12 @@ import com.custom.blockchain.wallet.exception.WalletException;
  */
 @Service
 public class WalletService {
+
+	private ChainstateDB chainstateDb;
+
+	public WalletService(final ChainstateDB chainstateDb) {
+		this.chainstateDb = chainstateDb;
+	}
 
 	/**
 	 * 
@@ -58,15 +61,8 @@ public class WalletService {
 	 * @throws Exception
 	 */
 	public BigDecimal getBalance(String publicKey) throws Exception {
-		PublicKey key = WalletUtil.getPublicKeyFromString(publicKey);
-		BigDecimal total = BigDecimal.ZERO;
-		for (Map.Entry<String, TransactionOutput> item : UTXOS.entrySet()) {
-			TransactionOutput unspentTransactionOutput = item.getValue();
-			if (unspentTransactionOutput.isMine(key)) {
-				total = total.add(unspentTransactionOutput.getValue());
-			}
-		}
-		return total;
+		TransactionOutput transactionOutput = chainstateDb.get(publicKey);
+		return transactionOutput.getValue();
 	}
 
 	/**

@@ -1,13 +1,11 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.costants.ChainConstants.UTXOS;
 import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_BLOCK;
 
 import java.math.BigDecimal;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.Block;
+import com.custom.blockchain.data.chainstate.ChainstateDB;
 import com.custom.blockchain.signature.SignatureFactory;
 import com.custom.blockchain.signature.SignatureVerifier;
 import com.custom.blockchain.transaction.SimpleTransaction;
@@ -36,6 +35,12 @@ public class TransactionService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(TransactionService.class);
 
+	private ChainstateDB chainstateDb;
+
+	public TransactionService(final ChainstateDB chainstateDb) {
+		this.chainstateDb = chainstateDb;
+	}
+
 	@Value("${application.blockchain.minimun.transaction}")
 	private BigDecimal minimunTransaction;
 
@@ -54,16 +59,8 @@ public class TransactionService {
 
 		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
 
-		BigDecimal total = BigDecimal.ZERO;
-		for (Map.Entry<String, TransactionOutput> item : UTXOS.entrySet()) {
-			TransactionOutput UTXO = item.getValue();
-			if (UTXO.isMine(from.getPublicKey())) {
-				total = total.add(UTXO.getValue());
-				inputs.add(new TransactionInput(UTXO.getId()));
-				if (total.compareTo(value) > 0)
-					break;
-			}
-		}
+		TransactionOutput UTXO = chainstateDb.get(from.getPublicKey());
+		inputs.add(new TransactionInput(UTXO.getId()));
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), to, value, inputs);
 		SignatureFactory.generateSignature(newTransaction, from);
@@ -104,7 +101,7 @@ public class TransactionService {
 		}
 
 		for (TransactionInput i : transaction.getInputs()) {
-			i.setUnspentTransactionOutput(UTXOS.get(i.getTransactionOutputId()));
+			i.setUnspentTransactionOutput(chainstateDb.get(transaction.getSender()));
 		}
 
 		if (transaction.getInputsValue().compareTo(minimunTransaction) < 0) {
@@ -119,13 +116,7 @@ public class TransactionService {
 				.add(new TransactionOutput(transaction.getSender(), leftOver, transaction.getTransactionId()));
 
 		for (TransactionOutput o : transaction.getOutputs()) {
-			UTXOS.put(o.getId(), o);
-		}
-
-		for (TransactionInput i : transaction.getInputs()) {
-			if (i.getUnspentTransactionOutput() == null)
-				continue;
-			UTXOS.remove(i.getUnspentTransactionOutput().getId());
+			chainstateDb.put(o.getReciepient(), o);
 		}
 
 		return true;
