@@ -87,7 +87,8 @@ public class SimpleTransaction extends Transaction implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(sender).append(signature).append(inputs).append(outputs).hashCode();
+		return new HashCodeBuilder().append(transactionId).append(sender).append(reciepient).append(value)
+				.append(signature).append(inputs).append(outputs).hashCode();
 	}
 
 	@Override
@@ -99,12 +100,13 @@ public class SimpleTransaction extends Transaction implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		SimpleTransaction other = (SimpleTransaction) obj;
-		return new EqualsBuilder().append(sender, other.sender).append(signature, other.signature).isEquals();
+		return new EqualsBuilder().append(transactionId, other.transactionId).isEquals();
 	}
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("sender", sender).append("signature", signature)
+		return new ToStringBuilder(this).append("transactionId", transactionId).append("sender", sender)
+				.append("reciepient", reciepient).append("value", value).append("signature", signature)
 				.append("inputs", inputs).append("outputs", outputs).build();
 	}
 

@@ -18,10 +18,10 @@ public class SystemConstants {
 
 	public static final String LEVEL_DB_CHAINSTATE_DIRECTORY = "chainstate" + File.separator;
 
-	public static final String BLOCK_FILE = "blk%s.json";
+	public static final String BLOCK_FILE = "blk%s.dat";
 
-	public static final String MEMPOOL_FILE = "mempool.json";
+	public static final String MEMPOOL_FILE = "mempool.dat";
 
-	public static final String PEERS_FILE = "peers.json";
+	public static final String PEERS_FILE = "peers.dat";
 
 }
