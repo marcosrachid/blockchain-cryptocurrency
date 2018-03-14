@@ -24,7 +24,7 @@ import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
 import com.custom.blockchain.data.blockindex.BlockIndexDB;
 import com.custom.blockchain.data.chainstate.ChainstateDB;
-import com.custom.blockchain.network.client.component.ClientManagement;
+import com.custom.blockchain.network.client.component.ClientManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionOutput;
@@ -61,10 +61,10 @@ public class NodeInit {
 
 	private ObjectMapper objectMapper;
 
-	private ClientManagement clientManagement;
+	private ClientManager clientManagement;
 
 	public NodeInit(final BlockIndexDB blockIndexDb, final ChainstateDB chainstateDb, final ObjectMapper objectMapper,
-			final ClientManagement clientManagement) {
+			final ClientManager clientManagement) {
 		this.blockIndexDb = blockIndexDb;
 		this.chainstateDb = chainstateDb;
 		this.objectMapper = objectMapper;
@@ -100,32 +100,55 @@ public class NodeInit {
 			LOG.info("[Crypto] Starting first block on Blockchain");
 			Block genesis = BlockFactory.getGenesisBlock(coinName);
 			Wallet owner = new Wallet();
-			int ownerLength = StringUtil.getBiggestLength(WalletUtil.getStringFromKey(owner.getPublicKey()),
-					WalletUtil.getStringFromKey(owner.getPrivateKey())) - 1;
 
-			LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
-			LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
-			LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
-			LOG.info("[Crypto] ### Owner public key:  " + WalletUtil.getStringFromKey(owner.getPublicKey()) + " ###");
-			LOG.info("[Crypto] ### Owner private key: " + WalletUtil.getStringFromKey(owner.getPrivateKey()) + " ###");
-			LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
-			LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
-			LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
-
-			RewardTransaction genesisTransaction = new RewardTransaction(coinbase, owner.getPublicKey(), premined);
-
-			genesisTransaction.setTransactionId(GENESIS_TX_ID);
-			genesisTransaction.setOutput(new TransactionOutput(genesisTransaction.getReciepient(),
-					genesisTransaction.getValue(), genesisTransaction.getTransactionId()));
-			chainstateDb.put("c" + genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
-			LOG.info("Premined transaction: {}", chainstateDb.get("c" + genesisTransaction.getOutput().getId()));
-
-			GENESIS_BLOCK = genesis;
-			PREVIOUS_BLOCK = genesis;
-			CURRENT_BLOCK = BlockFactory.getBlock(genesis);
+			logKeys(owner);
+			premined(owner);
+			setBlockState(genesis);
 		} else {
 			LOG.info("[Crypto] Blockchain already");
 		}
+	}
+
+	/**
+	 * 
+	 * @param owner
+	 */
+	private void logKeys(Wallet owner) {
+		int ownerLength = StringUtil.getBiggestLength(WalletUtil.getStringFromKey(owner.getPublicKey()),
+				WalletUtil.getStringFromKey(owner.getPrivateKey())) - 1;
+
+		LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
+		LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
+		LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
+		LOG.info("[Crypto] ### Owner public key:  " + WalletUtil.getStringFromKey(owner.getPublicKey()) + " ###");
+		LOG.info("[Crypto] ### Owner private key: " + WalletUtil.getStringFromKey(owner.getPrivateKey()) + " ###");
+		LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
+		LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
+		LOG.info("[Crypto] ##################" + StringUtil.repeat('#', ownerLength) + "####");
+	}
+
+	/**
+	 * 
+	 * @param owner
+	 */
+	private void premined(Wallet owner) {
+		RewardTransaction genesisTransaction = new RewardTransaction(coinbase, premined);
+
+		genesisTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), genesisTransaction.getValue(),
+				genesisTransaction.getTransactionId()));
+		genesisTransaction.setTransactionId(GENESIS_TX_ID);
+		chainstateDb.put("c" + genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
+		LOG.info("Premined transaction: {}", chainstateDb.get("c" + genesisTransaction.getOutput().getId()));
+	}
+
+	/**
+	 * 
+	 * @param genesis
+	 */
+	private void setBlockState(Block genesis) {
+		GENESIS_BLOCK = genesis;
+		PREVIOUS_BLOCK = genesis;
+		CURRENT_BLOCK = BlockFactory.getBlock(genesis);
 	}
 
 }

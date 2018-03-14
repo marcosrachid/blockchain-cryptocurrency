@@ -7,8 +7,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.custom.blockchain.data.serializers.LevelDbSerializable;
-import com.custom.blockchain.data.serializers.LevelDbUnserializable;
+import com.custom.blockchain.serializers.JsonSerializable;
+import com.custom.blockchain.serializers.JsonUnserializable;
 import com.custom.blockchain.transaction.TransactionOutput.TransactionOutputSerializable;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
@@ -18,7 +18,7 @@ import com.custom.blockchain.util.WalletUtil;
  * @author marcosrachid
  *
  */
-public class TransactionOutput implements LevelDbUnserializable<TransactionOutputSerializable> {
+public class TransactionOutput implements JsonUnserializable<TransactionOutputSerializable> {
 
 	private String id;
 	private PublicKey reciepient;
@@ -105,7 +105,7 @@ public class TransactionOutput implements LevelDbUnserializable<TransactionOutpu
 				parentTransactionId);
 	}
 
-	public static class TransactionOutputSerializable implements LevelDbSerializable<TransactionOutput> {
+	public static class TransactionOutputSerializable implements JsonSerializable<TransactionOutput> {
 
 		private static final long serialVersionUID = 6623612896188220785L;
 

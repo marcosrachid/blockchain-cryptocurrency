@@ -57,7 +57,7 @@ public class TransactionResource {
 	 * @return
 	 * @throws Exception
 	 */
-	@RequestMapping(method = RequestMethod.POST, consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/list", method = RequestMethod.POST, consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<ResponseDTO> sendFunds(@Valid @RequestBody RequestSendFundsDTO.RequestSendFundsListDTO funds)
 			throws Exception {
 		LOG.debug(REQUEST, funds);

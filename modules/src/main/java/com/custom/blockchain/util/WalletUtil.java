@@ -17,8 +17,6 @@ import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -26,8 +24,6 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class WalletUtil {
-
-	private static final Logger LOG = LoggerFactory.getLogger(WalletUtil.class);
 
 	/**
 	 * 
@@ -49,7 +45,6 @@ public class WalletUtil {
 	public static PrivateKey getPrivateKeyFromString(String privateKey)
 			throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
 		byte[] keyEncoded = Base64.getDecoder().decode(privateKey);
-		LOG.debug("[Crypto] privateKey - Encoded: {}, String: {}", keyEncoded, privateKey);
 		KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
 		PrivateKey privKey = kf.generatePrivate(new PKCS8EncodedKeySpec(keyEncoded));
 		return privKey;
@@ -66,7 +61,6 @@ public class WalletUtil {
 	public static PublicKey getPublicKeyFromString(String publicKey)
 			throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
 		byte[] keyEncoded = Base64.getDecoder().decode(publicKey);
-		LOG.debug("[Crypto] publicKey - Encoded: {}, String: {}", keyEncoded, publicKey);
 		KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
 		PublicKey pubKey = kf.generatePublic(new X509EncodedKeySpec(keyEncoded));
 		return pubKey;

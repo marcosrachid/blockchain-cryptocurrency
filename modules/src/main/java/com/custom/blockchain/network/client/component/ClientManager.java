@@ -15,7 +15,7 @@ import com.custom.blockchain.network.peer.PeerIterator;
 import com.custom.blockchain.network.peer.component.PeerFinder;
 
 @Component
-public class ClientManagement {
+public class ClientManager {
 
 	@Value("${application.blockchain.network.maximum-seeds}")
 	private Integer maximumSeeds;
@@ -24,7 +24,7 @@ public class ClientManagement {
 
 	private PeerFinder peerFinder;
 
-	public ClientManagement(final PeerFinder peerFinder) {
+	public ClientManager(final PeerFinder peerFinder) {
 		this.peerFinder = peerFinder;
 	}
 

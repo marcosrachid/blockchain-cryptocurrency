@@ -22,9 +22,7 @@ public abstract class Transaction {
 		return transactionId;
 	}
 
-	public void setTransactionId(String transactionId) {
-		this.transactionId = transactionId;
-	}
+	public abstract void setTransactionId(String transactionId);
 
 	public BigDecimal getValue() {
 		return value;

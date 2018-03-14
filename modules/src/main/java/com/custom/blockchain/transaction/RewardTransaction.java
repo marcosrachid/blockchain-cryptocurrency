@@ -44,6 +44,12 @@ public class RewardTransaction extends Transaction {
 	}
 
 	@Override
+	public void setTransactionId(String transactionId) {
+		this.transactionId = transactionId;
+		this.output.setParentTransactionId(transactionId);
+	}
+
+	@Override
 	public BigDecimal getInputsValue() {
 		return BigDecimal.ZERO;
 	}
@@ -54,7 +60,8 @@ public class RewardTransaction extends Transaction {
 	}
 
 	private void generateCoinbase() {
-		coinbase = DigestUtil.applySha256(Long.toString(DIFFICULTY) + Transaction.sequence);
+		Transaction.sequence++;
+		coinbase = DigestUtil.applySha256(DigestUtil.applySha256(Long.toString(DIFFICULTY) + Transaction.sequence));
 	}
 
 	@Override

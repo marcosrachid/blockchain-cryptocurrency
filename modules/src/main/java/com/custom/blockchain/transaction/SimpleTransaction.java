@@ -17,8 +17,8 @@ public class SimpleTransaction extends Transaction implements Serializable {
 	private PublicKey sender;
 	private byte[] signature;
 
-	private List<TransactionInput> inputs = new ArrayList<TransactionInput>();
-	private List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
+	private List<TransactionInput> inputs = new ArrayList<>();
+	private List<TransactionOutput> outputs = new ArrayList<>();
 
 	public SimpleTransaction(PublicKey from, BigDecimal value, List<TransactionInput> inputs) {
 		this.sender = from;
@@ -54,6 +54,14 @@ public class SimpleTransaction extends Transaction implements Serializable {
 		return outputs;
 	}
 
+	public List<TransactionOutput.TransactionOutputSerializable> getSerializableOutputs() {
+		List<TransactionOutput.TransactionOutputSerializable> serializableList = new ArrayList<>();
+		for (TransactionOutput utxo : outputs) {
+			serializableList.add(utxo.serializable());
+		}
+		return serializableList;
+	}
+
 	public void setOutputs(List<TransactionOutput> outputs) {
 		this.outputs = outputs;
 	}
@@ -82,6 +90,12 @@ public class SimpleTransaction extends Transaction implements Serializable {
 			total = total.add(o.getValue());
 		}
 		return total;
+	}
+
+	@Override
+	public void setTransactionId(String transactionId) {
+		this.transactionId = transactionId;
+		this.outputs.forEach(o -> o.setParentTransactionId(transactionId));
 	}
 
 	@Override

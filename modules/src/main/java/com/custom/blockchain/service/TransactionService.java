@@ -19,14 +19,11 @@ import org.springframework.stereotype.Service;
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.data.chainstate.ChainstateDB;
 import com.custom.blockchain.resource.dto.request.RequestSendFundsDTO;
-import com.custom.blockchain.signature.SignatureFactory;
-import com.custom.blockchain.signature.SignatureVerifier;
+import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.SimpleTransaction;
-import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.transaction.exception.TransactionException;
-import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 
@@ -40,14 +37,17 @@ public class TransactionService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(TransactionService.class);
 
-	private ChainstateDB chainstateDb;
-
-	public TransactionService(final ChainstateDB chainstateDb) {
-		this.chainstateDb = chainstateDb;
-	}
-
 	@Value("${application.blockchain.minimun.transaction}")
 	private BigDecimal minimunTransaction;
+
+	private ChainstateDB chainstateDb;
+
+	private SignatureManager signatureManager;
+
+	public TransactionService(final ChainstateDB chainstateDb, final SignatureManager signatureManager) {
+		this.chainstateDb = chainstateDb;
+		this.signatureManager = signatureManager;
+	}
 
 	/**
 	 * 
@@ -74,9 +74,8 @@ public class TransactionService {
 		inputs.add(new TransactionInput(UTXO.getId()));
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), value, inputs);
-		newTransaction.setTransactionId(calulateHash(newTransaction));
 		newTransaction.getOutputs().add(new TransactionOutput(to, value, newTransaction.getTransactionId()));
-		SignatureFactory.generateSignature(newTransaction, from);
+		signatureManager.generateSignature(newTransaction, from);
 
 		// TODO: change to mempool and process on mining
 		// TRANSACTION_MEMPOOL.add(newTransaction);
@@ -110,7 +109,6 @@ public class TransactionService {
 		inputs.add(new TransactionInput(UTXO.getId()));
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), totalSentFunds, inputs);
-		newTransaction.setTransactionId(calulateHash(newTransaction));
 		for (RequestSendFundsDTO f : funds) {
 			PublicKey reciepient;
 			try {
@@ -121,7 +119,7 @@ public class TransactionService {
 			newTransaction.getOutputs()
 					.add(new TransactionOutput(reciepient, f.getValue(), newTransaction.getTransactionId()));
 		}
-		SignatureFactory.generateSignature(newTransaction, from);
+		signatureManager.generateSignature(newTransaction, from);
 
 		// TODO: change to mempool and process on mining
 		// TRANSACTION_MEMPOOL.add(newTransaction);
@@ -154,7 +152,7 @@ public class TransactionService {
 	 */
 	private boolean processTransaction(SimpleTransaction transaction) throws TransactionException {
 
-		if (SignatureVerifier.verifiySignature(transaction) == false) {
+		if (signatureManager.verifiySignature(transaction) == false) {
 			throw new TransactionException("Transaction Signature failed to verify");
 		}
 
@@ -179,17 +177,6 @@ public class TransactionService {
 		}
 
 		return true;
-	}
-
-	/**
-	 * 
-	 * @param transaction
-	 * @return
-	 */
-	private String calulateHash(SimpleTransaction transaction) {
-		Transaction.sequence++;
-		return DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender())
-				+ transaction.getValue().setScale(8).toString() + Transaction.sequence);
 	}
 
 }
