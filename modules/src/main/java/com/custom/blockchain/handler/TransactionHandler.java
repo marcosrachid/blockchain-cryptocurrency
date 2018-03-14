@@ -65,10 +65,10 @@ public class TransactionHandler {
 		BigDecimal currentBalance = walletService.getBalance(WalletUtil.getStringFromKey(currentWallet.getPublicKey()));
 		final List<ResponseReciepientDTO> reciepientList = new ArrayList<>();
 		BigDecimal totalSentFunds = BigDecimal.ZERO;
-		funds.forEach(f -> {
+		for (RequestSendFundsDTO f : funds) {
 			reciepientList.add(new ResponseReciepientDTO(f.getReciepientPublicKey(), f.getValue()));
-			totalSentFunds.add(f.getValue());
-		});
+			totalSentFunds = totalSentFunds.add(f.getValue());
+		}
 		SimpleTransaction newTransaction = transactionService.sendFunds(currentWallet, currentBalance, totalSentFunds,
 				funds);
 		return new ResponseTransactions(newTransaction.getTransactionId(),

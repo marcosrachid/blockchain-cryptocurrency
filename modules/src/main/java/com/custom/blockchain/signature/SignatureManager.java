@@ -15,6 +15,11 @@ import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @Component
 public class SignatureManager {
 

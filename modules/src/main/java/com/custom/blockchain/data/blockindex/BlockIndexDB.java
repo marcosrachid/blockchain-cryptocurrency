@@ -6,6 +6,11 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @Component
 public class BlockIndexDB {
 	

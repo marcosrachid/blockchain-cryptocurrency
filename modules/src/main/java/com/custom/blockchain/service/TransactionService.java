@@ -128,6 +128,7 @@ public class TransactionService {
 		return newTransaction;
 	}
 
+	// TODO: move method to BlockService futurely
 	/**
 	 * 
 	 * @param block
@@ -143,6 +144,7 @@ public class TransactionService {
 		LOG.info("[Crypto] Transaction Successfully added to Block");
 	}
 
+	// TODO: move method to BlockService futurely
 	/**
 	 * 
 	 * @param transaction
@@ -175,6 +177,8 @@ public class TransactionService {
 		for (TransactionInput i : transaction.getInputs()) {
 			chainstateDb.delete("c" + i.getUnspentTransactionOutput().getId());
 		}
+
+		// TODO remove transaction from mempool
 
 		return true;
 	}
