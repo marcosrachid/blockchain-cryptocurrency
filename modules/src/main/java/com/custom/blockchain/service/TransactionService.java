@@ -64,17 +64,13 @@ public class TransactionService {
 
 		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
 
-		TransactionOutput UTXO = null;
-		DBIterator iterator = chainstateDb.iterator();
-		while (iterator.hasNext()) {
-			UTXO = chainstateDb.next(iterator);
-			if (UTXO.isMine(from.getPublicKey()))
-				break;
-		}
-		inputs.add(new TransactionInput(UTXO.getId()));
+		List<TransactionOutput> UTXOsSender = getUnspentTransactionOutput(from.getPublicKey());
+		UTXOsSender.forEach(u -> {
+			inputs.add(new TransactionInput(u.getId()));
+		});
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), value, inputs);
-		newTransaction.getOutputs().add(new TransactionOutput(to, value, newTransaction.getTransactionId()));
+		newTransaction.getOutputs().add(new TransactionOutput(to, value));
 		signatureManager.generateSignature(newTransaction, from);
 
 		// TODO: change to mempool and process on mining
@@ -99,25 +95,20 @@ public class TransactionService {
 
 		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
 
-		TransactionOutput UTXO = null;
-		DBIterator iterator = chainstateDb.iterator();
-		while (iterator.hasNext()) {
-			UTXO = chainstateDb.next(iterator);
-			if (UTXO.isMine(from.getPublicKey()))
-				break;
-		}
-		inputs.add(new TransactionInput(UTXO.getId()));
+		List<TransactionOutput> UTXOsSender = getUnspentTransactionOutput(from.getPublicKey());
+		UTXOsSender.forEach(u -> {
+			inputs.add(new TransactionInput(u.getId()));
+		});
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), totalSentFunds, inputs);
 		for (RequestSendFundsDTO f : funds) {
 			PublicKey reciepient;
 			try {
 				reciepient = WalletUtil.getPublicKeyFromString(f.getReciepientPublicKey());
+				newTransaction.getOutputs().add(new TransactionOutput(reciepient, f.getValue()));
 			} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
 				throw new TransactionException("Invalid reciepient public key [" + f.getReciepientPublicKey() + "]");
 			}
-			newTransaction.getOutputs()
-					.add(new TransactionOutput(reciepient, f.getValue(), newTransaction.getTransactionId()));
 		}
 		signatureManager.generateSignature(newTransaction, from);
 
@@ -166,6 +157,7 @@ public class TransactionService {
 			throw new TransactionException("Transaction Inputs too small: " + transaction.getInputsValue());
 		}
 
+		// TODO: mining reward
 		BigDecimal leftOver = transaction.getInputsValue().subtract(transaction.getValue());
 		transaction.getOutputs()
 				.add(new TransactionOutput(transaction.getSender(), leftOver, transaction.getTransactionId()));
@@ -181,6 +173,22 @@ public class TransactionService {
 		// TODO remove transaction from mempool
 
 		return true;
+	}
+
+	/**
+	 * 
+	 * @param publicKey
+	 * @return
+	 */
+	private List<TransactionOutput> getUnspentTransactionOutput(PublicKey publicKey) {
+		List<TransactionOutput> UTXOs = new ArrayList<>();
+		DBIterator iterator = chainstateDb.iterator();
+		while (iterator.hasNext()) {
+			TransactionOutput UTXO = chainstateDb.next(iterator);
+			if (UTXO.isMine(publicKey))
+				UTXOs.add(UTXO);
+		}
+		return UTXOs;
 	}
 
 }

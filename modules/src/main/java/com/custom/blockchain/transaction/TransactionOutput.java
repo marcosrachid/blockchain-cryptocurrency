@@ -25,11 +25,24 @@ public class TransactionOutput implements JsonUnserializable<TransactionOutputSe
 	private BigDecimal value;
 	private String parentTransactionId;
 
+	public TransactionOutput(String id, PublicKey reciepient, BigDecimal value) {
+		this.id = id;
+		this.reciepient = reciepient;
+		this.value = value;
+	}
+
 	public TransactionOutput(String id, PublicKey reciepient, BigDecimal value, String parentTransactionId) {
 		this.id = id;
 		this.reciepient = reciepient;
 		this.value = value;
 		this.parentTransactionId = parentTransactionId;
+	}
+
+	public TransactionOutput(PublicKey reciepient, BigDecimal value) {
+		this.reciepient = reciepient;
+		this.value = value;
+		this.id = DigestUtil.applySha256(
+				WalletUtil.getStringFromKey(reciepient) + value.setScale(8).toString() + parentTransactionId);
 	}
 
 	public TransactionOutput(PublicKey reciepient, BigDecimal value, String parentTransactionId) {

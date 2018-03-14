@@ -55,14 +55,14 @@ public class WalletService {
 	 */
 	public BigDecimal getBalance(String publicKey) throws Exception {
 		PublicKey key = WalletUtil.getPublicKeyFromString(publicKey);
-		TransactionOutput utxo = null;
+		BigDecimal total = BigDecimal.ZERO;
 		DBIterator iterator = chainstateDb.iterator();
 		while (iterator.hasNext()) {
-			utxo = chainstateDb.next(iterator);
+			TransactionOutput utxo = chainstateDb.next(iterator);
 			if (utxo.isMine(key))
-				break;
+				total = utxo.getValue().add(total);
 		}
-		return utxo.getValue();
+		return total;
 	}
 
 	/**

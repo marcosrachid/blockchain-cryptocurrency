@@ -1,7 +1,7 @@
 package com.custom.blockchain;
 
 import static com.custom.blockchain.costants.ChainConstants.TRANSACTION_MEMPOOL;
-import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_BLOCKS_INDEX_DIRECTORY;
+import static com.custom.blockchain.costants.SystemConstants.BLOCKS_DIRECTORY;
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
 import static com.custom.blockchain.properties.BlockchainImutableProperties.GENESIS_TX_ID;
 import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_BLOCK;
@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
-import com.custom.blockchain.data.blockindex.BlockIndexDB;
 import com.custom.blockchain.data.chainstate.ChainstateDB;
 import com.custom.blockchain.network.client.component.ClientManager;
 import com.custom.blockchain.transaction.RewardTransaction;
@@ -55,17 +54,14 @@ public class NodeInit {
 	@Value("${application.blockchain.premined:100}")
 	private BigDecimal premined;
 
-	private BlockIndexDB blockIndexDb;
-
 	private ChainstateDB chainstateDb;
 
 	private ObjectMapper objectMapper;
 
 	private ClientManager clientManagement;
 
-	public NodeInit(final BlockIndexDB blockIndexDb, final ChainstateDB chainstateDb, final ObjectMapper objectMapper,
+	public NodeInit(final ChainstateDB chainstateDb, final ObjectMapper objectMapper,
 			final ClientManager clientManagement) {
-		this.blockIndexDb = blockIndexDb;
 		this.chainstateDb = chainstateDb;
 		this.objectMapper = objectMapper;
 		this.clientManagement = clientManagement;
@@ -81,9 +77,8 @@ public class NodeInit {
 		Security.setProperty("crypto.policy", "unlimited");
 
 		// creating data storage path if not exists
-		File blockIndexes = new File(
-				String.format(OsUtil.getRootDirectory() + LEVEL_DB_BLOCKS_INDEX_DIRECTORY, coinName));
-		blockIndexes.mkdirs();
+		File blocks = new File(String.format(OsUtil.getRootDirectory() + BLOCKS_DIRECTORY, coinName));
+		blocks.mkdirs();
 		File chainstate = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY, coinName));
 		chainstate.mkdirs();
 
@@ -134,8 +129,7 @@ public class NodeInit {
 	private void premined(Wallet owner) {
 		RewardTransaction genesisTransaction = new RewardTransaction(coinbase, premined);
 
-		genesisTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), genesisTransaction.getValue(),
-				genesisTransaction.getTransactionId()));
+		genesisTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), genesisTransaction.getValue()));
 		genesisTransaction.setTransactionId(GENESIS_TX_ID);
 		chainstateDb.put("c" + genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
 		LOG.info("Premined transaction: {}", chainstateDb.get("c" + genesisTransaction.getOutput().getId()));

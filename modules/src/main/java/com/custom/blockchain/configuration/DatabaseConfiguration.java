@@ -1,6 +1,5 @@
 package com.custom.blockchain.configuration;
 
-import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_BLOCKS_INDEX_DIRECTORY;
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
 import static org.iq80.leveldb.impl.Iq80DBFactory.factory;
 
@@ -22,14 +21,6 @@ import com.custom.blockchain.util.OsUtil;
  */
 @Configuration
 public class DatabaseConfiguration {
-
-	@Bean("BlockIndexDB")
-	public DB createBlockIndex(@Value("${application.name}") String coinName) throws IOException {
-		Options options = new Options();
-		return factory.open(
-				new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_BLOCKS_INDEX_DIRECTORY, coinName)),
-				options);
-	}
 
 	@Bean("ChainStateDB")
 	public DB createChainState(@Value("${application.name}") String coinName) throws IOException {
