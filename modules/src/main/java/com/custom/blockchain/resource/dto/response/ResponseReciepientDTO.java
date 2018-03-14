@@ -1,30 +1,24 @@
-package com.custom.blockchain.resource.dto.request;
+package com.custom.blockchain.resource.dto.response;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-
-import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.hibernate.validator.constraints.NotEmpty;
 
-/**
- * 
- * @author marcosrachid
- *
- */
-public class RequestSendFundsDTO implements Serializable {
+public class ResponseReciepientDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@NotEmpty
 	private String reciepientPublicKey;
-
-	@NotNull
 	private BigDecimal value;
+
+	public ResponseReciepientDTO(String reciepientPublicKey, BigDecimal value) {
+		super();
+		this.reciepientPublicKey = reciepientPublicKey;
+		this.value = value;
+	}
 
 	public String getReciepientPublicKey() {
 		return reciepientPublicKey;
@@ -55,7 +49,7 @@ public class RequestSendFundsDTO implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		RequestSendFundsDTO other = (RequestSendFundsDTO) obj;
+		ResponseReciepientDTO other = (ResponseReciepientDTO) obj;
 		return new EqualsBuilder().append(reciepientPublicKey, other.reciepientPublicKey).append(value, other.value)
 				.isEquals();
 	}
@@ -64,12 +58,6 @@ public class RequestSendFundsDTO implements Serializable {
 	public String toString() {
 		return new ToStringBuilder(this).append("reciepientPublicKey", reciepientPublicKey).append("value", value)
 				.build();
-	}
-
-	public static class RequestSendFundsListDTO extends ArrayList<RequestSendFundsDTO> {
-
-		private static final long serialVersionUID = 1L;
-		
 	}
 
 }

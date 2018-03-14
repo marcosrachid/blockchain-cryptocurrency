@@ -3,11 +3,14 @@ package com.custom.blockchain.service;
 import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_WALLET;
 
 import java.math.BigDecimal;
+import java.security.PublicKey;
 
+import org.iq80.leveldb.DBIterator;
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.data.chainstate.ChainstateDB;
 import com.custom.blockchain.transaction.TransactionOutput;
+import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.custom.blockchain.wallet.exception.WalletException;
 
@@ -51,8 +54,15 @@ public class WalletService {
 	 * @throws Exception
 	 */
 	public BigDecimal getBalance(String publicKey) throws Exception {
-		TransactionOutput transactionOutput = chainstateDb.get(publicKey);
-		return transactionOutput.getValue();
+		PublicKey key = WalletUtil.getPublicKeyFromString(publicKey);
+		TransactionOutput utxo = null;
+		DBIterator iterator = chainstateDb.iterator();
+		while (iterator.hasNext()) {
+			utxo = chainstateDb.next(iterator);
+			if (utxo.isMine(key))
+				break;
+		}
+		return utxo.getValue();
 	}
 
 	/**

@@ -1,7 +1,6 @@
 package com.custom.blockchain.transaction;
 
 import java.math.BigDecimal;
-import java.security.PublicKey;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -15,7 +14,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 public abstract class Transaction {
 
 	protected String transactionId;
-	protected PublicKey reciepient;
 	protected BigDecimal value;
 
 	public static int sequence = 0;
@@ -26,14 +24,6 @@ public abstract class Transaction {
 
 	public void setTransactionId(String transactionId) {
 		this.transactionId = transactionId;
-	}
-
-	public PublicKey getReciepient() {
-		return reciepient;
-	}
-
-	public void setReciepient(PublicKey reciepient) {
-		this.reciepient = reciepient;
 	}
 
 	public BigDecimal getValue() {
@@ -58,7 +48,7 @@ public abstract class Transaction {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(transactionId).append(reciepient).append(value).hashCode();
+		return new HashCodeBuilder().append(transactionId).append(value).hashCode();
 	}
 
 	@Override
@@ -75,8 +65,7 @@ public abstract class Transaction {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("transactionId", transactionId).append("reciepient", reciepient)
-				.append("value", value).build();
+		return new ToStringBuilder(this).append("transactionId", transactionId).append("value", value).build();
 	}
 
 }

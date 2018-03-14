@@ -2,11 +2,15 @@ package com.custom.blockchain.handler;
 
 import java.math.BigDecimal;
 import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.resource.dto.request.RequestSendFundsDTO;
+import com.custom.blockchain.resource.dto.response.ResponseReciepientDTO;
 import com.custom.blockchain.resource.dto.response.ResponseTransaction;
+import com.custom.blockchain.resource.dto.response.ResponseTransactions;
 import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.service.WalletService;
 import com.custom.blockchain.transaction.SimpleTransaction;
@@ -31,6 +35,12 @@ public class TransactionHandler {
 		this.walletService = walletService;
 	}
 
+	/**
+	 * 
+	 * @param funds
+	 * @return
+	 * @throws Exception
+	 */
 	public ResponseTransaction sendFunds(RequestSendFundsDTO funds) throws Exception {
 		TransactionUtil.checkTransactionBlocked();
 		Wallet currentWallet = walletService.getCurrentWallet();
@@ -40,6 +50,28 @@ public class TransactionHandler {
 				currentBalance, funds.getValue());
 		return new ResponseTransaction(newTransaction.getTransactionId(),
 				WalletUtil.getStringFromKey(newTransaction.getSender()),
-				WalletUtil.getStringFromKey(newTransaction.getReciepient()), funds.getValue());
+				WalletUtil.getStringFromKey(newTransaction.getOutputs().get(0).getReciepient()), funds.getValue());
+	}
+
+	/**
+	 * 
+	 * @param funds
+	 * @return
+	 * @throws Exception
+	 */
+	public ResponseTransactions sendFunds(RequestSendFundsDTO.RequestSendFundsListDTO funds) throws Exception {
+		TransactionUtil.checkTransactionBlocked();
+		Wallet currentWallet = walletService.getCurrentWallet();
+		BigDecimal currentBalance = walletService.getBalance(WalletUtil.getStringFromKey(currentWallet.getPublicKey()));
+		final List<ResponseReciepientDTO> reciepientList = new ArrayList<>();
+		BigDecimal totalSentFunds = BigDecimal.ZERO;
+		funds.forEach(f -> {
+			reciepientList.add(new ResponseReciepientDTO(f.getReciepientPublicKey(), f.getValue()));
+			totalSentFunds.add(f.getValue());
+		});
+		SimpleTransaction newTransaction = transactionService.sendFunds(currentWallet, currentBalance, totalSentFunds,
+				funds);
+		return new ResponseTransactions(newTransaction.getTransactionId(),
+				WalletUtil.getStringFromKey(newTransaction.getSender()), reciepientList);
 	}
 }

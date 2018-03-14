@@ -3,7 +3,6 @@ package com.custom.blockchain.transaction;
 import static com.custom.blockchain.properties.BlockchainMutableProperties.DIFFICULTY;
 
 import java.math.BigDecimal;
-import java.security.PublicKey;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -17,16 +16,14 @@ public class RewardTransaction extends Transaction {
 
 	private TransactionOutput output;
 
-	public RewardTransaction(String coinbase, PublicKey to, BigDecimal value) {
+	public RewardTransaction(String coinbase, BigDecimal value) {
 		generateCoinbase();
 		coinbase += coinbase;
-		this.reciepient = to;
 		this.value = value;
 	}
 
-	public RewardTransaction(PublicKey to, BigDecimal value) {
+	public RewardTransaction(BigDecimal value) {
 		generateCoinbase();
-		this.reciepient = to;
 		this.value = value;
 	}
 
@@ -62,8 +59,7 @@ public class RewardTransaction extends Transaction {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(transactionId).append(reciepient).append(value).append(coinbase)
-				.append(output).hashCode();
+		return new HashCodeBuilder().append(transactionId).append(value).append(coinbase).append(output).hashCode();
 	}
 
 	@Override
@@ -80,8 +76,8 @@ public class RewardTransaction extends Transaction {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("transactionId", transactionId).append("reciepient", reciepient)
-				.append("value", value).append("coinbase", coinbase).append("output", output).build();
+		return new ToStringBuilder(this).append("transactionId", transactionId).append("value", value)
+				.append("coinbase", coinbase).append("output", output).build();
 	}
 
 }

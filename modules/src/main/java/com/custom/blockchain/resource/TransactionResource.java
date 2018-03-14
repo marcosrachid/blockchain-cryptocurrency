@@ -45,7 +45,21 @@ public class TransactionResource {
 	 * @throws Exception
 	 */
 	@RequestMapping(method = RequestMethod.POST, consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<ResponseDTO> sendFunds(@Valid @RequestBody RequestSendFundsDTO funds) throws Exception {
+	public ResponseEntity<ResponseDTO> sendFunds(@Valid @RequestBody RequestSendFundsDTO fund) throws Exception {
+		LOG.debug(REQUEST, fund);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(APPLICATION_JSON_UTF8)
+				.body(new ResponseDTO(transactionHandler.sendFunds(fund)));
+	}
+
+	/**
+	 * 
+	 * @param funds
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(method = RequestMethod.POST, consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<ResponseDTO> sendFunds(@Valid @RequestBody RequestSendFundsDTO.RequestSendFundsListDTO funds)
+			throws Exception {
 		LOG.debug(REQUEST, funds);
 		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(APPLICATION_JSON_UTF8)
 				.body(new ResponseDTO(transactionHandler.sendFunds(funds)));

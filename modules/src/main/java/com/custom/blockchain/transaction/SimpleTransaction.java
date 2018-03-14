@@ -20,9 +20,8 @@ public class SimpleTransaction extends Transaction implements Serializable {
 	private List<TransactionInput> inputs = new ArrayList<TransactionInput>();
 	private List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
 
-	public SimpleTransaction(PublicKey from, PublicKey to, BigDecimal value, List<TransactionInput> inputs) {
+	public SimpleTransaction(PublicKey from, BigDecimal value, List<TransactionInput> inputs) {
 		this.sender = from;
-		this.reciepient = to;
 		this.value = value;
 		this.inputs = inputs;
 	}
@@ -87,8 +86,8 @@ public class SimpleTransaction extends Transaction implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(transactionId).append(sender).append(reciepient).append(value)
-				.append(signature).append(inputs).append(outputs).hashCode();
+		return new HashCodeBuilder().append(transactionId).append(sender).append(value).append(signature).append(inputs)
+				.append(outputs).hashCode();
 	}
 
 	@Override
@@ -106,8 +105,8 @@ public class SimpleTransaction extends Transaction implements Serializable {
 	@Override
 	public String toString() {
 		return new ToStringBuilder(this).append("transactionId", transactionId).append("sender", sender)
-				.append("reciepient", reciepient).append("value", value).append("signature", signature)
-				.append("inputs", inputs).append("outputs", outputs).build();
+				.append("value", value).append("signature", signature).append("inputs", inputs)
+				.append("outputs", outputs).build();
 	}
 
 }

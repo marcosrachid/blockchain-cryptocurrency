@@ -117,8 +117,8 @@ public class NodeInit {
 			genesisTransaction.setTransactionId(GENESIS_TX_ID);
 			genesisTransaction.setOutput(new TransactionOutput(genesisTransaction.getReciepient(),
 					genesisTransaction.getValue(), genesisTransaction.getTransactionId()));
-			chainstateDb.put(genesisTransaction.getOutput().getReciepient(), genesisTransaction.getOutput());
-			LOG.info("Premined transaction: {}", chainstateDb.get(genesisTransaction.getOutput().getReciepient()));
+			chainstateDb.put("c" + genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
+			LOG.info("Premined transaction: {}", chainstateDb.get("c" + genesisTransaction.getOutput().getId()));
 
 			GENESIS_BLOCK = genesis;
 			PREVIOUS_BLOCK = genesis;
