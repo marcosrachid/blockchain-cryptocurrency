@@ -5,6 +5,8 @@ import java.util.Map.Entry;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
 import org.iq80.leveldb.DBIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +24,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 
+	private static final Logger LOG = LoggerFactory.getLogger(ChainstateDB.class);
+
 	private DB chainstateDb;
 
 	private ObjectMapper objectMapper;
@@ -34,6 +38,7 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 	@Override
 	public TransactionOutput get(String key) {
 		try {
+			LOG.trace("[Crypto] Get - Key: " + key);
 			return objectMapper
 					.readValue(chainstateDb.get(key.getBytes()), TransactionOutput.TransactionOutputSerializable.class)
 					.unserializable();
@@ -44,13 +49,17 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 
 	@Override
 	public void put(String key, String value) {
+		LOG.trace("Add String - Key: " + key + ", Value: " + value);
 		chainstateDb.put(key.getBytes(), value.getBytes());
 	}
 
 	@Override
 	public void put(String key, TransactionOutput value) {
 		try {
-			chainstateDb.put(key.getBytes(), objectMapper.writeValueAsBytes(value.serializable()));
+			LOG.trace("[Crypto] Add - Value before mapper: " + value.serializable());
+			String v = objectMapper.writeValueAsString(value.serializable());
+			LOG.trace("[Crypto] Add Object - Key: " + key + ", Value: " + v);
+			chainstateDb.put(key.getBytes(), v.getBytes());
 		} catch (DBException | JsonProcessingException e) {
 			throw new LevelDBException("Could not put data from key [" + key + "] and TransactionOutput [" + value
 					+ "]: " + e.getMessage());
@@ -59,6 +68,7 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 
 	@Override
 	public void delete(String key) {
+		LOG.trace("[Crypto] Deleted - Key: " + key);
 		chainstateDb.delete(key.getBytes());
 	}
 
@@ -69,8 +79,10 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 
 	@Override
 	public TransactionOutput next(final DBIterator iterator) {
-		Entry<byte[], byte[]> entry = iterator.next();
 		try {
+			Entry<byte[], byte[]> entry = iterator.next();
+			LOG.trace("[Crypto] Current Iterator - Key: " + new String(entry.getKey()) + ", Value: "
+					+ new String(entry.getValue()));
 			return objectMapper.readValue(entry.getValue(), TransactionOutput.TransactionOutputSerializable.class)
 					.unserializable();
 		} catch (Exception e) {
