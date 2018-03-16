@@ -74,7 +74,9 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 
 	@Override
 	public DBIterator iterator() {
-		return chainstateDb.iterator();
+		DBIterator iterator = chainstateDb.iterator();
+		iterator.seekToFirst();
+		return iterator;
 	}
 
 	@Override

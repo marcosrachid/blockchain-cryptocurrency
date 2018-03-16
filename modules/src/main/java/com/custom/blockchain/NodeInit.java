@@ -128,9 +128,9 @@ public class NodeInit {
 	 */
 	private void premined(Wallet owner) {
 		RewardTransaction genesisTransaction = new RewardTransaction(coinbase, premined);
-
-		genesisTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), genesisTransaction.getValue()));
 		genesisTransaction.setTransactionId(GENESIS_TX_ID);
+		genesisTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), genesisTransaction.getValue(),
+				genesisTransaction.getTransactionId()));
 		chainstateDb.put("c" + genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
 		LOG.info("Premined transaction: {}", chainstateDb.get("c" + genesisTransaction.getOutput().getId()));
 	}

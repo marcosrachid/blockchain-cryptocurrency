@@ -3,6 +3,7 @@ package com.custom.blockchain.transaction;
 import static com.custom.blockchain.properties.BlockchainMutableProperties.DIFFICULTY;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -20,6 +21,7 @@ public class RewardTransaction extends Transaction {
 		generateCoinbase();
 		coinbase += coinbase;
 		this.value = value;
+		this.timeStamp = new Date().getTime();
 	}
 
 	public RewardTransaction(BigDecimal value) {
@@ -44,12 +46,6 @@ public class RewardTransaction extends Transaction {
 	}
 
 	@Override
-	public void setTransactionId(String transactionId) {
-		this.transactionId = transactionId;
-		this.output.setParentTransactionId(transactionId);
-	}
-
-	@Override
 	public BigDecimal getInputsValue() {
 		return BigDecimal.ZERO;
 	}
@@ -61,12 +57,14 @@ public class RewardTransaction extends Transaction {
 
 	private void generateCoinbase() {
 		Transaction.sequence++;
-		coinbase = DigestUtil.applySha256(DigestUtil.applySha256(Long.toString(DIFFICULTY) + Transaction.sequence));
+		coinbase = DigestUtil
+				.applySha256(DigestUtil.applySha256(Long.toString(DIFFICULTY) + timeStamp + Transaction.sequence));
 	}
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(transactionId).append(value).append(coinbase).append(output).hashCode();
+		return new HashCodeBuilder().append(transactionId).append(value).append(timeStamp).append(coinbase)
+				.append(output).hashCode();
 	}
 
 	@Override
@@ -84,7 +82,7 @@ public class RewardTransaction extends Transaction {
 	@Override
 	public String toString() {
 		return new ToStringBuilder(this).append("transactionId", transactionId).append("value", value)
-				.append("coinbase", coinbase).append("output", output).build();
+				.append("timeStamp", timeStamp).append("coinbase", coinbase).append("output", output).build();
 	}
 
 }

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -24,6 +25,7 @@ public class SimpleTransaction extends Transaction implements Serializable {
 		this.sender = from;
 		this.value = value;
 		this.inputs = inputs;
+		this.timeStamp = new Date().getTime();
 	}
 
 	public PublicKey getSender() {
@@ -93,15 +95,9 @@ public class SimpleTransaction extends Transaction implements Serializable {
 	}
 
 	@Override
-	public void setTransactionId(String transactionId) {
-		this.transactionId = transactionId;
-		this.outputs.forEach(o -> o.setParentTransactionId(transactionId));
-	}
-
-	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(transactionId).append(sender).append(value).append(signature).append(inputs)
-				.append(outputs).hashCode();
+		return new HashCodeBuilder().append(transactionId).append(sender).append(value).append(timeStamp)
+				.append(signature).append(inputs).append(outputs).hashCode();
 	}
 
 	@Override
@@ -119,8 +115,8 @@ public class SimpleTransaction extends Transaction implements Serializable {
 	@Override
 	public String toString() {
 		return new ToStringBuilder(this).append("transactionId", transactionId).append("sender", sender)
-				.append("value", value).append("signature", signature).append("inputs", inputs)
-				.append("outputs", outputs).build();
+				.append("value", value).append("timeStamp", timeStamp).append("signature", signature)
+				.append("inputs", inputs).append("outputs", outputs).build();
 	}
 
 }

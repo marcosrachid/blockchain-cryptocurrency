@@ -8,8 +8,6 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.signature.exception.SignatureException;
 import com.custom.blockchain.transaction.SimpleTransaction;
-import com.custom.blockchain.transaction.Transaction;
-import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -38,7 +36,6 @@ public class SignatureManager {
 	public void generateSignature(final SimpleTransaction transaction, Wallet wallet) {
 		String data;
 		try {
-			transaction.setTransactionId(calulateHash(transaction));
 			data = WalletUtil.getStringFromKey(transaction.getSender())
 					+ objectMapper.writeValueAsString(transaction.getSerializableOutputs())
 					+ transaction.getValue().setScale(8).toString();
@@ -104,19 +101,6 @@ public class SignatureManager {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	/**
-	 * 
-	 * @param transaction
-	 * @return
-	 * @throws JsonProcessingException
-	 */
-	private String calulateHash(SimpleTransaction transaction) throws JsonProcessingException {
-		Transaction.sequence++;
-		return DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender())
-				+ objectMapper.writeValueAsBytes(transaction.getSerializableOutputs())
-				+ transaction.getValue().setScale(8).toString() + Transaction.sequence);
 	}
 
 }

@@ -21,11 +21,14 @@ import com.custom.blockchain.data.chainstate.ChainstateDB;
 import com.custom.blockchain.resource.dto.request.RequestSendFundsDTO;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.SimpleTransaction;
+import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.transaction.exception.TransactionException;
+import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * 
@@ -70,7 +73,8 @@ public class TransactionService {
 		});
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), value, inputs);
-		newTransaction.getOutputs().add(new TransactionOutput(to, value));
+		newTransaction.setTransactionId(calulateHash(newTransaction));
+		newTransaction.getOutputs().add(new TransactionOutput(to, value, newTransaction.getTransactionId()));
 		signatureManager.generateSignature(newTransaction, from);
 
 		// TODO: change to mempool and process on mining
@@ -101,11 +105,13 @@ public class TransactionService {
 		});
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), totalSentFunds, inputs);
+		newTransaction.setTransactionId(calulateHash(newTransaction));
 		for (RequestSendFundsDTO f : funds) {
 			PublicKey reciepient;
 			try {
 				reciepient = WalletUtil.getPublicKeyFromString(f.getReciepientPublicKey());
-				newTransaction.getOutputs().add(new TransactionOutput(reciepient, f.getValue()));
+				newTransaction.getOutputs()
+						.add(new TransactionOutput(reciepient, f.getValue(), newTransaction.getTransactionId()));
 			} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
 				throw new TransactionException("Invalid reciepient public key [" + f.getReciepientPublicKey() + "]");
 			}
@@ -189,6 +195,18 @@ public class TransactionService {
 				UTXOs.add(UTXO);
 		}
 		return UTXOs;
+	}
+
+	/**
+	 * 
+	 * @param transaction
+	 * @return
+	 * @throws JsonProcessingException
+	 */
+	private String calulateHash(SimpleTransaction transaction) throws JsonProcessingException {
+		Transaction.sequence++;
+		return DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender())
+				+ transaction.getValue().setScale(8).toString() + transaction.getTimeStamp() + Transaction.sequence);
 	}
 
 }

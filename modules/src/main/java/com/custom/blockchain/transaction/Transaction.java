@@ -15,6 +15,7 @@ public abstract class Transaction {
 
 	protected String transactionId;
 	protected BigDecimal value;
+	protected long timeStamp;
 
 	public static int sequence = 0;
 
@@ -22,7 +23,9 @@ public abstract class Transaction {
 		return transactionId;
 	}
 
-	public abstract void setTransactionId(String transactionId);
+	public void setTransactionId(String transactionId) {
+		this.transactionId = transactionId;
+	}
 
 	public BigDecimal getValue() {
 		return value;
@@ -30,6 +33,14 @@ public abstract class Transaction {
 
 	public void setValue(BigDecimal value) {
 		this.value = value;
+	}
+
+	public long getTimeStamp() {
+		return timeStamp;
+	}
+
+	public void setTimeStamp(long timeStamp) {
+		this.timeStamp = timeStamp;
 	}
 
 	/**
