@@ -2,12 +2,9 @@ package com.custom.blockchain.costants;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import com.custom.blockchain.block.Block;
 import com.custom.blockchain.network.peer.Peer;
 import com.custom.blockchain.network.peer.PeerCollection;
-import com.custom.blockchain.transaction.Transaction;
 
 /**
  * 
@@ -16,9 +13,11 @@ import com.custom.blockchain.transaction.Transaction;
  */
 public class ChainConstants {
 
-	public static Set<Block> BLOCKCHAIN = null;
+	public static final Long BLK_DAT_MAX_FILE_SIZE = 134217728L;
 
-	public static Set<Transaction> TRANSACTION_MEMPOOL = null;
+	public static final String GENESIS_TX_ID = "0";
+
+	public static final String GENESIS_PREVIOUS_HASH = "0";
 
 	public static final PeerCollection PEERS = new PeerCollection();
 

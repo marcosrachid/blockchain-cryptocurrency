@@ -1,6 +1,6 @@
 package com.custom.blockchain.util;
 
-import static com.custom.blockchain.properties.BlockchainMutableProperties.BLOCKED;
+import static com.custom.blockchain.NodeStateManagement.BLOCKED;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -7,23 +7,29 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.custom.blockchain.serializers.JsonSerializable;
-import com.custom.blockchain.serializers.JsonUnserializable;
-import com.custom.blockchain.transaction.TransactionOutput.TransactionOutputSerializable;
+import com.custom.blockchain.serializers.PublicKeyDeserializer;
+import com.custom.blockchain.serializers.PublicKeySerializer;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * 
  * @author marcosrachid
  *
  */
-public class TransactionOutput implements JsonUnserializable<TransactionOutputSerializable> {
+public class TransactionOutput {
 
 	private String id;
+	@JsonSerialize(using = PublicKeySerializer.class)
+	@JsonDeserialize(using = PublicKeyDeserializer.class)
 	private PublicKey reciepient;
 	private BigDecimal value;
 	private String parentTransactionId;
+
+	public TransactionOutput() {
+	}
 
 	public TransactionOutput(String id, PublicKey reciepient, BigDecimal value, String parentTransactionId) {
 		this.id = id;
@@ -97,96 +103,6 @@ public class TransactionOutput implements JsonUnserializable<TransactionOutputSe
 	public String toString() {
 		return new ToStringBuilder(this).append("id", id).append("reciepient", reciepient).append("value", value)
 				.append("parentTransactionId", parentTransactionId).build();
-	}
-
-	@Override
-	public TransactionOutputSerializable serializable() {
-		return new TransactionOutputSerializable(id, WalletUtil.getStringFromKey(reciepient), value,
-				parentTransactionId);
-	}
-
-	public static class TransactionOutputSerializable implements JsonSerializable<TransactionOutput> {
-
-		private static final long serialVersionUID = 6623612896188220785L;
-
-		private String id;
-		private String reciepient;
-		private BigDecimal value;
-		private String parentTransactionId;
-
-		public TransactionOutputSerializable() {
-		}
-
-		public TransactionOutputSerializable(String id, String reciepient, BigDecimal value,
-				String parentTransactionId) {
-			super();
-			this.id = id;
-			this.reciepient = reciepient;
-			this.value = value;
-			this.parentTransactionId = parentTransactionId;
-		}
-
-		public String getId() {
-			return id;
-		}
-
-		public void setId(String id) {
-			this.id = id;
-		}
-
-		public String getReciepient() {
-			return reciepient;
-		}
-
-		public void setReciepient(String reciepient) {
-			this.reciepient = reciepient;
-		}
-
-		public BigDecimal getValue() {
-			return value;
-		}
-
-		public void setValue(BigDecimal value) {
-			this.value = value;
-		}
-
-		public String getParentTransactionId() {
-			return parentTransactionId;
-		}
-
-		public void setParentTransactionId(String parentTransactionId) {
-			this.parentTransactionId = parentTransactionId;
-		}
-
-		@Override
-		public TransactionOutput unserializable() throws Exception {
-			return new TransactionOutput(id, WalletUtil.getPublicKeyFromString(reciepient), value, parentTransactionId);
-		}
-
-		@Override
-		public int hashCode() {
-			return new HashCodeBuilder().append(id).append(reciepient).append(value).append(parentTransactionId)
-					.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			TransactionOutput other = (TransactionOutput) obj;
-			return new EqualsBuilder().append(id, other.id).isEquals();
-		}
-
-		@Override
-		public String toString() {
-			return new ToStringBuilder(this).append("id", id).append("reciepient", reciepient).append("value", value)
-					.append("parentTransactionId", parentTransactionId).build();
-		}
-
 	}
 
 }

@@ -21,10 +21,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class PeerService {
 
-	@Value("${application.name:'Rachid Coin'}")
+	@Value("${application.name:'RachidCoin'}")
 	private String coinName;
 
-	public ObjectMapper objectMapper;
+	private ObjectMapper objectMapper;
 
 	public PeerService(final ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;

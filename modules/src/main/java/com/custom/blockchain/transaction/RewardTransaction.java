@@ -1,6 +1,6 @@
 package com.custom.blockchain.transaction;
 
-import static com.custom.blockchain.properties.BlockchainMutableProperties.DIFFICULTY;
+import static com.custom.blockchain.NodeStateManagement.DIFFICULTY;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -18,8 +18,8 @@ public class RewardTransaction extends Transaction {
 	private TransactionOutput output;
 
 	public RewardTransaction(String coinbase, BigDecimal value) {
-		generateCoinbase();
 		coinbase += coinbase;
+		generateCoinbase();
 		this.value = value;
 		this.timeStamp = new Date().getTime();
 	}

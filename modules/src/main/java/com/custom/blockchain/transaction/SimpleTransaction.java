@@ -11,15 +11,30 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import com.custom.blockchain.serializers.PublicKeyDeserializer;
+import com.custom.blockchain.serializers.PublicKeySerializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class SimpleTransaction extends Transaction implements Serializable {
 
 	private static final long serialVersionUID = 7034357259560766328L;
 
+	@JsonSerialize(using = PublicKeySerializer.class)
+	@JsonDeserialize(using = PublicKeyDeserializer.class)
 	private PublicKey sender;
 	private byte[] signature;
 
 	private List<TransactionInput> inputs = new ArrayList<>();
 	private List<TransactionOutput> outputs = new ArrayList<>();
+
+	public SimpleTransaction() {
+	}
 
 	public SimpleTransaction(PublicKey from, BigDecimal value, List<TransactionInput> inputs) {
 		this.sender = from;
@@ -54,14 +69,6 @@ public class SimpleTransaction extends Transaction implements Serializable {
 
 	public List<TransactionOutput> getOutputs() {
 		return outputs;
-	}
-
-	public List<TransactionOutput.TransactionOutputSerializable> getSerializableOutputs() {
-		List<TransactionOutput.TransactionOutputSerializable> serializableList = new ArrayList<>();
-		for (TransactionOutput utxo : outputs) {
-			serializableList.add(utxo.serializable());
-		}
-		return serializableList;
 	}
 
 	public void setOutputs(List<TransactionOutput> outputs) {

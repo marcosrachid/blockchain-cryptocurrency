@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class PeerFinder {
 
-	@Value("${application.name:'Rachid Coin'}")
+	@Value("${application.name:'RachidCoin'}")
 	private String coinName;
 
 	@Value("${application.blockchain.network.maximum-seeds}")

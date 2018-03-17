@@ -1,6 +1,6 @@
 package com.custom.blockchain.block;
 
-import static com.custom.blockchain.properties.BlockchainImutableProperties.GENESIS_PREVIOUS_HASH;
+import static com.custom.blockchain.costants.ChainConstants.GENESIS_PREVIOUS_HASH;
 
 import java.io.Serializable;
 import java.util.ArrayList;

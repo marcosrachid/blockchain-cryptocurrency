@@ -1,12 +1,12 @@
 package com.custom.blockchain;
 
-import static com.custom.blockchain.costants.ChainConstants.TRANSACTION_MEMPOOL;
+import static com.custom.blockchain.block.BlockStateManagement.CURRENT_BLOCK;
+import static com.custom.blockchain.block.BlockStateManagement.GENESIS_BLOCK;
+import static com.custom.blockchain.block.BlockStateManagement.PREVIOUS_BLOCK;
+import static com.custom.blockchain.costants.ChainConstants.GENESIS_TX_ID;
 import static com.custom.blockchain.costants.SystemConstants.BLOCKS_DIRECTORY;
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
-import static com.custom.blockchain.properties.BlockchainImutableProperties.GENESIS_TX_ID;
-import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_BLOCK;
-import static com.custom.blockchain.properties.BlockchainMutableProperties.GENESIS_BLOCK;
-import static com.custom.blockchain.properties.BlockchainMutableProperties.PREVIOUS_BLOCK;
+import static com.custom.blockchain.transaction.component.TransactionMempool.TRANSACTION_MEMPOOL;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -45,7 +45,7 @@ public class NodeInit {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeInit.class);
 
-	@Value("${application.name:'Rachid Coin'}")
+	@Value("${application.name:'RachidCoin'}")
 	private String coinName;
 
 	@Value("${application.blockchain.coinbase:'default'}")

@@ -1,6 +1,6 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_WALLET;
+import static com.custom.blockchain.wallet.WalletStateManagement.CURRENT_WALLET;
 
 import java.math.BigDecimal;
 import java.security.PublicKey;

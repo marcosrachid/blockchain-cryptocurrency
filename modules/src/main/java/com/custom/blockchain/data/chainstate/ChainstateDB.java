@@ -39,9 +39,7 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 	public TransactionOutput get(String key) {
 		try {
 			LOG.trace("[Crypto] Get - Key: " + key);
-			return objectMapper
-					.readValue(chainstateDb.get(key.getBytes()), TransactionOutput.TransactionOutputSerializable.class)
-					.unserializable();
+			return objectMapper.readValue(chainstateDb.get(key.getBytes()), TransactionOutput.class);
 		} catch (Exception e) {
 			throw new LevelDBException("Could not get data from key " + key + ": " + e.getMessage());
 		}
@@ -56,8 +54,8 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 	@Override
 	public void put(String key, TransactionOutput value) {
 		try {
-			LOG.trace("[Crypto] Add - Value before mapper: " + value.serializable());
-			String v = objectMapper.writeValueAsString(value.serializable());
+			LOG.trace("[Crypto] Add - Value before mapper: " + value);
+			String v = objectMapper.writeValueAsString(value);
 			LOG.trace("[Crypto] Add Object - Key: " + key + ", Value: " + v);
 			chainstateDb.put(key.getBytes(), v.getBytes());
 		} catch (DBException | JsonProcessingException e) {
@@ -85,8 +83,7 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 			Entry<byte[], byte[]> entry = iterator.next();
 			LOG.trace("[Crypto] Current Iterator - Key: " + new String(entry.getKey()) + ", Value: "
 					+ new String(entry.getValue()));
-			return objectMapper.readValue(entry.getValue(), TransactionOutput.TransactionOutputSerializable.class)
-					.unserializable();
+			return objectMapper.readValue(entry.getValue(), TransactionOutput.class);
 		} catch (Exception e) {
 			throw new LevelDBException("Could not get data from iterator: " + e.getMessage());
 		}

@@ -1,6 +1,6 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.properties.BlockchainMutableProperties.CURRENT_BLOCK;
+import static com.custom.blockchain.block.BlockStateManagement.CURRENT_BLOCK;
 
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
@@ -24,6 +24,7 @@ import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
+import com.custom.blockchain.transaction.component.TransactionMempool;
 import com.custom.blockchain.transaction.exception.TransactionException;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
@@ -47,9 +48,13 @@ public class TransactionService {
 
 	private SignatureManager signatureManager;
 
-	public TransactionService(final ChainstateDB chainstateDb, final SignatureManager signatureManager) {
+	private TransactionMempool transactionMempool;
+
+	public TransactionService(final ChainstateDB chainstateDb, final SignatureManager signatureManager,
+			final TransactionMempool transactionMempool) {
 		this.chainstateDb = chainstateDb;
 		this.signatureManager = signatureManager;
+		this.transactionMempool = transactionMempool;
 	}
 
 	/**
@@ -77,9 +82,7 @@ public class TransactionService {
 		newTransaction.getOutputs().add(new TransactionOutput(to, value, newTransaction.getTransactionId()));
 		signatureManager.generateSignature(newTransaction, from);
 
-		// TODO: change to mempool and process on mining
-		// TRANSACTION_MEMPOOL.add(newTransaction);
-		addTransaction(newTransaction);
+		transactionMempool.updateMempool(newTransaction);
 
 		return newTransaction;
 	}
@@ -118,9 +121,7 @@ public class TransactionService {
 		}
 		signatureManager.generateSignature(newTransaction, from);
 
-		// TODO: change to mempool and process on mining
-		// TRANSACTION_MEMPOOL.add(newTransaction);
-		addTransaction(newTransaction);
+		transactionMempool.updateMempool(newTransaction);
 
 		return newTransaction;
 	}
@@ -149,7 +150,7 @@ public class TransactionService {
 	 * @return
 	 * @throws TransactionException
 	 */
-	private boolean processTransaction(SimpleTransaction transaction) throws TransactionException {
+	private void processTransaction(SimpleTransaction transaction) throws TransactionException {
 
 		if (signatureManager.verifiySignature(transaction) == false) {
 			throw new TransactionException("Transaction Signature failed to verify");
@@ -177,8 +178,6 @@ public class TransactionService {
 		}
 
 		// TODO remove transaction from mempool
-
-		return true;
 	}
 
 	/**
