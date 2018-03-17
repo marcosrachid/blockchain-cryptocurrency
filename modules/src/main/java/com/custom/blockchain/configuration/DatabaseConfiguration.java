@@ -8,6 +8,8 @@ import java.io.IOException;
 
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.Options;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,11 +24,15 @@ import com.custom.blockchain.util.OsUtil;
 @Configuration
 public class DatabaseConfiguration {
 
+	private static final Logger LOG = LoggerFactory.getLogger(DatabaseConfiguration.class);
+
 	@Bean("ChainStateDB")
 	public DB createChainState(@Value("${application.name}") String coinName) throws IOException {
+		LOG.info("Creating ChainState database connection...");
 		Options options = new Options();
-		return factory.open(
-				new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY, coinName)), options);
+		String path = String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY, coinName);
+		LOG.debug("Path of chainstate leveldb: " + path);
+		return factory.open(new File(path), options);
 	}
 
 }
