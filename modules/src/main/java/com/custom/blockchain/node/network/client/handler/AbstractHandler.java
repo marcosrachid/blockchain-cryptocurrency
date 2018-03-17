@@ -1,4 +1,4 @@
-package com.custom.blockchain.network.client.handler;
+package com.custom.blockchain.node.network.client.handler;
 
 public abstract class AbstractHandler<T> {
 

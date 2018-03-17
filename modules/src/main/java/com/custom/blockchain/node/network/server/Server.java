@@ -1,4 +1,4 @@
-package com.custom.blockchain.network.server;
+package com.custom.blockchain.node.network.server;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -8,7 +8,7 @@ import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.custom.blockchain.network.peer.Peer;
+import com.custom.blockchain.node.network.peer.Peer;
 
 public class Server extends DatagramSocket {
 

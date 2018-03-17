@@ -1,4 +1,4 @@
-package com.custom.blockchain.network.client.component;
+package com.custom.blockchain.node.network.client.component;
 
 import static com.custom.blockchain.costants.ChainConstants.PEERS;
 import static com.custom.blockchain.costants.ChainConstants.PEERS_STATUS;
@@ -9,10 +9,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.network.client.Client;
-import com.custom.blockchain.network.peer.Peer;
-import com.custom.blockchain.network.peer.PeerIterator;
-import com.custom.blockchain.network.peer.component.PeerFinder;
+import com.custom.blockchain.node.network.client.Client;
+import com.custom.blockchain.node.network.peer.Peer;
+import com.custom.blockchain.node.network.peer.PeerIterator;
+import com.custom.blockchain.node.network.peer.component.PeerFinder;
 
 @Component
 public class ClientManager {

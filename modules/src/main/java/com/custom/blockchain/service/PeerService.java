@@ -8,8 +8,8 @@ import java.io.IOException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.custom.blockchain.network.peer.Peer;
-import com.custom.blockchain.network.peer.exception.PeerException;
+import com.custom.blockchain.node.network.peer.Peer;
+import com.custom.blockchain.node.network.peer.exception.PeerException;
 import com.custom.blockchain.util.FileUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

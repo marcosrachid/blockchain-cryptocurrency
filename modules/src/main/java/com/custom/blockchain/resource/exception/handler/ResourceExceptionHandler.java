@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.custom.blockchain.block.exception.BlockException;
-import com.custom.blockchain.network.peer.exception.PeerException;
+import com.custom.blockchain.node.network.peer.exception.PeerException;
 import com.custom.blockchain.resource.dto.response.ResponseDTO;
 import com.custom.blockchain.resource.dto.response.ResponseDTO.ResponseDTOBuilder;
 import com.custom.blockchain.resource.dto.response.ResponseErrorsDTO;

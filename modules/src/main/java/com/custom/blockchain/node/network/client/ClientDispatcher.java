@@ -1,6 +1,6 @@
-package com.custom.blockchain.network.client;
+package com.custom.blockchain.node.network.client;
 
-import com.custom.blockchain.network.Messages;
+import com.custom.blockchain.node.network.Messages;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
 

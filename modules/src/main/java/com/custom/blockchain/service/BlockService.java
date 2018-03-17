@@ -1,6 +1,6 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.NodeStateManagement.DIFFICULTY;
+import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

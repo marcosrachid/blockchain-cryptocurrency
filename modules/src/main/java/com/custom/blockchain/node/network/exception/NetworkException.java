@@ -1,4 +1,4 @@
-package com.custom.blockchain.network.exception;
+package com.custom.blockchain.node.network.exception;
 
 /**
  * 

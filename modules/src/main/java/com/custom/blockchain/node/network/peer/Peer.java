@@ -1,4 +1,4 @@
-package com.custom.blockchain.network.peer;
+package com.custom.blockchain.node.network.peer;
 
 import java.io.Serializable;
 

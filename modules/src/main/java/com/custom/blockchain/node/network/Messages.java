@@ -1,6 +1,6 @@
-package com.custom.blockchain.network;
+package com.custom.blockchain.node.network;
 
-import com.custom.blockchain.network.exception.NetworkException;
+import com.custom.blockchain.node.network.exception.NetworkException;
 
 public enum Messages {
 

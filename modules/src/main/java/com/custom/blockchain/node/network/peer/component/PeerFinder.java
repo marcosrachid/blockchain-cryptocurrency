@@ -1,4 +1,4 @@
-package com.custom.blockchain.network.peer.component;
+package com.custom.blockchain.node.network.peer.component;
 
 import static com.custom.blockchain.costants.ChainConstants.PEERS;
 import static com.custom.blockchain.costants.ChainConstants.PEERS_STATUS;
@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.network.exception.NetworkException;
-import com.custom.blockchain.network.peer.Peer;
+import com.custom.blockchain.node.network.exception.NetworkException;
+import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.util.FileUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

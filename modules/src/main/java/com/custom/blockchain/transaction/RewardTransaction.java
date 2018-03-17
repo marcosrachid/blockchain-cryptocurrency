@@ -1,6 +1,6 @@
 package com.custom.blockchain.transaction;
 
-import static com.custom.blockchain.NodeStateManagement.DIFFICULTY;
+import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY;
 
 import java.math.BigDecimal;
 import java.util.Date;

@@ -3,8 +3,8 @@ package com.custom.blockchain.costants;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.custom.blockchain.network.peer.Peer;
-import com.custom.blockchain.network.peer.PeerCollection;
+import com.custom.blockchain.node.network.peer.Peer;
+import com.custom.blockchain.node.network.peer.PeerCollection;
 
 /**
  * 

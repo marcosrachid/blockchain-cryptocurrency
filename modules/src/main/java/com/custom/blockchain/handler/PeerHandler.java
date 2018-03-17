@@ -2,7 +2,7 @@ package com.custom.blockchain.handler;
 
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.network.peer.exception.PeerException;
+import com.custom.blockchain.node.network.peer.exception.PeerException;
 import com.custom.blockchain.resource.dto.request.RequestPeerImportDTO;
 import com.custom.blockchain.service.PeerService;
 
