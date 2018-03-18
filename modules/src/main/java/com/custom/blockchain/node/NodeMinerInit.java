@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
+import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.chainstate.ChainstateDB;
 import com.custom.blockchain.node.network.client.component.ClientManager;
 import com.custom.blockchain.transaction.Transaction;
@@ -37,8 +38,9 @@ public class NodeMinerInit extends AbstractNode {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeMinerInit.class);
 
-	public NodeMinerInit(final ChainstateDB chainstateDb, final ObjectMapper objectMapper,
-			final ClientManager clientManagement) {
+	public NodeMinerInit(final BlockchainProperties blockchainProperties, final ChainstateDB chainstateDb,
+			final ObjectMapper objectMapper, final ClientManager clientManagement) {
+		this.blockchainProperties = blockchainProperties;
 		this.chainstateDb = chainstateDb;
 		this.objectMapper = objectMapper;
 		this.clientManagement = clientManagement;
@@ -55,9 +57,11 @@ public class NodeMinerInit extends AbstractNode {
 		Security.setProperty("crypto.policy", "unlimited");
 
 		// creating data storage path if not exists
-		File blocks = new File(String.format(OsUtil.getRootDirectory() + BLOCKS_DIRECTORY, coinName));
+		File blocks = new File(
+				String.format(OsUtil.getRootDirectory() + BLOCKS_DIRECTORY, blockchainProperties.getCoinName()));
 		blocks.mkdirs();
-		File chainstate = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY, coinName));
+		File chainstate = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY,
+				blockchainProperties.getCoinName()));
 		chainstate.mkdirs();
 
 		// start thread for searching blocks and transactions
@@ -65,18 +69,17 @@ public class NodeMinerInit extends AbstractNode {
 		this.clientManagement.searchActions();
 
 		// read current Transaction mempool
-		TRANSACTION_MEMPOOL = objectMapper.readValue(FileUtil.readUnminedTransaction(coinName),
+		TRANSACTION_MEMPOOL = objectMapper.readValue(
+				FileUtil.readUnminedTransaction(blockchainProperties.getCoinName()),
 				new TypeReference<Set<Transaction>>() {
 				});
 
 		// load node services for a miner
-		NodeStateManagement.services.add(Service.RECEIVE_BLOCKS);
-		NodeStateManagement.services.add(Service.SEND_BLOCKS);
-		NodeStateManagement.services.add(Service.RECEIVE_TRANSACTIONS);
+		loadServices();
 
-		if (!FileUtil.isBlockchainStarted(coinName)) {
+		if (!FileUtil.isBlockchainStarted(blockchainProperties.getCoinName())) {
 			LOG.info("[Crypto] Starting first block on Blockchain");
-			Block genesis = BlockFactory.getGenesisBlock(coinName);
+			Block genesis = BlockFactory.getGenesisBlock(blockchainProperties.getCoinName());
 			Wallet owner = new Wallet();
 
 			logKeys(owner);
@@ -85,6 +88,13 @@ public class NodeMinerInit extends AbstractNode {
 		} else {
 			LOG.info("[Crypto] Blockchain already");
 		}
+	}
+
+	@Override
+	protected void loadServices() {
+		NodeStateManagement.SERVICES.add(Service.RECEIVE_BLOCKS);
+		NodeStateManagement.SERVICES.add(Service.SEND_BLOCKS);
+		NodeStateManagement.SERVICES.add(Service.RECEIVE_TRANSACTIONS);
 	}
 
 }

@@ -13,10 +13,10 @@ import java.util.List;
 import org.iq80.leveldb.DBIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.Block;
+import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.chainstate.ChainstateDB;
 import com.custom.blockchain.resource.dto.request.RequestSendFundsDTO;
 import com.custom.blockchain.signature.SignatureManager;
@@ -41,8 +41,7 @@ public class TransactionService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(TransactionService.class);
 
-	@Value("${application.blockchain.minimun.transaction}")
-	private BigDecimal minimunTransaction;
+	private BlockchainProperties blockchainProperties;
 
 	private ChainstateDB chainstateDb;
 
@@ -50,8 +49,9 @@ public class TransactionService {
 
 	private TransactionMempool transactionMempool;
 
-	public TransactionService(final ChainstateDB chainstateDb, final SignatureManager signatureManager,
-			final TransactionMempool transactionMempool) {
+	public TransactionService(final BlockchainProperties blockchainProperties, final ChainstateDB chainstateDb,
+			final SignatureManager signatureManager, final TransactionMempool transactionMempool) {
+		this.blockchainProperties = blockchainProperties;
 		this.chainstateDb = chainstateDb;
 		this.signatureManager = signatureManager;
 		this.transactionMempool = transactionMempool;
@@ -160,7 +160,7 @@ public class TransactionService {
 			i.setUnspentTransactionOutput(chainstateDb.get("c" + i.getTransactionOutputId()));
 		}
 
-		if (transaction.getInputsValue().compareTo(minimunTransaction) < 0) {
+		if (transaction.getInputsValue().compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
 			throw new TransactionException("Transaction Inputs too small: " + transaction.getInputsValue());
 		}
 

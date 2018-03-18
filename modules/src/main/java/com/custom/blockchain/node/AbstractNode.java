@@ -5,14 +5,12 @@ import static com.custom.blockchain.block.BlockStateManagement.GENESIS_BLOCK;
 import static com.custom.blockchain.block.BlockStateManagement.PREVIOUS_BLOCK;
 import static com.custom.blockchain.costants.ChainConstants.GENESIS_TX_ID;
 
-import java.math.BigDecimal;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
+import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.chainstate.ChainstateDB;
 import com.custom.blockchain.node.network.client.component.ClientManager;
 import com.custom.blockchain.transaction.RewardTransaction;
@@ -26,14 +24,7 @@ public abstract class AbstractNode {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractNode.class);
 
-	@Value("${application.name:'RachidCoin'}")
-	protected String coinName;
-
-	@Value("${application.blockchain.coinbase:'default'}")
-	protected String coinbase;
-
-	@Value("${application.blockchain.premined:100}")
-	protected BigDecimal premined;
+	protected BlockchainProperties blockchainProperties;
 
 	protected ChainstateDB chainstateDb;
 
@@ -42,6 +33,8 @@ public abstract class AbstractNode {
 	protected ClientManager clientManagement;
 
 	public abstract void startBlocks() throws Exception;
+
+	protected abstract void loadServices();
 
 	/**
 	 * 
@@ -66,7 +59,8 @@ public abstract class AbstractNode {
 	 * @param owner
 	 */
 	protected void premined(Wallet owner) {
-		RewardTransaction genesisTransaction = new RewardTransaction(coinbase, premined);
+		RewardTransaction genesisTransaction = new RewardTransaction(blockchainProperties.getCoinbase(),
+				blockchainProperties.getPremined());
 		genesisTransaction.setTransactionId(GENESIS_TX_ID);
 		genesisTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), genesisTransaction.getValue(),
 				genesisTransaction.getTransactionId()));

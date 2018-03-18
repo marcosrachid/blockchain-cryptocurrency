@@ -14,6 +14,6 @@ public class NodeStateManagement {
 
 	public static boolean BLOCKED = false;
 
-	public static Set<Service> services = new HashSet<>();
+	public static final Set<Service> SERVICES = new HashSet<>();
 
 }

@@ -27,7 +27,7 @@ public class DatabaseConfiguration {
 	private static final Logger LOG = LoggerFactory.getLogger(DatabaseConfiguration.class);
 
 	@Bean("ChainStateDB")
-	public DB createChainState(@Value("${application.name}") String coinName) throws IOException {
+	public DB createChainState(@Value("${application.blockchain.coinName}") String coinName) throws IOException {
 		LOG.info("Creating ChainState database connection...");
 		Options options = new Options();
 		String path = String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY, coinName);

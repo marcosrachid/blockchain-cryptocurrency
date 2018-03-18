@@ -1,16 +1,18 @@
 package com.custom.blockchain.node.network.peer.component;
 
-import static com.custom.blockchain.costants.ChainConstants.PEERS;
-import static com.custom.blockchain.costants.ChainConstants.PEERS_STATUS;
+import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
+import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.util.FileUtil;
@@ -25,15 +27,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class PeerFinder {
 
-	@Value("${application.name:'RachidCoin'}")
-	private String coinName;
-
-	@Value("${application.blockchain.network.maximum-seeds}")
-	private Integer maximumSeeds;
+	private BlockchainProperties blockchainProperties;
 
 	public ObjectMapper objectMapper;
 
-	public PeerFinder(final ObjectMapper objectMapper) {
+	public PeerFinder(final BlockchainProperties blockchainProperties, final ObjectMapper objectMapper) {
+		this.blockchainProperties = blockchainProperties;
 		this.objectMapper = objectMapper;
 	}
 
@@ -44,6 +43,7 @@ public class PeerFinder {
 		findFromFile();
 		findFromDNS();
 		findFromPeers();
+		findMockedPeers();
 	}
 
 	/**
@@ -54,8 +54,9 @@ public class PeerFinder {
 			return;
 		List<Peer> filePeers;
 		try {
-			filePeers = objectMapper.readValue(FileUtil.readPeer(coinName), new TypeReference<List<Peer>>() {
-			});
+			filePeers = objectMapper.readValue(FileUtil.readPeer(blockchainProperties.getCoinName()),
+					new TypeReference<List<Peer>>() {
+					});
 			for (Peer peer : new ArrayList<Peer>(filePeers)) {
 				if (PEERS_STATUS.containsKey(peer) && !PEERS_STATUS.get(peer))
 					filePeers.remove(peer);
@@ -64,7 +65,7 @@ public class PeerFinder {
 			throw new NetworkException("Could not read peers data: " + e.getMessage());
 		}
 		for (Peer peer : filePeers) {
-			PEERS.addPeer(peer);
+			addPeer(peer);
 		}
 
 	}
@@ -87,11 +88,42 @@ public class PeerFinder {
 
 	/**
 	 * 
+	 */
+	private void findMockedPeers() {
+		if (isPeerConnectionsFull())
+			return;
+		for (String p : blockchainProperties.getNetworkMockedPeers()) {
+			try {
+				addPeer(objectMapper.readValue(p, Peer.class));
+			} catch (IOException e) {
+				throw new NetworkException("Could not read peers data: " + e.getMessage());
+			}
+		}
+	}
+
+	/**
+	 * 
 	 * @return
 	 */
 	private boolean isPeerConnectionsFull() {
 		return PEERS_STATUS.values().stream().filter(v -> v.equals(true)).collect(Collectors.toList())
-				.size() >= maximumSeeds;
+				.size() >= blockchainProperties.getNetworkMaximumSeeds();
+	}
+
+	/**
+	 * 
+	 * @param peer
+	 */
+	private void addPeer(Peer peer) {
+		InetAddress hostname;
+		try {
+			hostname = InetAddress.getByName(peer.getIp());
+			if (!hostname.equals(InetAddress.getLocalHost())) {
+				PEERS.add(peer);
+			}
+		} catch (UnknownHostException e) {
+			throw new NetworkException("Could read peer " + peer.getIp() + " as an InetAddress");
+		}
 	}
 
 }

@@ -54,7 +54,6 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 	@Override
 	public void put(String key, TransactionOutput value) {
 		try {
-			LOG.trace("[Crypto] Add - Value before mapper: " + value);
 			String v = objectMapper.writeValueAsString(value);
 			LOG.trace("[Crypto] Add Object - Key: " + key + ", Value: " + v);
 			chainstateDb.put(key.getBytes(), v.getBytes());

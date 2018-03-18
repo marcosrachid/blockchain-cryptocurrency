@@ -166,7 +166,7 @@
 
 	<profiles>
 		<profile>
-			<id>node</id>
+			<id>wallet</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>

@@ -1,18 +1,15 @@
 package com.custom.blockchain.node.network.client;
 
-import static com.custom.blockchain.costants.ChainConstants.PEERS_STATUS;
+import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.custom.blockchain.node.Service;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.util.StringUtil;
 
@@ -21,8 +18,6 @@ public class Client implements Runnable {
 	private static final Logger LOG = LoggerFactory.getLogger(Client.class);
 
 	private Peer peer;
-	
-	private List<Service> services = new ArrayList<>();
 
 	public Client(Peer peer) {
 		this.peer = peer;

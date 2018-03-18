@@ -14,18 +14,18 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
 public class JacksonConfiguration {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(JacksonConfiguration.class);
-	
+
 	@Bean
-    @Primary
-    public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
+	@Primary
+	public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
 		LOG.info("Creating ObjectMapper bean...");
-        ObjectMapper objectMapper = builder.createXmlMapper(false).build();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        objectMapper.configure(Feature.AUTO_CLOSE_SOURCE, true);
-        return objectMapper;
-    }
+		ObjectMapper objectMapper = builder.createXmlMapper(false).build();
+		objectMapper.registerModule(new JavaTimeModule());
+		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+		objectMapper.configure(Feature.AUTO_CLOSE_SOURCE, true);
+		return objectMapper;
+	}
 
 }

@@ -1,11 +1,5 @@
 package com.custom.blockchain.costants;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.custom.blockchain.node.network.peer.Peer;
-import com.custom.blockchain.node.network.peer.PeerCollection;
-
 /**
  * 
  * @author marcosrachid
@@ -18,9 +12,5 @@ public class ChainConstants {
 	public static final String GENESIS_TX_ID = "0";
 
 	public static final String GENESIS_PREVIOUS_HASH = "0";
-
-	public static final PeerCollection PEERS = new PeerCollection();
-
-	public static final Map<Peer, Boolean> PEERS_STATUS = new HashMap<>();
 
 }

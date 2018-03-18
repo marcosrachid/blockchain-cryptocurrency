@@ -24,7 +24,7 @@ public class Block implements Serializable {
 	private static final long serialVersionUID = 3050609047223755104L;
 
 	private boolean genesis = false;
-	private long blockNumber;
+	private long height;
 	private String hash;
 	private String previousHash;
 	private String merkleRoot;
@@ -35,14 +35,14 @@ public class Block implements Serializable {
 	public Block() {
 		super();
 		this.genesis = true;
-		this.blockNumber = 1L;
+		this.height = 1L;
 		this.timeStamp = new Date().getTime();
 		calculateHash();
 	}
 
 	public Block(Block previousBlock) {
 		super();
-		this.blockNumber = previousBlock.getBlockNumber() + 1;
+		this.height = previousBlock.getBlockNumber() + 1;
 		this.previousHash = previousBlock.getHash();
 		this.timeStamp = new Date().getTime();
 		calculateHash();
@@ -57,11 +57,11 @@ public class Block implements Serializable {
 	}
 
 	public long getBlockNumber() {
-		return blockNumber;
+		return height;
 	}
 
 	public void setBlockNumber(long blockNumber) {
-		this.blockNumber = blockNumber;
+		this.height = blockNumber;
 	}
 
 	public String getHash() {
@@ -122,7 +122,7 @@ public class Block implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(blockNumber).append(hash).append(merkleRoot).append(nonce)
+		return new HashCodeBuilder().append(height).append(hash).append(merkleRoot).append(nonce)
 				.append(getPreviousHash()).append(timeStamp).append(transactions).hashCode();
 	}
 
@@ -140,7 +140,7 @@ public class Block implements Serializable {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("blockNumber", blockNumber).append("hash", hash)
+		return new ToStringBuilder(this).append("blockNumber", height).append("hash", hash)
 				.append("merkleRoot", merkleRoot).append("nonce", nonce).append("previousHash", getPreviousHash())
 				.append("timeStamp", timeStamp).append("transactions", transactions).build();
 	}

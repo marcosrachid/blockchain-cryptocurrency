@@ -1,44 +1,44 @@
 package com.custom.blockchain.node.network.client.component;
 
-import static com.custom.blockchain.costants.ChainConstants.PEERS;
-import static com.custom.blockchain.costants.ChainConstants.PEERS_STATUS;
+import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
+import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 
+import java.util.Iterator;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.node.network.client.Client;
 import com.custom.blockchain.node.network.peer.Peer;
-import com.custom.blockchain.node.network.peer.PeerIterator;
 import com.custom.blockchain.node.network.peer.component.PeerFinder;
 
 @Component
 public class ClientManager {
 
-	@Value("${application.blockchain.network.maximum-seeds}")
-	private Integer maximumSeeds;
-
 	private static Thread thread;
+
+	private BlockchainProperties blockchainProperties;
 
 	private PeerFinder peerFinder;
 
-	public ClientManager(final PeerFinder peerFinder) {
+	public ClientManager(final BlockchainProperties blockchainProperties, final PeerFinder peerFinder) {
+		this.blockchainProperties = blockchainProperties;
 		this.peerFinder = peerFinder;
 	}
 
 	@Scheduled(fixedRate = 300000)
 	public void searchActions() {
-		if (getConnectedPeersNumber() >= maximumSeeds) {
+		if (getConnectedPeersNumber() >= blockchainProperties.getNetworkMaximumSeeds()) {
 			return;
 		}
 
 		Runnable runnable = () -> {
 			this.peerFinder.findPeers();
 
-			PeerIterator iterator = PEERS.iterator();
-			while (iterator.hasNext() && getConnectedPeersNumber() < maximumSeeds) {
+			Iterator<Peer> iterator = PEERS.iterator();
+			while (iterator.hasNext() && getConnectedPeersNumber() < blockchainProperties.getNetworkMaximumSeeds()) {
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e) {

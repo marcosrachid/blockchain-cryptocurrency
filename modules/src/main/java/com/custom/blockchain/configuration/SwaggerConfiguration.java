@@ -32,20 +32,15 @@ public class SwaggerConfiguration {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SwaggerConfiguration.class);
 
-	@Value("${application.name}")
-	private String title;
-
-	@Value("${application.version}")
-	private String version;
-
 	/**
 	 * 
 	 * @return SPB Docket
 	 */
 	@Bean
-	public Docket v1Api() {
+	public Docket v1Api(@Value("${application.blockchain.coinName}") String title,
+			@Value("${application.blockchain.version}") String version) {
 		LOG.info("Creating swagger bean...");
-		return new Docket(DocumentationType.SWAGGER_2).groupName("1").apiInfo(apiInfo())
+		return new Docket(DocumentationType.SWAGGER_2).groupName("1").apiInfo(apiInfo(title, version))
 				.useDefaultResponseMessages(false)
 				.globalResponseMessage(org.springframework.web.bind.annotation.RequestMethod.POST, getMessages())
 				.securitySchemes(newArrayList(apiKey())).securityContexts(newArrayList(securityContext())).select()
@@ -105,7 +100,7 @@ public class SwaggerConfiguration {
 	 * 
 	 * @return created ApiInfo
 	 */
-	private ApiInfo apiInfo() {
+	private ApiInfo apiInfo(String title, String version) {
 		return new ApiInfoBuilder().title(title).description("").version(version).build();
 	}
 }
