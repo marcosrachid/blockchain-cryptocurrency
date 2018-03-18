@@ -1,21 +1,24 @@
-package com.custom.blockchain.node.network.client.component;
+package com.custom.blockchain.node.network.component;
 
-import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
+import static com.custom.blockchain.node.NodeStateManagement.LISTENING;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 
-import java.util.Iterator;
 import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.node.network.client.Client;
-import com.custom.blockchain.node.network.peer.Peer;
+import com.custom.blockchain.node.network.peer.component.Peer2Peer;
 import com.custom.blockchain.node.network.peer.component.PeerFinder;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @Component
-public class ClientManager {
+public class NetworkManager {
 
 	private static Thread thread;
 
@@ -23,39 +26,45 @@ public class ClientManager {
 
 	private PeerFinder peerFinder;
 
-	public ClientManager(final BlockchainProperties blockchainProperties, final PeerFinder peerFinder) {
+	private Peer2Peer peer2peer;
+
+	public NetworkManager(final BlockchainProperties blockchainProperties, final PeerFinder peerFinder,
+			final Peer2Peer peer2peer) {
 		this.blockchainProperties = blockchainProperties;
 		this.peerFinder = peerFinder;
+		this.peer2peer = peer2peer;
 	}
 
+	/**
+	 * 
+	 */
 	@Scheduled(fixedRate = 300000)
-	public void searchActions() {
+	public void searchPeers() {
 		if (getConnectedPeersNumber() >= blockchainProperties.getNetworkMaximumSeeds()) {
 			return;
 		}
 
 		Runnable runnable = () -> {
 			this.peerFinder.findPeers();
-
-			Iterator<Peer> iterator = PEERS.iterator();
-			while (iterator.hasNext() && getConnectedPeersNumber() < blockchainProperties.getNetworkMaximumSeeds()) {
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-				}
-				Peer peer = iterator.next();
-				if (!PEERS_STATUS.containsKey(peer)) {
-					Client client = new Client(peer);
-					Thread thread = new Thread(client);
-					thread.start();
-				}
-			}
 		};
 
 		thread = new Thread(runnable);
 		thread.start();
 	}
 
+	/**
+	 * 
+	 */
+	@Scheduled(fixedRate = 60000)
+	public void startServer() {
+		if (!LISTENING)
+			this.peer2peer.listen();
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
 	private int getConnectedPeersNumber() {
 		return PEERS_STATUS.values().stream().filter(v -> v.equals(true)).collect(Collectors.toList()).size();
 	}

@@ -18,8 +18,9 @@ import org.springframework.stereotype.Component;
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.chainstate.ChainstateDB;
-import com.custom.blockchain.node.network.client.component.ClientManager;
+import com.custom.blockchain.data.ChainstateDB;
+import com.custom.blockchain.node.network.Service;
+import com.custom.blockchain.node.network.component.NetworkManager;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.util.FileUtil;
 import com.custom.blockchain.util.OsUtil;
@@ -39,11 +40,11 @@ public class NodeMinerInit extends AbstractNode {
 	private static final Logger LOG = LoggerFactory.getLogger(NodeMinerInit.class);
 
 	public NodeMinerInit(final BlockchainProperties blockchainProperties, final ChainstateDB chainstateDb,
-			final ObjectMapper objectMapper, final ClientManager clientManagement) {
+			final ObjectMapper objectMapper, final NetworkManager networkManagement) {
 		this.blockchainProperties = blockchainProperties;
 		this.chainstateDb = chainstateDb;
 		this.objectMapper = objectMapper;
-		this.clientManagement = clientManagement;
+		this.networkManagement = networkManagement;
 	}
 
 	/**
@@ -66,7 +67,8 @@ public class NodeMinerInit extends AbstractNode {
 
 		// start thread for searching blocks and transactions
 		LOG.info("[Crypto] Starting peer and actions searching thread...");
-		this.clientManagement.searchActions();
+		this.networkManagement.searchPeers();
+		this.networkManagement.startServer();
 
 		// read current Transaction mempool
 		TRANSACTION_MEMPOOL = objectMapper.readValue(
@@ -92,9 +94,10 @@ public class NodeMinerInit extends AbstractNode {
 
 	@Override
 	protected void loadServices() {
-		NodeStateManagement.SERVICES.add(Service.RECEIVE_BLOCKS);
-		NodeStateManagement.SERVICES.add(Service.SEND_BLOCKS);
-		NodeStateManagement.SERVICES.add(Service.RECEIVE_TRANSACTIONS);
+		NodeStateManagement.SERVICES.add(Service.GET_STATE);
+		NodeStateManagement.SERVICES.add(Service.GET_BLOCK);
+		NodeStateManagement.SERVICES.add(Service.GET_PEERS);
+		NodeStateManagement.SERVICES.add(Service.GET_TRANSACTIONS);
 	}
 
 }

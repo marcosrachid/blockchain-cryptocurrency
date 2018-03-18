@@ -28,10 +28,10 @@ public class DatabaseConfiguration {
 
 	@Bean("ChainStateDB")
 	public DB createChainState(@Value("${application.blockchain.coinName}") String coinName) throws IOException {
-		LOG.info("Creating ChainState database connection...");
+		LOG.info("[Crypto] Creating ChainState database connection...");
 		Options options = new Options();
 		String path = String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY, coinName);
-		LOG.debug("Path of chainstate leveldb: " + path);
+		LOG.debug("[Crypto] Path of chainstate leveldb: " + path);
 		return factory.open(new File(path), options);
 	}
 

@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.chainstate.ChainstateDB;
+import com.custom.blockchain.data.ChainstateDB;
 import com.custom.blockchain.resource.dto.request.RequestSendFundsDTO;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.SimpleTransaction;

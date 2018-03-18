@@ -39,7 +39,7 @@ public class SwaggerConfiguration {
 	@Bean
 	public Docket v1Api(@Value("${application.blockchain.coinName}") String title,
 			@Value("${application.blockchain.version}") String version) {
-		LOG.info("Creating swagger bean...");
+		LOG.info("[Crypto] Creating swagger bean...");
 		return new Docket(DocumentationType.SWAGGER_2).groupName("1").apiInfo(apiInfo(title, version))
 				.useDefaultResponseMessages(false)
 				.globalResponseMessage(org.springframework.web.bind.annotation.RequestMethod.POST, getMessages())

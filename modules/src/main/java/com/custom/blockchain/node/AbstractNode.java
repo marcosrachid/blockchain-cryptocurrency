@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.chainstate.ChainstateDB;
-import com.custom.blockchain.node.network.client.component.ClientManager;
+import com.custom.blockchain.data.ChainstateDB;
+import com.custom.blockchain.node.network.component.NetworkManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.StringUtil;
@@ -30,7 +30,7 @@ public abstract class AbstractNode {
 
 	protected ObjectMapper objectMapper;
 
-	protected ClientManager clientManagement;
+	protected NetworkManager networkManagement;
 
 	public abstract void startBlocks() throws Exception;
 

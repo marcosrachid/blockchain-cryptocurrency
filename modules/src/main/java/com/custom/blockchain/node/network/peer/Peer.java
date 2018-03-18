@@ -8,7 +8,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.custom.blockchain.node.Service;
+import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.serializers.PeerDeserializer;
 import com.custom.blockchain.serializers.PeerSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

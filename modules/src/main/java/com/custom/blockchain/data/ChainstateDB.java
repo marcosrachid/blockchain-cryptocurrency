@@ -1,4 +1,4 @@
-package com.custom.blockchain.data.chainstate;
+package com.custom.blockchain.data;
 
 import java.util.Map.Entry;
 
@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.data.AbstractLevelDB;
 import com.custom.blockchain.data.exception.LevelDBException;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -47,7 +46,7 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 
 	@Override
 	public void put(String key, String value) {
-		LOG.trace("Add String - Key: " + key + ", Value: " + value);
+		LOG.trace("[Crypto] Add String - Key: " + key + ", Value: " + value);
 		chainstateDb.put(key.getBytes(), value.getBytes());
 	}
 

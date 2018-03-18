@@ -53,4 +53,20 @@ public class PeerService {
 		}
 	}
 
+	public void addPeer(Peer peer) throws PeerException {
+		if (PEERS.contains(peer) && PEERS_STATUS.containsKey(peer) && PEERS_STATUS.get(peer)) {
+			throw new PeerException(String.format("Peer %s is already registered on peer's list", peer));
+		}
+		if (PEERS.contains(peer) && !PEERS_STATUS.containsKey(peer)) {
+			throw new PeerException(String.format("Peer %s is on queue to try a connection", peer));
+		}
+		PEERS.add(peer);
+		PEERS_STATUS.remove(peer);
+		try {
+			FileUtil.addPeer(blockchainProperties.getCoinName(), this.objectMapper.writeValueAsString(PEERS));
+		} catch (IOException e) {
+			throw new PeerException("It was not possible deserialize peer request");
+		}
+	}
+
 }
