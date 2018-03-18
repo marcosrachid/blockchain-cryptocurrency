@@ -18,8 +18,8 @@ public class RewardTransaction extends Transaction {
 	private TransactionOutput output;
 
 	public RewardTransaction(String coinbase, BigDecimal value) {
-		coinbase += coinbase;
 		generateCoinbase();
+		coinbase += coinbase;
 		this.value = value;
 		this.timeStamp = new Date().getTime();
 	}

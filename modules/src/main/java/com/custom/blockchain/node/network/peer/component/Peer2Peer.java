@@ -94,7 +94,7 @@ public class Peer2Peer {
 			Peer newPeer = new Peer(clientSocket.getInetAddress().getHostAddress(), clientSocket.getLocalPort());
 
 			if (service.contains(Service.PING.getService())) {
-				output.writeUTF(Service.PONG.getService());
+				output.writeUTF(blockchainProperties.getNetworkSignature() + "#" + Service.PONG.getService());
 				try {
 					peerService.addPeer(newPeer);
 				} catch (PeerException e) {
@@ -104,7 +104,7 @@ public class Peer2Peer {
 			} else if (service.contains(Service.PONG.getService())) {
 				LOG.debug(String.format("[Crypto] node [%s] successfully answered", clientSocket.toString()));
 			} else {
-				output.writeUTF(serviceDispatcher.launch(service));
+				output.writeUTF(blockchainProperties.getNetworkSignature() + "#" + serviceDispatcher.launch(service));
 			}
 
 			output.close();

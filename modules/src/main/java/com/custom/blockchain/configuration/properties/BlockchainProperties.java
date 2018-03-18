@@ -10,6 +10,8 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import com.custom.blockchain.util.DigestUtil;
+
 @ConfigurationProperties(prefix = "application.blockchain")
 @Component
 public class BlockchainProperties {
@@ -20,23 +22,23 @@ public class BlockchainProperties {
 	private String version;
 
 	private BigDecimal minimunTransaction;
-	
+
 	private BigDecimal coinLimit;
-	
+
 	private String coinbase;
-	
+
 	private BigDecimal premined;
-	
+
 	@Min(1025)
 	@Max(65536)
 	private Integer networkPort;
-	
+
 	private Integer networkMaximumSeeds;
-	
+
 	private List<String> networkMockedPeers;
-	
+
 	private String miner;
-	
+
 	private Long miningTimeRate;
 
 	public String getCoinName() {
@@ -125,6 +127,11 @@ public class BlockchainProperties {
 
 	public void setMiningTimeRate(Long miningTimeRate) {
 		this.miningTimeRate = miningTimeRate;
+	}
+
+	public String getNetworkSignature() {
+		return DigestUtil.applySha256(DigestUtil
+				.applySha256(coinName + version + minimunTransaction.toPlainString() + coinLimit.toPlainString()));
 	}
 
 }
