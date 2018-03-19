@@ -16,7 +16,7 @@ import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.util.FileUtil;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -40,6 +40,8 @@ public class PeerFinder {
 	 * 
 	 */
 	public void findPeers() {
+		if (isPeerConnectionsFull())
+			return;
 		findFromFile();
 		findFromDNS();
 		findFromPeers();
@@ -50,15 +52,14 @@ public class PeerFinder {
 	 * 
 	 */
 	private void findFromFile() {
-		if (isPeerConnectionsFull())
-			return;
 		List<Peer> filePeers;
 		try {
+			JavaType collectionPeerClass = objectMapper.getTypeFactory().constructCollectionType(List.class,
+					Peer.class);
 			filePeers = objectMapper.readValue(FileUtil.readPeer(blockchainProperties.getCoinName()),
-					new TypeReference<List<Peer>>() {
-					});
+					collectionPeerClass);
 			for (Peer peer : new ArrayList<Peer>(filePeers)) {
-				if (PEERS_STATUS.containsKey(peer) && !PEERS_STATUS.get(peer))
+				if (PEERS.contains(peer))
 					filePeers.remove(peer);
 			}
 		} catch (IOException e) {
@@ -74,24 +75,18 @@ public class PeerFinder {
 	 * 
 	 */
 	private void findFromDNS() {
-		if (isPeerConnectionsFull())
-			return;
 	}
 
 	/**
 	 * 
 	 */
 	private void findFromPeers() {
-		if (isPeerConnectionsFull())
-			return;
 	}
 
 	/**
 	 * 
 	 */
 	private void findMockedPeers() {
-		if (isPeerConnectionsFull())
-			return;
 		for (String p : blockchainProperties.getNetworkMockedPeers()) {
 			try {
 				addPeer(objectMapper.readValue(p, Peer.class));

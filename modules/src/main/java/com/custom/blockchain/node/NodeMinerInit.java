@@ -69,6 +69,7 @@ public class NodeMinerInit extends AbstractNode {
 		LOG.info("[Crypto] Starting peer and actions searching thread...");
 		this.networkManagement.searchPeers();
 		this.networkManagement.startServer();
+		this.networkManagement.pingPeers();
 
 		// read current Transaction mempool
 		TRANSACTION_MEMPOOL = objectMapper.readValue(

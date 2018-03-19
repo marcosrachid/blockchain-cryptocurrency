@@ -3,6 +3,7 @@ package com.custom.blockchain.block;
 import static com.custom.blockchain.costants.ChainConstants.GENESIS_PREVIOUS_HASH;
 
 import java.io.Serializable;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,9 +29,11 @@ public class Block implements Serializable {
 	private String hash;
 	private String previousHash;
 	private String merkleRoot;
-	private List<Transaction> transactions = new ArrayList<Transaction>();
+	private PublicKey miner;
 	private long timeStamp;
 	private int nonce;
+
+	private List<Transaction> transactions = new ArrayList<Transaction>();
 
 	public Block() {
 		super();
@@ -42,7 +45,7 @@ public class Block implements Serializable {
 
 	public Block(Block previousBlock) {
 		super();
-		this.height = previousBlock.getBlockNumber() + 1;
+		this.height = previousBlock.getHeight() + 1;
 		this.previousHash = previousBlock.getHash();
 		this.timeStamp = new Date().getTime();
 		calculateHash();
@@ -56,12 +59,12 @@ public class Block implements Serializable {
 		this.genesis = genesis;
 	}
 
-	public long getBlockNumber() {
+	public long getHeight() {
 		return height;
 	}
 
-	public void setBlockNumber(long blockNumber) {
-		this.height = blockNumber;
+	public void setHeight(long height) {
+		this.height = height;
 	}
 
 	public String getHash() {
@@ -88,12 +91,12 @@ public class Block implements Serializable {
 		this.merkleRoot = merkleRoot;
 	}
 
-	public List<Transaction> getTransactions() {
-		return transactions;
+	public PublicKey getMiner() {
+		return miner;
 	}
 
-	public void setTransactions(List<Transaction> transactions) {
-		this.transactions = transactions;
+	public void setMiner(PublicKey miner) {
+		this.miner = miner;
 	}
 
 	public long getTimeStamp() {
@@ -110,6 +113,14 @@ public class Block implements Serializable {
 
 	public void setNonce(int nonce) {
 		this.nonce = nonce;
+	}
+
+	public List<Transaction> getTransactions() {
+		return transactions;
+	}
+
+	public void setTransactions(List<Transaction> transactions) {
+		this.transactions = transactions;
 	}
 
 	/**

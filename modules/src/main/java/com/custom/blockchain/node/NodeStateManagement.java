@@ -16,7 +16,7 @@ public class NodeStateManagement {
 
 	public static boolean BLOCKED = false;
 	
-	public static boolean LISTENING = false;
+	public static Thread LISTENING_THREAD = null;
 
 	public static final Set<Service> SERVICES = new HashSet<>();
 

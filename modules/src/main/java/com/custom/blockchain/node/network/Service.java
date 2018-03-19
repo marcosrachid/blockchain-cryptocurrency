@@ -2,8 +2,8 @@ package com.custom.blockchain.node.network;
 
 public enum Service {
 
-	GET_STATE("getState()"), GET_BLOCK("getBlock(%s)"), GET_PEERS("getPeers()"), GET_TRANSACTIONS(
-			"getTransactions()"), UNKNOWN("unknown()"), PING("ping()"), PONG("pong()");
+	GET_STATE("getState"), GET_BLOCK("getBlock"), GET_PEERS("getPeers"), GET_TRANSACTIONS("getTransactions"), UNKNOWN(
+			"unknown"), PING("ping"), PONG("pong");
 
 	private String service;
 
