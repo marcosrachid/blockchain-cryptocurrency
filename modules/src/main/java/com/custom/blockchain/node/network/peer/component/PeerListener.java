@@ -1,5 +1,6 @@
 package com.custom.blockchain.node.network.peer.component;
 
+import static com.custom.blockchain.costants.ChainConstants.REQUEST_SEPARATOR;
 import static com.custom.blockchain.node.NodeStateManagement.LISTENING_THREAD;
 
 import java.io.DataInputStream;
@@ -87,18 +88,23 @@ public class PeerListener {
 			clientSocket = server.accept();
 			input = new DataInputStream(clientSocket.getInputStream());
 
-			LOG.debug("[Crypto] Connection Received from: " + clientSocket.toString());
+			LOG.info("[Crypto] Connection Received from: " + clientSocket.toString());
 
-			service = input.readUTF().split("#");
+			String request = input.readUTF();
+			LOG.trace("[Crypto] Raw Request: " + request);
+			service = request.split(REQUEST_SEPARATOR);
 			Peer newPeer = new Peer(clientSocket.getInetAddress().getHostAddress(), clientSocket.getLocalPort());
 
-			if (service.length != 2 || !service[0].equals(blockchainProperties.getNetworkSignature())) {
+			if (service.length < 2 || !service[0].equals(blockchainProperties.getNetworkSignature())) {
 				LOG.error("[Crypto] Received an invalid signature from peer [" + newPeer + "]");
 				input.close();
 				continue;
 			}
 
-			serviceDispatcher.launch(clientSocket, newPeer, service[1]);
+			if (service.length == 3)
+				serviceDispatcher.launch(clientSocket, newPeer, service[1], service[2]);
+			else
+				serviceDispatcher.launch(clientSocket, newPeer, service[1]);
 
 			input.close();
 			clientSocket.close();

@@ -4,10 +4,9 @@ import static com.custom.blockchain.node.NodeStateManagement.LISTENING_THREAD;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +24,6 @@ import com.custom.blockchain.node.network.peer.component.PeerSender;
  */
 @Component
 public class NetworkManager {
-
-	private static final Logger LOG = LoggerFactory.getLogger(NetworkManager.class);
 
 	private BlockchainProperties blockchainProperties;
 
@@ -70,13 +67,24 @@ public class NetworkManager {
 	@Scheduled(fixedRate = 60000)
 	public synchronized void pingPeers() {
 		for (Peer p : PEERS) {
-			if (getConnectedPeersNumber() >= blockchainProperties.getNetworkMaximumSeeds()) {
-				return;
-			}
-			LOG.debug("[Crypto] Ping peer [" + p + "]");
 			PEERS_STATUS.put(p, false);
 			this.peerSender.connect(p);
-			this.peerSender.send(blockchainProperties.getNetworkSignature() + "#" + Service.PING.getService());
+			this.peerSender.send(Service.PING.getService());
+			this.peerSender.close();
+		}
+		;
+	}
+
+	/**
+	 * 
+	 */
+	@Scheduled(fixedRate = 60000)
+	public synchronized void getState() {
+		Set<Peer> connectedPeers = PEERS_STATUS.entrySet().stream().filter(entry -> entry.getValue().equals(true))
+				.map(e -> e.getKey()).collect(Collectors.toSet());
+		for (Peer p : connectedPeers) {
+			this.peerSender.connect(p);
+			this.peerSender.send(Service.GET_STATE.getService());
 			this.peerSender.close();
 		}
 		;

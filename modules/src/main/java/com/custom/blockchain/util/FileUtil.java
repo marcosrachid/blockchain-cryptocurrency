@@ -1,6 +1,5 @@
 package com.custom.blockchain.util;
 
-import static com.custom.blockchain.costants.LogMessagesConstants.JSON_FORMAT;
 import static com.custom.blockchain.costants.SystemConstants.BLOCKS_DIRECTORY;
 import static com.custom.blockchain.costants.SystemConstants.MEMPOOL_FILE;
 import static com.custom.blockchain.costants.SystemConstants.PEERS_FILE;
@@ -17,8 +16,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -26,8 +23,6 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class FileUtil {
-
-	private static final Logger LOG = LoggerFactory.getLogger(FileUtil.class);
 
 	private static final String EMPTY_LIST = "[]";
 
@@ -53,8 +48,6 @@ public class FileUtil {
 	 * @throws IOException
 	 */
 	public static void addPeer(String coinName, String peerJson) throws IOException {
-		LOG.debug(JSON_FORMAT, "PEER", peerJson);
-
 		String path = String.format(OsUtil.getRootDirectory(), coinName);
 		File file = new File(path + PEERS_FILE);
 		FileUtils.writeByteArrayToFile(file, compress(peerJson));
@@ -82,8 +75,6 @@ public class FileUtil {
 	 * @throws IOException
 	 */
 	public static void addUnminedTransaction(String coinName, String transactionJson) throws IOException {
-		LOG.debug(JSON_FORMAT, "TRANSACTION", transactionJson);
-
 		String path = String.format(OsUtil.getRootDirectory(), coinName);
 		File file = new File(path + MEMPOOL_FILE);
 		FileUtils.writeByteArrayToFile(file, compress(transactionJson));

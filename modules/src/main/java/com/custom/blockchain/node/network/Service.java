@@ -2,8 +2,10 @@ package com.custom.blockchain.node.network;
 
 public enum Service {
 
-	GET_STATE("getState"), GET_BLOCK("getBlock"), GET_PEERS("getPeers"), GET_TRANSACTIONS("getTransactions"), UNKNOWN(
-			"unknown"), PING("ping"), PONG("pong");
+	PING("ping"), PONG("pong"), GET_STATE("getState"), GET_STATE_RESPONSE("getStateResponse"), GET_BLOCK(
+			"getBlock"), GET_BLOCK_RESPONSE("getBlockResponse"), GET_PEERS("getPeers"), GET_PEERS_RESPONSE(
+					"getPeersResponse"), GET_TRANSACTIONS("getTransactions"), GET_TRANSACTIONS_RESPONSE(
+							"getTransactionsResponse");
 
 	private String service;
 
@@ -13,10 +15,6 @@ public enum Service {
 
 	public String getService() {
 		return this.service;
-	}
-
-	public String getService(String param) {
-		return String.format(this.service, param);
 	}
 
 }

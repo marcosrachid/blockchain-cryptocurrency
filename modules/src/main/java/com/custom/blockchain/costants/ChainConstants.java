@@ -13,4 +13,8 @@ public class ChainConstants {
 
 	public static final String GENESIS_PREVIOUS_HASH = "0";
 
+	public static final String REQUEST_SEPARATOR = "#";
+
+	public static final String REQUEST_PARAM_SEPARATOR = ",";
+
 }

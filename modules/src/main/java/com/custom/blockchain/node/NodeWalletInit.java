@@ -65,6 +65,9 @@ public class NodeWalletInit extends AbstractNode {
 				blockchainProperties.getCoinName()));
 		chainstate.mkdirs();
 
+		// load node services for a simple wallet
+		loadServices();
+
 		// start thread for searching blocks and transactions
 		LOG.info("[Crypto] Starting peer and actions searching thread...");
 		this.networkManagement.searchPeers();
@@ -76,9 +79,6 @@ public class NodeWalletInit extends AbstractNode {
 				FileUtil.readUnminedTransaction(blockchainProperties.getCoinName()),
 				new TypeReference<Set<Transaction>>() {
 				});
-
-		// load node services for a simple wallet
-		loadServices();
 
 		if (!FileUtil.isBlockchainStarted(blockchainProperties.getCoinName())) {
 			LOG.info("[Crypto] Starting first block on Blockchain");
@@ -95,9 +95,14 @@ public class NodeWalletInit extends AbstractNode {
 
 	@Override
 	protected void loadServices() {
+		NodeStateManagement.SERVICES.add(Service.PING);
+		NodeStateManagement.SERVICES.add(Service.PONG);
 		NodeStateManagement.SERVICES.add(Service.GET_STATE);
+		NodeStateManagement.SERVICES.add(Service.GET_STATE_RESPONSE);
 		NodeStateManagement.SERVICES.add(Service.GET_BLOCK);
+		NodeStateManagement.SERVICES.add(Service.GET_BLOCK_RESPONSE);
 		NodeStateManagement.SERVICES.add(Service.GET_PEERS);
+		NodeStateManagement.SERVICES.add(Service.GET_PEERS_RESPONSE);
 	}
 
 }
