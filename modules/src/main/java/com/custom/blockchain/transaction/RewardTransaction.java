@@ -18,8 +18,8 @@ public class RewardTransaction extends Transaction {
 	private TransactionOutput output;
 
 	public RewardTransaction(String coinbase, BigDecimal value) {
+		this.coinbase = coinbase;
 		generateCoinbase();
-		coinbase += coinbase;
 		this.value = value;
 		this.timeStamp = new Date().getTime();
 	}
@@ -57,8 +57,8 @@ public class RewardTransaction extends Transaction {
 
 	private void generateCoinbase() {
 		Transaction.sequence++;
-		coinbase = DigestUtil
-				.applySha256(DigestUtil.applySha256(Long.toString(DIFFICULTY) + timeStamp + Transaction.sequence));
+		coinbase = DigestUtil.applySha256(
+				DigestUtil.applySha256(Long.toString(DIFFICULTY) + timeStamp + Transaction.sequence + coinbase));
 	}
 
 	@Override
