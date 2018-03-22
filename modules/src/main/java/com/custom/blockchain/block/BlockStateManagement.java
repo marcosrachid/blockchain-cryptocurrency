@@ -2,9 +2,9 @@ package com.custom.blockchain.block;
 
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.data.CurrentBlockChainstateDB;
-import com.custom.blockchain.data.GenesisBlockChainstateDB;
-import com.custom.blockchain.data.PreviewBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.GenesisBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.PreviewBlockChainstateDB;
 
 /**
  * 

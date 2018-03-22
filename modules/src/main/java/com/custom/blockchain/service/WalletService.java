@@ -8,7 +8,7 @@ import java.security.PublicKey;
 import org.iq80.leveldb.DBIterator;
 import org.springframework.stereotype.Service;
 
-import com.custom.blockchain.data.UTXOChainstateDB;
+import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;

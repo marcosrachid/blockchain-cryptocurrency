@@ -19,7 +19,7 @@ import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.UTXOChainstateDB;
+import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.component.NetworkManager;
 import com.custom.blockchain.transaction.Transaction;

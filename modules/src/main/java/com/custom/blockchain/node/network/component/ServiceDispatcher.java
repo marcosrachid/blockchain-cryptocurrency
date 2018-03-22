@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.BlockStateManagement;
-import com.custom.blockchain.data.PreviewBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.PreviewBlockChainstateDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;

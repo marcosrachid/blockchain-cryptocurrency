@@ -1,4 +1,4 @@
-package com.custom.blockchain.data;
+package com.custom.blockchain.data.chainstate;
 
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.Block;
+import com.custom.blockchain.data.FlagAbstractLevelDB;
 import com.custom.blockchain.data.exception.LevelDBException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,17 +19,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 @Component
-public class GenesisBlockChainstateDB extends FlagAbstractLevelDB<Block> {
+public class CurrentBlockChainstateDB extends FlagAbstractLevelDB<Block> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(UTXOChainstateDB.class);
 
-	private static final String KEY_BINDER = "G";
+	private static final String KEY_BINDER = "B";
 
 	private DB chainstateDb;
 
 	private ObjectMapper objectMapper;
 
-	public GenesisBlockChainstateDB(final @Qualifier("ChainStateDB") DB chainstateDb, final ObjectMapper objectMapper) {
+	public CurrentBlockChainstateDB(final @Qualifier("ChainStateDB") DB chainstateDb, final ObjectMapper objectMapper) {
 		this.chainstateDb = chainstateDb;
 		this.objectMapper = objectMapper;
 	}

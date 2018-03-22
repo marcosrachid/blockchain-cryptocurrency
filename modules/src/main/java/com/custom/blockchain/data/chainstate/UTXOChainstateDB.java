@@ -1,4 +1,4 @@
-package com.custom.blockchain.data;
+package com.custom.blockchain.data.chainstate;
 
 import java.util.Map.Entry;
 
@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import com.custom.blockchain.data.AbstractLevelDB;
 import com.custom.blockchain.data.exception.LevelDBException;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.fasterxml.jackson.core.JsonProcessingException;
