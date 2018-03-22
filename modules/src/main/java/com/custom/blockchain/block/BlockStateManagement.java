@@ -1,21 +1,49 @@
 package com.custom.blockchain.block;
 
+import org.springframework.stereotype.Component;
+
+import com.custom.blockchain.data.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.GenesisBlockChainstateDB;
+import com.custom.blockchain.data.PreviewBlockChainstateDB;
+
 /**
  * 
  * @author marcosrachid
  *
  */
+@Component
 public class BlockStateManagement {
 
-	public static Block GENESIS_BLOCK;
+	private GenesisBlockChainstateDB genesisBlockChainstateDB;
 
-	public static Block PREVIOUS_BLOCK;
+	private PreviewBlockChainstateDB previewBlockChainstateDB;
 
-	public static Block CURRENT_BLOCK;
-	
-	public static void foundBlock() {
-		PREVIOUS_BLOCK = CURRENT_BLOCK;
-		CURRENT_BLOCK = BlockFactory.getBlock(PREVIOUS_BLOCK);
+	private CurrentBlockChainstateDB currentBlockChainstateDB;
+
+	public BlockStateManagement(final GenesisBlockChainstateDB genesisBlockChainstateDB,
+			final PreviewBlockChainstateDB previewBlockChainstateDB,
+			final CurrentBlockChainstateDB currentBlockChainstateDB) {
+		this.genesisBlockChainstateDB = genesisBlockChainstateDB;
+		this.previewBlockChainstateDB = previewBlockChainstateDB;
+		this.currentBlockChainstateDB = currentBlockChainstateDB;
+	}
+
+	/**
+	 * 
+	 * @param block
+	 */
+	public void saveGenesis(Block block) {
+		genesisBlockChainstateDB.put(block);
+		currentBlockChainstateDB.put(block);
+	}
+
+	/**
+	 * 
+	 */
+	public void foundBlock() {
+		Block previewBlock = currentBlockChainstateDB.get();
+		previewBlockChainstateDB.put(previewBlock);
+		currentBlockChainstateDB.put(BlockFactory.getBlock(previewBlock));
 	}
 
 }

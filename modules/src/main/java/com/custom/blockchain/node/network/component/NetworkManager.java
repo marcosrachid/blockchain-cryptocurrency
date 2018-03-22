@@ -5,6 +5,7 @@ import static com.custom.blockchain.node.NodeStateManagement.LISTENING_THREAD;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 
+import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -93,8 +94,9 @@ public class NetworkManager {
 	 */
 	@Scheduled(fixedRate = 60000)
 	public synchronized void getBlocks() {
-		for (Peer p : getConnectedPeers()) {
-			this.peerSender.connect(p);
+		Iterator<Peer> peers = getConnectedPeers().iterator();
+		while (peers.hasNext() && BLOCKS_QUEUE.size() > 0) {
+			this.peerSender.connect(peers.next());
 			this.peerSender.send(Service.GET_BLOCK.getService(), Long.toString(BLOCKS_QUEUE.peek().getHeight()));
 			this.peerSender.close();
 		}

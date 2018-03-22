@@ -17,8 +17,9 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
+import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.ChainstateDB;
+import com.custom.blockchain.data.UTXOChainstateDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.component.NetworkManager;
 import com.custom.blockchain.transaction.Transaction;
@@ -39,10 +40,12 @@ public class NodeWalletInit extends AbstractNode {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeWalletInit.class);
 
-	public NodeWalletInit(final BlockchainProperties blockchainProperties, final ChainstateDB chainstateDb,
-			final ObjectMapper objectMapper, final NetworkManager networkManagement) {
+	public NodeWalletInit(final BlockchainProperties blockchainProperties, final UTXOChainstateDB chainstateDb,
+			final BlockStateManagement blockStateManagement, final ObjectMapper objectMapper,
+			final NetworkManager networkManagement) {
 		this.blockchainProperties = blockchainProperties;
-		this.chainstateDb = chainstateDb;
+		this.utxoChainstateDb = chainstateDb;
+		this.blockStateManagement = blockStateManagement;
 		this.objectMapper = objectMapper;
 		this.networkManagement = networkManagement;
 	}

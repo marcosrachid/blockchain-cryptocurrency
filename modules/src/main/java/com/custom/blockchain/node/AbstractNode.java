@@ -1,17 +1,14 @@
 package com.custom.blockchain.node;
 
-import static com.custom.blockchain.block.BlockStateManagement.CURRENT_BLOCK;
-import static com.custom.blockchain.block.BlockStateManagement.GENESIS_BLOCK;
-import static com.custom.blockchain.block.BlockStateManagement.PREVIOUS_BLOCK;
 import static com.custom.blockchain.costants.ChainConstants.GENESIS_TX_ID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.custom.blockchain.block.Block;
-import com.custom.blockchain.block.BlockFactory;
+import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.ChainstateDB;
+import com.custom.blockchain.data.UTXOChainstateDB;
 import com.custom.blockchain.node.network.component.NetworkManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
@@ -26,11 +23,13 @@ public abstract class AbstractNode {
 
 	protected BlockchainProperties blockchainProperties;
 
-	protected ChainstateDB chainstateDb;
+	protected UTXOChainstateDB utxoChainstateDb;
 
 	protected ObjectMapper objectMapper;
 
 	protected NetworkManager networkManagement;
+
+	protected BlockStateManagement blockStateManagement;
 
 	public abstract void startBlocks() throws Exception;
 
@@ -64,8 +63,8 @@ public abstract class AbstractNode {
 		genesisTransaction.setTransactionId(GENESIS_TX_ID);
 		genesisTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), genesisTransaction.getValue(),
 				genesisTransaction.getTransactionId()));
-		chainstateDb.put("c" + genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
-		LOG.info("Premined transaction: {}", chainstateDb.get("c" + genesisTransaction.getOutput().getId()));
+		utxoChainstateDb.put(genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
+		LOG.info("Premined transaction: {}", utxoChainstateDb.get(genesisTransaction.getOutput().getId()));
 	}
 
 	/**
@@ -73,9 +72,8 @@ public abstract class AbstractNode {
 	 * @param genesis
 	 */
 	protected void setBlockState(Block genesis) {
-		GENESIS_BLOCK = genesis;
-		PREVIOUS_BLOCK = genesis;
-		CURRENT_BLOCK = BlockFactory.getBlock(genesis);
+		blockStateManagement.saveGenesis(genesis);
+		blockStateManagement.foundBlock();
 	}
 
 }

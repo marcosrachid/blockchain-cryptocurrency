@@ -1,7 +1,5 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.block.BlockStateManagement.CURRENT_BLOCK;
-
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -17,7 +15,8 @@ import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.ChainstateDB;
+import com.custom.blockchain.data.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.UTXOChainstateDB;
 import com.custom.blockchain.resource.dto.request.RequestSendFundsDTO;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.SimpleTransaction;
@@ -43,16 +42,20 @@ public class TransactionService {
 
 	private BlockchainProperties blockchainProperties;
 
-	private ChainstateDB chainstateDb;
+	private UTXOChainstateDB utxoChainstateDb;
+
+	private CurrentBlockChainstateDB currentBlockChainstateDB;
 
 	private SignatureManager signatureManager;
 
 	private TransactionMempool transactionMempool;
 
-	public TransactionService(final BlockchainProperties blockchainProperties, final ChainstateDB chainstateDb,
-			final SignatureManager signatureManager, final TransactionMempool transactionMempool) {
+	public TransactionService(final BlockchainProperties blockchainProperties, final UTXOChainstateDB chainstateDb,
+			final CurrentBlockChainstateDB currentBlockChainstateDB, final SignatureManager signatureManager,
+			final TransactionMempool transactionMempool) {
 		this.blockchainProperties = blockchainProperties;
-		this.chainstateDb = chainstateDb;
+		this.utxoChainstateDb = chainstateDb;
+		this.currentBlockChainstateDB = currentBlockChainstateDB;
 		this.signatureManager = signatureManager;
 		this.transactionMempool = transactionMempool;
 	}
@@ -134,7 +137,7 @@ public class TransactionService {
 	 * @throws TransactionException
 	 */
 	public void addTransaction(SimpleTransaction transaction) throws TransactionException {
-		Block block = CURRENT_BLOCK;
+		Block block = currentBlockChainstateDB.get();
 		if (transaction == null)
 			throw new TransactionException("Non existent transaction");
 		processTransaction(transaction);
@@ -157,7 +160,7 @@ public class TransactionService {
 		}
 
 		for (TransactionInput i : transaction.getInputs()) {
-			i.setUnspentTransactionOutput(chainstateDb.get("c" + i.getTransactionOutputId()));
+			i.setUnspentTransactionOutput(utxoChainstateDb.get(i.getTransactionOutputId()));
 		}
 
 		if (transaction.getInputsValue().compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
@@ -170,11 +173,11 @@ public class TransactionService {
 				.add(new TransactionOutput(transaction.getSender(), leftOver, transaction.getTransactionId()));
 
 		for (TransactionOutput o : transaction.getOutputs()) {
-			chainstateDb.put("c" + o.getId(), o);
+			utxoChainstateDb.put(o.getId(), o);
 		}
 
 		for (TransactionInput i : transaction.getInputs()) {
-			chainstateDb.delete("c" + i.getUnspentTransactionOutput().getId());
+			utxoChainstateDb.delete(i.getUnspentTransactionOutput().getId());
 		}
 
 		// TODO remove transaction from mempool
@@ -187,9 +190,9 @@ public class TransactionService {
 	 */
 	private List<TransactionOutput> getUnspentTransactionOutput(PublicKey publicKey) {
 		List<TransactionOutput> UTXOs = new ArrayList<>();
-		DBIterator iterator = chainstateDb.iterator();
+		DBIterator iterator = utxoChainstateDb.iterator();
 		while (iterator.hasNext()) {
-			TransactionOutput UTXO = chainstateDb.next(iterator);
+			TransactionOutput UTXO = utxoChainstateDb.next(iterator);
 			if (UTXO.isMine(publicKey))
 				UTXOs.add(UTXO);
 		}

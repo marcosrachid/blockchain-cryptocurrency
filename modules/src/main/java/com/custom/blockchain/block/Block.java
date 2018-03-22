@@ -12,8 +12,12 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import com.custom.blockchain.serializers.PublicKeyDeserializer;
+import com.custom.blockchain.serializers.PublicKeySerializer;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.util.DigestUtil;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * 
@@ -29,6 +33,8 @@ public class Block implements Serializable {
 	private String hash;
 	private String previousHash;
 	private String merkleRoot;
+	@JsonSerialize(using = PublicKeySerializer.class)
+	@JsonDeserialize(using = PublicKeyDeserializer.class)
 	private PublicKey miner;
 	private int difficulty;
 	private long timeStamp;

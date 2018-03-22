@@ -1,6 +1,7 @@
 package com.custom.blockchain.configuration;
 
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
+import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_BLOCK_INDEX_DIRECTORY;
 import static org.iq80.leveldb.impl.Iq80DBFactory.factory;
 
 import java.io.File;
@@ -25,6 +26,15 @@ import com.custom.blockchain.util.OsUtil;
 public class DatabaseConfiguration {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DatabaseConfiguration.class);
+	
+	@Bean("BlockIndexDB")
+	public DB createBlockIndex(@Value("${application.blockchain.coinName}") String coinName) throws IOException {
+		LOG.info("[Crypto] Creating BlockIndex database connection...");
+		Options options = new Options();
+		String path = String.format(OsUtil.getRootDirectory() + LEVEL_DB_BLOCK_INDEX_DIRECTORY, coinName);
+		LOG.debug("[Crypto] Path of block index leveldb: " + path);
+		return factory.open(new File(path), options);
+	}
 
 	@Bean("ChainStateDB")
 	public DB createChainState(@Value("${application.blockchain.coinName}") String coinName) throws IOException {

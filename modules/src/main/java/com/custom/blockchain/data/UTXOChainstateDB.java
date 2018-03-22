@@ -21,15 +21,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 @Component
-public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
+public class UTXOChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ChainstateDB.class);
+	private static final Logger LOG = LoggerFactory.getLogger(UTXOChainstateDB.class);
+	
+	private static final String KEY_BINDER = "c";
 
 	private DB chainstateDb;
 
 	private ObjectMapper objectMapper;
 
-	public ChainstateDB(final @Qualifier("ChainStateDB") DB chainstateDb, final ObjectMapper objectMapper) {
+	public UTXOChainstateDB(final @Qualifier("ChainStateDB") DB chainstateDb, final ObjectMapper objectMapper) {
 		this.chainstateDb = chainstateDb;
 		this.objectMapper = objectMapper;
 	}
@@ -37,8 +39,8 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 	@Override
 	public TransactionOutput get(String key) {
 		try {
-			LOG.trace("[Crypto] Get - Key: " + key);
-			return objectMapper.readValue(chainstateDb.get(key.getBytes()), TransactionOutput.class);
+			LOG.trace("[Crypto] ChainstateDB Get - Key: " + key);
+			return objectMapper.readValue(chainstateDb.get((KEY_BINDER + key).getBytes()), TransactionOutput.class);
 		} catch (Exception e) {
 			throw new LevelDBException("Could not get data from key " + key + ": " + e.getMessage());
 		}
@@ -46,16 +48,16 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 
 	@Override
 	public void put(String key, String value) {
-		LOG.trace("[Crypto] Add String - Key: " + key + ", Value: " + value);
-		chainstateDb.put(key.getBytes(), value.getBytes());
+		LOG.trace("[Crypto] ChainstateDB Add String - Key: " + key + ", Value: " + value);
+		chainstateDb.put((KEY_BINDER + key).getBytes(), value.getBytes());
 	}
 
 	@Override
 	public void put(String key, TransactionOutput value) {
 		try {
 			String v = objectMapper.writeValueAsString(value);
-			LOG.trace("[Crypto] Add Object - Key: " + key + ", Value: " + v);
-			chainstateDb.put(key.getBytes(), v.getBytes());
+			LOG.trace("[Crypto] ChainstateDB Add Object - Key: " + key + ", Value: " + v);
+			chainstateDb.put((KEY_BINDER + key).getBytes(), v.getBytes());
 		} catch (DBException | JsonProcessingException e) {
 			throw new LevelDBException("Could not put data from key [" + key + "] and TransactionOutput [" + value
 					+ "]: " + e.getMessage());
@@ -64,8 +66,8 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 
 	@Override
 	public void delete(String key) {
-		LOG.trace("[Crypto] Deleted - Key: " + key);
-		chainstateDb.delete(key.getBytes());
+		LOG.trace("[Crypto] ChainstateDB Deleted - Key: " + key);
+		chainstateDb.delete((KEY_BINDER + key).getBytes());
 	}
 
 	@Override
@@ -79,7 +81,7 @@ public class ChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
 	public TransactionOutput next(final DBIterator iterator) {
 		try {
 			Entry<byte[], byte[]> entry = iterator.next();
-			LOG.trace("[Crypto] Current Iterator - Key: " + new String(entry.getKey()) + ", Value: "
+			LOG.trace("[Crypto] ChainstateDB Current Iterator - Key: " + new String(entry.getKey()) + ", Value: "
 					+ new String(entry.getValue()));
 			return objectMapper.readValue(entry.getValue(), TransactionOutput.class);
 		} catch (Exception e) {

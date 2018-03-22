@@ -1,6 +1,5 @@
 package com.custom.blockchain.node.network.component;
 
-import static com.custom.blockchain.block.BlockStateManagement.PREVIOUS_BLOCK;
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
 import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
@@ -15,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.BlockStateManagement;
+import com.custom.blockchain.data.PreviewBlockChainstateDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
@@ -31,13 +31,20 @@ public class ServiceDispatcher {
 
 	private PeerSender peerSender;
 
+	private PreviewBlockChainstateDB previewBlockChainstateDB;
+
+	private BlockStateManagement blockStateManagement;
+
 	private Socket clientSocket;
 
 	private Peer peer;
 
-	public ServiceDispatcher(final PeerService peerService, final PeerSender peerSender) {
+	public ServiceDispatcher(final PeerService peerService, final PeerSender peerSender,
+			final PreviewBlockChainstateDB previewBlockChainstateDB, final BlockStateManagement blockStateManagement) {
 		this.peerService = peerService;
 		this.peerSender = peerSender;
+		this.previewBlockChainstateDB = previewBlockChainstateDB;
+		this.blockStateManagement = blockStateManagement;
 	}
 
 	/**
@@ -90,9 +97,7 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void ping() {
 		LOG.debug("[Crypto] Found a " + Service.PING.getService() + " event from peer [" + peer + "]");
-		peerSender.connect(peer);
-		peerSender.send(Service.PONG.getService());
-		peerSender.close();
+		simpleSend(Service.PONG);
 		try {
 			peerService.addPeer(peer);
 		} catch (PeerException e) {
@@ -116,9 +121,7 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getState() {
 		LOG.debug("[Crypto] Found a " + Service.GET_STATE.getService() + " event");
-		peerSender.connect(peer);
-		peerSender.send(Service.GET_STATE_RESPONSE.getService(), Long.toString(PREVIOUS_BLOCK.getHeight()));
-		peerSender.close();
+		simpleSend(Service.GET_STATE_RESPONSE, Long.toString(previewBlockChainstateDB.get().getHeight()));
 	}
 
 	/**
@@ -129,12 +132,12 @@ public class ServiceDispatcher {
 	private void getStateResponse(String currentBlock) {
 		LOG.debug("[Crypto] Found a " + Service.GET_STATE_RESPONSE.getService() + " event");
 		LOG.debug("[Crypto] peer [" + peer + "] current block [" + currentBlock + "]");
-		if (Long.valueOf(currentBlock) > PREVIOUS_BLOCK.getHeight()) {
+		if (Long.valueOf(currentBlock) > previewBlockChainstateDB.get().getHeight()) {
 			LOG.info("[Crypto] Found new block from peer [" + peer + "], requesting block...");
-			long blockNumber = Long.valueOf(currentBlock) - PREVIOUS_BLOCK.getHeight();
-			for (long i = PREVIOUS_BLOCK.getHeight(); i <= Long.valueOf(currentBlock); i++) {
-				BlockStateManagement.foundBlock();
-				BLOCKS_QUEUE.add(PREVIOUS_BLOCK);
+			long blockNumber = Long.valueOf(currentBlock) - previewBlockChainstateDB.get().getHeight();
+			for (long i = previewBlockChainstateDB.get().getHeight(); i <= Long.valueOf(currentBlock); i++) {
+				blockStateManagement.foundBlock();
+				BLOCKS_QUEUE.add(previewBlockChainstateDB.get());
 			}
 		}
 	}
@@ -146,6 +149,7 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getBlock(String height) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event");
+		simpleSend(Service.GET_BLOCK_RESPONSE, Long.toString(previewBlockChainstateDB.get().getHeight()));
 	}
 
 	/**
@@ -194,7 +198,7 @@ public class ServiceDispatcher {
 	 * @param difficulty
 	 */
 	@SuppressWarnings("unused")
-	private void getDifficulty() {
+	private void getDifficulty(String height) {
 		LOG.debug("[Crypto] Found a " + Service.GET_DIFFICULTY.getService() + " event");
 	}
 
@@ -203,8 +207,29 @@ public class ServiceDispatcher {
 	 * @param difficulty
 	 */
 	@SuppressWarnings("unused")
-	private void getDifficultyResponse(String height, String difficulty) {
+	private void getDifficultyResponse(String difficulty) {
 		LOG.debug("[Crypto] Found a " + Service.GET_DIFFICULTY_RESPONSE.getService() + " event");
+	}
+
+	/**
+	 * 
+	 * @param service
+	 */
+	private void simpleSend(Service service) {
+		peerSender.connect(peer);
+		peerSender.send(service.getService());
+		peerSender.close();
+	}
+
+	/**
+	 * 
+	 * @param service
+	 * @param param
+	 */
+	private void simpleSend(Service service, String param) {
+		peerSender.connect(peer);
+		peerSender.send(service.getService(), param);
+		peerSender.close();
 	}
 
 }

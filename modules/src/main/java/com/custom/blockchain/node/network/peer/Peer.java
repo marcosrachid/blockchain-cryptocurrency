@@ -9,18 +9,13 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.custom.blockchain.node.network.Service;
-import com.custom.blockchain.serializers.PeerDeserializer;
-import com.custom.blockchain.serializers.PeerSerializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * 
  * @author marcosrachid
  *
  */
-@JsonSerialize(using = PeerSerializer.class)
-@JsonDeserialize(using = PeerDeserializer.class)
 public class Peer implements Serializable {
 
 	private static final long serialVersionUID = -6246549703936086338L;
@@ -28,6 +23,7 @@ public class Peer implements Serializable {
 	private String ip;
 	private int serverPort;
 
+	@JsonIgnore
 	private List<Service> services;
 
 	public Peer() {

@@ -8,7 +8,7 @@ import java.security.PublicKey;
 import org.iq80.leveldb.DBIterator;
 import org.springframework.stereotype.Service;
 
-import com.custom.blockchain.data.ChainstateDB;
+import com.custom.blockchain.data.UTXOChainstateDB;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
@@ -22,9 +22,9 @@ import com.custom.blockchain.wallet.exception.WalletException;
 @Service
 public class WalletService {
 
-	private ChainstateDB chainstateDb;
+	private UTXOChainstateDB chainstateDb;
 
-	public WalletService(final ChainstateDB chainstateDb) {
+	public WalletService(final UTXOChainstateDB chainstateDb) {
 		this.chainstateDb = chainstateDb;
 	}
 

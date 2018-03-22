@@ -14,6 +14,8 @@ public class SystemConstants {
 
 	public static final String BLOCKS_DIRECTORY = "blocks" + File.separator;
 
+	public static final String LEVEL_DB_BLOCK_INDEX_DIRECTORY = BLOCKS_DIRECTORY + "index" + File.separator;
+
 	public static final String LEVEL_DB_CHAINSTATE_DIRECTORY = "chainstate" + File.separator;
 
 	public static final String BLOCK_FILE = "blk%s.dat";
