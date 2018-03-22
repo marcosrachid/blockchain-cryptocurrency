@@ -30,6 +30,7 @@ public class Block implements Serializable {
 	private String previousHash;
 	private String merkleRoot;
 	private PublicKey miner;
+	private int difficulty;
 	private long timeStamp;
 	private int nonce;
 
@@ -99,6 +100,14 @@ public class Block implements Serializable {
 		this.miner = miner;
 	}
 
+	public int getDifficulty() {
+		return difficulty;
+	}
+
+	public void setDifficulty(int difficulty) {
+		this.difficulty = difficulty;
+	}
+
 	public long getTimeStamp() {
 		return timeStamp;
 	}
@@ -133,8 +142,8 @@ public class Block implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(height).append(hash).append(merkleRoot).append(nonce)
-				.append(getPreviousHash()).append(timeStamp).append(transactions).hashCode();
+		return new HashCodeBuilder().append(height).append(hash).append(merkleRoot).append(miner).append(difficulty)
+				.append(nonce).append(getPreviousHash()).append(timeStamp).append(transactions).hashCode();
 	}
 
 	@Override
@@ -152,8 +161,9 @@ public class Block implements Serializable {
 	@Override
 	public String toString() {
 		return new ToStringBuilder(this).append("blockNumber", height).append("hash", hash)
-				.append("merkleRoot", merkleRoot).append("nonce", nonce).append("previousHash", getPreviousHash())
-				.append("timeStamp", timeStamp).append("transactions", transactions).build();
+				.append("merkleRoot", merkleRoot).append("miner", miner).append("difficulty", difficulty)
+				.append("nonce", nonce).append("previousHash", getPreviousHash()).append("timeStamp", timeStamp)
+				.append("transactions", transactions).build();
 	}
 
 }

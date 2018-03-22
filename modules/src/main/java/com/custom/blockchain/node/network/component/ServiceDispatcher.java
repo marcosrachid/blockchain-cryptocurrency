@@ -1,6 +1,7 @@
 package com.custom.blockchain.node.network.component;
 
 import static com.custom.blockchain.block.BlockStateManagement.PREVIOUS_BLOCK;
+import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
 import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
@@ -78,10 +80,7 @@ public class ServiceDispatcher {
 		this.peer = peer;
 		if (!SERVICES.stream().map(s -> s.getService()).collect(Collectors.toList()).contains(command))
 			return;
-		if (arg == null)
-			this.getClass().getDeclaredMethod(command).invoke(this);
-		else
-			this.getClass().getDeclaredMethod(command, String.class).invoke(this, arg);
+		this.getClass().getDeclaredMethod(command, String.class).invoke(this, arg);
 	}
 
 	/**
@@ -130,6 +129,14 @@ public class ServiceDispatcher {
 	private void getStateResponse(String currentBlock) {
 		LOG.debug("[Crypto] Found a " + Service.GET_STATE_RESPONSE.getService() + " event");
 		LOG.debug("[Crypto] peer [" + peer + "] current block [" + currentBlock + "]");
+		if (Long.valueOf(currentBlock) > PREVIOUS_BLOCK.getHeight()) {
+			LOG.info("[Crypto] Found new block from peer [" + peer + "], requesting block...");
+			long blockNumber = Long.valueOf(currentBlock) - PREVIOUS_BLOCK.getHeight();
+			for (long i = PREVIOUS_BLOCK.getHeight(); i <= Long.valueOf(currentBlock); i++) {
+				BlockStateManagement.foundBlock();
+				BLOCKS_QUEUE.add(PREVIOUS_BLOCK);
+			}
+		}
 	}
 
 	/**
@@ -180,6 +187,24 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getTransactionsResponse(String transactions) {
 		LOG.debug("[Crypto] Found a " + Service.GET_TRANSACTIONS_RESPONSE.getService() + " event");
+	}
+
+	/**
+	 * 
+	 * @param difficulty
+	 */
+	@SuppressWarnings("unused")
+	private void getDifficulty() {
+		LOG.debug("[Crypto] Found a " + Service.GET_DIFFICULTY.getService() + " event");
+	}
+
+	/**
+	 * 
+	 * @param difficulty
+	 */
+	@SuppressWarnings("unused")
+	private void getDifficultyResponse(String height, String difficulty) {
+		LOG.debug("[Crypto] Found a " + Service.GET_DIFFICULTY_RESPONSE.getService() + " event");
 	}
 
 }

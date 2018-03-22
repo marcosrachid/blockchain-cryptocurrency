@@ -75,9 +75,9 @@ public class PeerListener {
 	 */
 	private void start() throws IOException, NoSuchMethodException, SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException {
-		LOG.info("[Crypto] Server Starting");
+		LOG.debug("[Crypto] Server Starting");
 		server = new ServerSocket(blockchainProperties.getNetworkPort());
-		LOG.info("[Crypto] Server Started port: " + blockchainProperties.getNetworkPort());
+		LOG.debug("[Crypto] Server Started port: " + blockchainProperties.getNetworkPort());
 		String[] service;
 
 		Socket clientSocket;
@@ -88,7 +88,7 @@ public class PeerListener {
 			clientSocket = server.accept();
 			input = new DataInputStream(clientSocket.getInputStream());
 
-			LOG.info("[Crypto] Connection Received from: " + clientSocket.toString());
+			LOG.debug("[Crypto] Connection Received from: " + clientSocket.toString());
 
 			String request = input.readUTF();
 			LOG.trace("[Crypto] Raw Request: " + request);
@@ -98,6 +98,7 @@ public class PeerListener {
 			if (service.length < 2 || !service[0].equals(blockchainProperties.getNetworkSignature())) {
 				LOG.error("[Crypto] Received an invalid signature from peer [" + newPeer + "]");
 				input.close();
+				clientSocket.close();
 				continue;
 			}
 

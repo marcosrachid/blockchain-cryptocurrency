@@ -26,6 +26,7 @@ public class BlockService {
 	 */
 	public void mineBlock(Block block) {
 		block.setMerkleRoot(TransactionUtil.getMerkleRoot(block.getTransactions()));
+		block.setDifficulty(DIFFICULTY);
 		String target = StringUtil.getDificultyString(DIFFICULTY);
 		while (!block.getHash().substring(0, DIFFICULTY).equals(target)) {
 			block.setNonce(block.getNonce() + 1);

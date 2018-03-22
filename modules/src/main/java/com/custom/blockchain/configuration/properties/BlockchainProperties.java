@@ -25,6 +25,8 @@ public class BlockchainProperties {
 
 	private BigDecimal coinLimit;
 
+	private Long miningTimeRate;
+
 	private String coinbase;
 
 	private BigDecimal premined;
@@ -38,8 +40,6 @@ public class BlockchainProperties {
 	private List<String> networkMockedPeers;
 
 	private String miner;
-
-	private Long miningTimeRate;
 
 	public String getCoinName() {
 		return coinName;
@@ -130,8 +130,8 @@ public class BlockchainProperties {
 	}
 
 	public String getNetworkSignature() {
-		return DigestUtil.applySha256(DigestUtil
-				.applySha256(coinName + version + minimunTransaction.toPlainString() + coinLimit.toPlainString()));
+		return DigestUtil.applySha256(DigestUtil.applySha256(
+				coinName + version + minimunTransaction.toPlainString() + coinLimit.toPlainString() + miningTimeRate));
 	}
 
 }

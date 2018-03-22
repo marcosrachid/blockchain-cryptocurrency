@@ -1,5 +1,6 @@
 package com.custom.blockchain.node.network.component;
 
+import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
 import static com.custom.blockchain.node.NodeStateManagement.LISTENING_THREAD;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
@@ -80,14 +81,32 @@ public class NetworkManager {
 	 */
 	@Scheduled(fixedRate = 60000)
 	public synchronized void getState() {
-		Set<Peer> connectedPeers = PEERS_STATUS.entrySet().stream().filter(entry -> entry.getValue().equals(true))
-				.map(e -> e.getKey()).collect(Collectors.toSet());
-		for (Peer p : connectedPeers) {
+		for (Peer p : getConnectedPeers()) {
 			this.peerSender.connect(p);
 			this.peerSender.send(Service.GET_STATE.getService());
 			this.peerSender.close();
 		}
-		;
+	}
+
+	/**
+	 * 
+	 */
+	@Scheduled(fixedRate = 60000)
+	public synchronized void getBlocks() {
+		for (Peer p : getConnectedPeers()) {
+			this.peerSender.connect(p);
+			this.peerSender.send(Service.GET_BLOCK.getService(), Long.toString(BLOCKS_QUEUE.peek().getHeight()));
+			this.peerSender.close();
+		}
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	private Set<Peer> getConnectedPeers() {
+		return PEERS_STATUS.entrySet().stream().filter(entry -> entry.getValue().equals(true)).map(e -> e.getKey())
+				.collect(Collectors.toSet());
 	}
 
 	/**
@@ -95,7 +114,7 @@ public class NetworkManager {
 	 * @return
 	 */
 	private int getConnectedPeersNumber() {
-		return PEERS_STATUS.values().stream().filter(v -> v.equals(true)).collect(Collectors.toList()).size();
+		return getConnectedPeers().size();
 	}
 
 }
