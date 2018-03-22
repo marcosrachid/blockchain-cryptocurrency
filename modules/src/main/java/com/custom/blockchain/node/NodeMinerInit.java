@@ -106,7 +106,6 @@ public class NodeMinerInit extends AbstractNode {
 		NodeStateManagement.SERVICES.add(Service.GET_BLOCK_RESPONSE);
 		NodeStateManagement.SERVICES.add(Service.GET_PEERS);
 		NodeStateManagement.SERVICES.add(Service.GET_PEERS_RESPONSE);
-		NodeStateManagement.SERVICES.add(Service.GET_TRANSACTIONS);
 		NodeStateManagement.SERVICES.add(Service.GET_TRANSACTIONS_RESPONSE);
 	}
 
