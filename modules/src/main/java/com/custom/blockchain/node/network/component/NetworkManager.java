@@ -97,7 +97,7 @@ public class NetworkManager {
 		Iterator<Peer> peers = getConnectedPeers().iterator();
 		while (peers.hasNext() && BLOCKS_QUEUE.size() > 0) {
 			this.peerSender.connect(peers.next());
-			this.peerSender.send(Service.GET_BLOCK.getService(), Long.toString(BLOCKS_QUEUE.peek().getHeight()));
+			this.peerSender.send(Service.GET_BLOCK.getService(), Long.toString(BLOCKS_QUEUE.peek()));
 			this.peerSender.close();
 		}
 	}

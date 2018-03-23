@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.Block;
+import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.resource.dto.request.RequestSendFundsDTO;
 import com.custom.blockchain.signature.SignatureManager;
@@ -44,18 +44,18 @@ public class TransactionService {
 
 	private UTXOChainstateDB utxoChainstateDb;
 
-	private CurrentBlockChainstateDB currentBlockChainstateDB;
+	private BlockStateManagement blockStateManagement;
 
 	private SignatureManager signatureManager;
 
 	private TransactionMempool transactionMempool;
 
 	public TransactionService(final BlockchainProperties blockchainProperties, final UTXOChainstateDB chainstateDb,
-			final CurrentBlockChainstateDB currentBlockChainstateDB, final SignatureManager signatureManager,
+			final BlockStateManagement blockStateManagement, final SignatureManager signatureManager,
 			final TransactionMempool transactionMempool) {
 		this.blockchainProperties = blockchainProperties;
 		this.utxoChainstateDb = chainstateDb;
-		this.currentBlockChainstateDB = currentBlockChainstateDB;
+		this.blockStateManagement = blockStateManagement;
 		this.signatureManager = signatureManager;
 		this.transactionMempool = transactionMempool;
 	}
@@ -137,7 +137,7 @@ public class TransactionService {
 	 * @throws TransactionException
 	 */
 	public void addTransaction(SimpleTransaction transaction) throws TransactionException {
-		Block block = currentBlockChainstateDB.get();
+		Block block = blockStateManagement.getNextBlock();
 		if (transaction == null)
 			throw new TransactionException("Non existent transaction");
 		processTransaction(transaction);

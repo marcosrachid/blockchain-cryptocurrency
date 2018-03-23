@@ -14,24 +14,27 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.BlockStateManagement;
-import com.custom.blockchain.data.chainstate.PreviewBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.node.network.peer.component.PeerSender;
 import com.custom.blockchain.node.network.peer.exception.PeerException;
 import com.custom.blockchain.service.PeerService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class ServiceDispatcher {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ServiceDispatcher.class);
+	
+	private ObjectMapper objectMapper;
 
 	private PeerService peerService;
 
 	private PeerSender peerSender;
 
-	private PreviewBlockChainstateDB previewBlockChainstateDB;
+	private CurrentBlockChainstateDB currentBlockChainstateDB;
 
 	private BlockStateManagement blockStateManagement;
 
@@ -39,11 +42,12 @@ public class ServiceDispatcher {
 
 	private Peer peer;
 
-	public ServiceDispatcher(final PeerService peerService, final PeerSender peerSender,
-			final PreviewBlockChainstateDB previewBlockChainstateDB, final BlockStateManagement blockStateManagement) {
+	public ServiceDispatcher(final ObjectMapper objectMapper, final PeerService peerService, final PeerSender peerSender,
+			final CurrentBlockChainstateDB currentBlockChainstateDB, final BlockStateManagement blockStateManagement) {
+		this.objectMapper = objectMapper;
 		this.peerService = peerService;
 		this.peerSender = peerSender;
-		this.previewBlockChainstateDB = previewBlockChainstateDB;
+		this.currentBlockChainstateDB = currentBlockChainstateDB;
 		this.blockStateManagement = blockStateManagement;
 	}
 
@@ -121,7 +125,7 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getState() {
 		LOG.debug("[Crypto] Found a " + Service.GET_STATE.getService() + " event");
-		simpleSend(Service.GET_STATE_RESPONSE, Long.toString(previewBlockChainstateDB.get().getHeight()));
+		simpleSend(Service.GET_STATE_RESPONSE, Long.toString(currentBlockChainstateDB.get().getHeight()));
 	}
 
 	/**
@@ -132,12 +136,12 @@ public class ServiceDispatcher {
 	private void getStateResponse(String currentBlock) {
 		LOG.debug("[Crypto] Found a " + Service.GET_STATE_RESPONSE.getService() + " event");
 		LOG.debug("[Crypto] peer [" + peer + "] current block [" + currentBlock + "]");
-		if (Long.valueOf(currentBlock) > previewBlockChainstateDB.get().getHeight()) {
+		Long currentMappedHeight = (currentBlockChainstateDB.get().getHeight() + BLOCKS_QUEUE.size());
+		if (Long.valueOf(currentBlock) > currentMappedHeight) {
 			LOG.info("[Crypto] Found new block from peer [" + peer + "], requesting block...");
-			long blockNumber = Long.valueOf(currentBlock) - previewBlockChainstateDB.get().getHeight();
-			for (long i = previewBlockChainstateDB.get().getHeight(); i <= Long.valueOf(currentBlock); i++) {
-				blockStateManagement.foundBlock();
-				BLOCKS_QUEUE.add(previewBlockChainstateDB.get());
+			long blockNumber = Long.valueOf(currentBlock) - currentBlockChainstateDB.get().getHeight();
+			for (long i = (currentMappedHeight + 1); i <= Long.valueOf(currentBlock); i++) {
+				BLOCKS_QUEUE.add(i);
 			}
 		}
 	}
@@ -149,7 +153,7 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getBlock(String height) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event");
-		simpleSend(Service.GET_BLOCK_RESPONSE, Long.toString(previewBlockChainstateDB.get().getHeight()));
+//		simpleSend(Service.GET_BLOCK_RESPONSE, objectMapper.writeValueAsString(arg0));
 	}
 
 	/**
@@ -159,6 +163,7 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getBlockResponse(String block) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event");
+		BLOCKS_QUEUE.poll();
 	}
 
 	/**

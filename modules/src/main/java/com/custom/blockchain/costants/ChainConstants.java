@@ -7,7 +7,7 @@ package com.custom.blockchain.costants;
  */
 public class ChainConstants {
 
-	public static final Long BLK_DAT_MAX_FILE_SIZE = 134217728L;
+	public static final Long BLK_DAT_MAX_FILE_SIZE = 128000000L;
 
 	public static final String GENESIS_TX_ID = "0";
 

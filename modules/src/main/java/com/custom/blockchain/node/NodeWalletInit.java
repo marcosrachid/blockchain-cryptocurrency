@@ -90,7 +90,7 @@ public class NodeWalletInit extends AbstractNode {
 
 			logKeys(owner);
 			premined(owner);
-			setBlockState(genesis);
+			setGenesis(genesis);
 		} else {
 			LOG.info("[Crypto] Blockchain already");
 		}

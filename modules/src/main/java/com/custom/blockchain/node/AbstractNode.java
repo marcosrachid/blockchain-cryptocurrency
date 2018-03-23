@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
+import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.node.network.component.NetworkManager;
@@ -71,9 +72,12 @@ public abstract class AbstractNode {
 	 * 
 	 * @param genesis
 	 */
-	protected void setBlockState(Block genesis) {
-		blockStateManagement.saveGenesis(genesis);
-		blockStateManagement.foundBlock();
+	protected void setGenesis(Block genesis) {
+		try {
+			blockStateManagement.foundBlock(genesis);
+		} catch (BlockException e) {
+			LOG.error("Premined block error: " + e.getMessage());
+		}
 	}
 
 }
