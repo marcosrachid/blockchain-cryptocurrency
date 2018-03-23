@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.data.blockindex.CurrentFileBlockIndexDB;
 import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
 import com.custom.blockchain.util.FileUtil;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -24,17 +25,20 @@ public class BlockStateManagement {
 
 	private BlockchainProperties blockchainProperties;
 
+	private ObjectMapper objectMapper;
+
 	private CurrentBlockChainstateDB currentBlockChainstateDB;
 
-	private ObjectMapper objectMapper;
+	private CurrentFileBlockIndexDB currentFileBlockIndexDB;
 
 	private Block nextBlock;
 
-	public BlockStateManagement(final BlockchainProperties blockchainProperties,
-			final CurrentBlockChainstateDB currentBlockChainstateDB, final ObjectMapper objectMapper) {
+	public BlockStateManagement(final BlockchainProperties blockchainProperties, final ObjectMapper objectMapper,
+			final CurrentBlockChainstateDB currentBlockChainstateDB, CurrentFileBlockIndexDB currentFileBlockIndexDB) {
 		this.blockchainProperties = blockchainProperties;
-		this.currentBlockChainstateDB = currentBlockChainstateDB;
 		this.objectMapper = objectMapper;
+		this.currentBlockChainstateDB = currentBlockChainstateDB;
+		this.currentFileBlockIndexDB = currentFileBlockIndexDB;
 	}
 
 	/**
@@ -46,11 +50,14 @@ public class BlockStateManagement {
 		try {
 			currentBlockChainstateDB.put(block);
 			nextBlock = BlockFactory.getBlock(block);
-			String jsonBlockList = addBlockToCurrentFile(block);
-			if (FileUtil.isCurrentFileFull(blockchainProperties.getCoinName(), jsonBlockList)) {
-				jsonBlockList = addBlockToCurrentFile(block);
+			Long fileNumber = currentFileBlockIndexDB.get();
+			String jsonBlockList = addBlockToCurrentFile(block, fileNumber);
+			if (FileUtil.isCurrentFileFull(blockchainProperties.getCoinName(), jsonBlockList, fileNumber)) {
+				fileNumber++;
+				currentFileBlockIndexDB.put(fileNumber);
+				jsonBlockList = addBlockToCurrentFile(block, fileNumber);
 			}
-			FileUtil.addBlock(blockchainProperties.getCoinName(), jsonBlockList);
+			FileUtil.addBlock(blockchainProperties.getCoinName(), jsonBlockList, fileNumber);
 		} catch (IOException e) {
 			throw new BlockException("Could not register new Block");
 		}
@@ -64,13 +71,7 @@ public class BlockStateManagement {
 	public void foundBlock(String jsonBlock) throws BlockException {
 		try {
 			Block block = objectMapper.readValue(jsonBlock, Block.class);
-			currentBlockChainstateDB.put(block);
-			nextBlock = BlockFactory.getBlock(block);
-			String jsonBlockList = addBlockToCurrentFile(block);
-			if (FileUtil.isCurrentFileFull(blockchainProperties.getCoinName(), jsonBlockList)) {
-				jsonBlockList = addBlockToCurrentFile(block);
-			}
-			FileUtil.addBlock(blockchainProperties.getCoinName(), jsonBlockList);
+			foundBlock(block);
 		} catch (IOException e) {
 			throw new BlockException("Could not register new Block");
 		}
@@ -87,15 +88,16 @@ public class BlockStateManagement {
 	/**
 	 * 
 	 * @param block
+	 * @param fileNumber
 	 * @return
 	 * @throws JsonParseException
 	 * @throws JsonMappingException
 	 * @throws IOException
 	 */
-	private String addBlockToCurrentFile(Block block) throws IOException {
+	private String addBlockToCurrentFile(Block block, Long fileNumber) throws IOException {
 		JavaType collectionBlockClass = objectMapper.getTypeFactory().constructCollectionType(Set.class, Block.class);
-		Set<Block> blockList = objectMapper.readValue(FileUtil.readCurrentBlock(blockchainProperties.getCoinName()),
-				collectionBlockClass);
+		Set<Block> blockList = objectMapper.readValue(
+				FileUtil.readBlocksFile(blockchainProperties.getCoinName(), fileNumber), collectionBlockClass);
 		blockList.add(block);
 		return objectMapper.writeValueAsString(blockList);
 	}

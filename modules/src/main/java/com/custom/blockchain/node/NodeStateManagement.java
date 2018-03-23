@@ -21,8 +21,6 @@ public class NodeStateManagement {
 	public static final Queue<Long> BLOCKS_QUEUE = new LinkedList<>();
 
 	public static Integer DIFFICULTY = 5;
-	
-	public static Long CURRENT_FILE_NUMBER = 0L;
 
 	public static boolean BLOCKED = false;
 

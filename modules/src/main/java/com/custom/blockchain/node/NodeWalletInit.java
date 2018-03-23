@@ -19,6 +19,7 @@ import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.data.blockindex.CurrentFileBlockIndexDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.component.NetworkManager;
@@ -40,11 +41,12 @@ public class NodeWalletInit extends AbstractNode {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeWalletInit.class);
 
-	public NodeWalletInit(final BlockchainProperties blockchainProperties, final UTXOChainstateDB chainstateDb,
-			final BlockStateManagement blockStateManagement, final ObjectMapper objectMapper,
-			final NetworkManager networkManagement) {
+	public NodeWalletInit(final BlockchainProperties blockchainProperties, final UTXOChainstateDB utxoChainstateDb,
+			final CurrentFileBlockIndexDB currentFileBlockIndexDB, final BlockStateManagement blockStateManagement,
+			final ObjectMapper objectMapper, final NetworkManager networkManagement) {
 		this.blockchainProperties = blockchainProperties;
-		this.utxoChainstateDb = chainstateDb;
+		this.utxoChainstateDb = utxoChainstateDb;
+		this.currentFileBlockIndexDB = currentFileBlockIndexDB;
 		this.blockStateManagement = blockStateManagement;
 		this.objectMapper = objectMapper;
 		this.networkManagement = networkManagement;

@@ -5,7 +5,6 @@ import static com.custom.blockchain.costants.SystemConstants.BLOCKS_DIRECTORY;
 import static com.custom.blockchain.costants.SystemConstants.BLOCK_FILE;
 import static com.custom.blockchain.costants.SystemConstants.MEMPOOL_FILE;
 import static com.custom.blockchain.costants.SystemConstants.PEERS_FILE;
-import static com.custom.blockchain.node.NodeStateManagement.CURRENT_FILE_NUMBER;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -53,10 +52,9 @@ public class FileUtil {
 	 * @param blockJson
 	 * @throws IOException
 	 */
-	public static boolean isCurrentFileFull(String coinName, String blockJson) throws IOException {
+	public static boolean isCurrentFileFull(String coinName, String blockJson, Long fileNumber) throws IOException {
 		if (blockJson.length() > BLK_DAT_MAX_FILE_SIZE) {
-			CURRENT_FILE_NUMBER++;
-			readCurrentBlock(coinName);
+			readBlocksFile(coinName, fileNumber + 1);
 			return true;
 		}
 		return false;
@@ -68,21 +66,11 @@ public class FileUtil {
 	 * @throws IOException
 	 * @throws BlockException
 	 */
-	public static void addBlock(String coinName, String blockJson) throws IOException {
+	public static void addBlock(String coinName, String blockJson, Long fileNumber) throws IOException {
 		String path = String.format(OsUtil.getRootDirectory(), coinName);
-		String fileName = String.format(BLOCK_FILE, CURRENT_FILE_NUMBER);
+		String fileName = String.format(BLOCK_FILE, fileNumber);
 		File file = new File(path + BLOCKS_DIRECTORY + fileName);
 		FileUtils.writeByteArrayToFile(file, compress(blockJson));
-	}
-
-	/**
-	 * 
-	 * @param coinName
-	 * @return
-	 * @throws IOException
-	 */
-	public static String readCurrentBlock(String coinName) throws IOException {
-		return readBlock(coinName, CURRENT_FILE_NUMBER);
 	}
 
 	/**
@@ -92,7 +80,7 @@ public class FileUtil {
 	 * @return
 	 * @throws IOException
 	 */
-	public static String readBlock(String coinName, Long fileNumber) throws IOException {
+	public static String readBlocksFile(String coinName, Long fileNumber) throws IOException {
 		String path = String.format(OsUtil.getRootDirectory(), coinName);
 		String fileName = String.format(BLOCK_FILE, fileNumber);
 		File file = new File(path + BLOCKS_DIRECTORY + fileName);

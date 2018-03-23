@@ -104,7 +104,6 @@ public class Wallet {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("privateKey", WalletUtil.getStringFromKey(privateKey))
-				.append("publicKey", WalletUtil.getStringFromKey(publicKey)).build();
+		return new ToStringBuilder(this).append("publicKey", WalletUtil.getStringFromKey(publicKey)).build();
 	}
 }

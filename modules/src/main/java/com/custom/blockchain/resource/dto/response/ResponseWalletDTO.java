@@ -59,7 +59,7 @@ public class ResponseWalletDTO implements Serializable {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("publicKey", publicKey).append("privateKey", privateKey).build();
+		return new ToStringBuilder(this).append("publicKey", publicKey).build();
 	}
 
 }

@@ -46,7 +46,7 @@ public class RequestImportDTO implements Serializable {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("privateKey", privateKey).build();
+		return new ToStringBuilder(this).build();
 	}
 
 }
