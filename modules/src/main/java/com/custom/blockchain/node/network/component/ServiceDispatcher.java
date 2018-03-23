@@ -1,6 +1,7 @@
 package com.custom.blockchain.node.network.component;
 
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
+import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY_ADJUSTMENT_BLOCK;
 import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 
@@ -180,6 +181,9 @@ public class ServiceDispatcher {
 				blockStateManagement.foundBlock(block);
 				BLOCKS_QUEUE.poll();
 			}
+			if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
+				// TODO: adjust difficulty
+			}
 		} catch (BlockException | IOException e) {
 			throw new NetworkException("Block[" + jsonBlock + "] found error: " + e.getMessage());
 		}
@@ -230,24 +234,6 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getTransactionsResponse(String transactions) {
 		LOG.debug("[Crypto] Found a " + Service.GET_TRANSACTIONS_RESPONSE.getService() + " event");
-	}
-
-	/**
-	 * 
-	 * @param difficulty
-	 */
-	@SuppressWarnings("unused")
-	private void getDifficulty(String height) {
-		LOG.debug("[Crypto] Found a " + Service.GET_DIFFICULTY.getService() + " event");
-	}
-
-	/**
-	 * 
-	 * @param difficulty
-	 */
-	@SuppressWarnings("unused")
-	private void getDifficultyResponse(String difficulty) {
-		LOG.debug("[Crypto] Found a " + Service.GET_DIFFICULTY_RESPONSE.getService() + " event");
 	}
 
 	/**
