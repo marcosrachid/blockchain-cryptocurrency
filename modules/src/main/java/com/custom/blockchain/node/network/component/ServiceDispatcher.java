@@ -7,6 +7,7 @@ import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -14,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.BlockStateManagement;
+import com.custom.blockchain.block.exception.BlockException;
+import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.exception.NetworkException;
@@ -21,14 +24,18 @@ import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.node.network.peer.component.PeerSender;
 import com.custom.blockchain.node.network.peer.exception.PeerException;
 import com.custom.blockchain.service.PeerService;
+import com.custom.blockchain.util.FileUtil;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class ServiceDispatcher {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ServiceDispatcher.class);
-	
+
 	private ObjectMapper objectMapper;
+
+	private BlockchainProperties blockchainProperties;
 
 	private PeerService peerService;
 
@@ -42,9 +49,11 @@ public class ServiceDispatcher {
 
 	private Peer peer;
 
-	public ServiceDispatcher(final ObjectMapper objectMapper, final PeerService peerService, final PeerSender peerSender,
+	public ServiceDispatcher(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
+			final PeerService peerService, final PeerSender peerSender,
 			final CurrentBlockChainstateDB currentBlockChainstateDB, final BlockStateManagement blockStateManagement) {
 		this.objectMapper = objectMapper;
+		this.blockchainProperties = blockchainProperties;
 		this.peerService = peerService;
 		this.peerSender = peerSender;
 		this.currentBlockChainstateDB = currentBlockChainstateDB;
@@ -153,7 +162,8 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getBlock(String height) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event");
-//		simpleSend(Service.GET_BLOCK_RESPONSE, objectMapper.writeValueAsString(arg0));
+		// simpleSend(Service.GET_BLOCK_RESPONSE,
+		// objectMapper.writeValueAsString(arg0));
 	}
 
 	/**
@@ -161,9 +171,14 @@ public class ServiceDispatcher {
 	 * @param block
 	 */
 	@SuppressWarnings("unused")
-	private void getBlockResponse(String block) {
+	private void getBlockResponse(String jsonBlock) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event");
-		BLOCKS_QUEUE.poll();
+		try {
+			blockStateManagement.foundBlock(jsonBlock);
+			BLOCKS_QUEUE.poll();
+		} catch (BlockException e) {
+			throw new NetworkException("Block[" + jsonBlock + "] found error: " + e.getMessage());
+		}
 	}
 
 	/**
@@ -172,6 +187,11 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getPeers() {
 		LOG.debug("[Crypto] Found a " + Service.GET_PEERS.getService() + " event");
+		try {
+			simpleSend(Service.GET_PEERS_RESPONSE, FileUtil.readPeer(blockchainProperties.getCoinName()));
+		} catch (IOException e) {
+			throw new NetworkException("Could not get peer list: " + e.getMessage());
+		}
 	}
 
 	/**
@@ -180,6 +200,16 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getPeersResponse(String peers) {
 		LOG.debug("[Crypto] Found a " + Service.GET_PEERS_RESPONSE.getService() + " event");
+		JavaType collectionPeerClass = objectMapper.getTypeFactory().constructCollectionType(Set.class, Peer.class);
+		try {
+			Set<Peer> requestPeers = objectMapper.readValue(peers, collectionPeerClass);
+			Set<Peer> nodePeers = objectMapper.readValue(FileUtil.readPeer(blockchainProperties.getCoinName()),
+					collectionPeerClass);
+			nodePeers.addAll(requestPeers);
+			FileUtil.addPeer(blockchainProperties.getCoinName(), objectMapper.writeValueAsString(nodePeers));
+		} catch (IOException e) {
+			throw new NetworkException("Could not read peers data: " + e.getMessage());
+		}
 	}
 
 	/**

@@ -8,11 +8,13 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.util.FileUtil;
@@ -31,9 +33,13 @@ public class PeerFinder {
 
 	public ObjectMapper objectMapper;
 
-	public PeerFinder(final BlockchainProperties blockchainProperties, final ObjectMapper objectMapper) {
+	private PeerSender peerSender;
+
+	public PeerFinder(final BlockchainProperties blockchainProperties, final ObjectMapper objectMapper,
+			final PeerSender peerSender) {
 		this.blockchainProperties = blockchainProperties;
 		this.objectMapper = objectMapper;
+		this.peerSender = peerSender;
 	}
 
 	/**
@@ -75,12 +81,18 @@ public class PeerFinder {
 	 * 
 	 */
 	private void findFromDNS() {
+		// TODO: MAYBE
 	}
 
 	/**
 	 * 
 	 */
 	private void findFromPeers() {
+		for (Peer p : getConnectedPeers()) {
+			this.peerSender.connect(p);
+			this.peerSender.send(Service.GET_PEERS.getService());
+			this.peerSender.close();
+		}
 	}
 
 	/**
@@ -119,6 +131,15 @@ public class PeerFinder {
 		} catch (UnknownHostException e) {
 			throw new NetworkException("Could read peer " + peer.getIp() + " as an InetAddress");
 		}
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	private Set<Peer> getConnectedPeers() {
+		return PEERS_STATUS.entrySet().stream().filter(entry -> entry.getValue().equals(true)).map(e -> e.getKey())
+				.collect(Collectors.toSet());
 	}
 
 }

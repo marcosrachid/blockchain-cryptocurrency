@@ -43,9 +43,29 @@ public class BlockStateManagement {
 	 * @throws BlockException
 	 */
 	public void foundBlock(Block block) throws BlockException {
-		currentBlockChainstateDB.put(block);
-		nextBlock = BlockFactory.getBlock(block);
 		try {
+			currentBlockChainstateDB.put(block);
+			nextBlock = BlockFactory.getBlock(block);
+			String jsonBlockList = addBlockToCurrentFile(block);
+			if (FileUtil.isCurrentFileFull(blockchainProperties.getCoinName(), jsonBlockList)) {
+				jsonBlockList = addBlockToCurrentFile(block);
+			}
+			FileUtil.addBlock(blockchainProperties.getCoinName(), jsonBlockList);
+		} catch (IOException e) {
+			throw new BlockException("Could not register new Block");
+		}
+	}
+
+	/**
+	 * 
+	 * @param jsonBlock
+	 * @throws BlockException
+	 */
+	public void foundBlock(String jsonBlock) throws BlockException {
+		try {
+			Block block = objectMapper.readValue(jsonBlock, Block.class);
+			currentBlockChainstateDB.put(block);
+			nextBlock = BlockFactory.getBlock(block);
 			String jsonBlockList = addBlockToCurrentFile(block);
 			if (FileUtil.isCurrentFileFull(blockchainProperties.getCoinName(), jsonBlockList)) {
 				jsonBlockList = addBlockToCurrentFile(block);
