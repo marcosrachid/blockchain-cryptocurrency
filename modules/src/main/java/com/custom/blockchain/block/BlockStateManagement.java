@@ -65,20 +65,6 @@ public class BlockStateManagement {
 
 	/**
 	 * 
-	 * @param jsonBlock
-	 * @throws BlockException
-	 */
-	public void foundBlock(String jsonBlock) throws BlockException {
-		try {
-			Block block = objectMapper.readValue(jsonBlock, Block.class);
-			foundBlock(block);
-		} catch (IOException e) {
-			throw new BlockException("Could not register new Block");
-		}
-	}
-
-	/**
-	 * 
 	 * @return
 	 */
 	public Block getNextBlock() {

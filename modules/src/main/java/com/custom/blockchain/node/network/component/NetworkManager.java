@@ -92,7 +92,7 @@ public class NetworkManager {
 	/**
 	 * 
 	 */
-	@Scheduled(fixedRate = 60000)
+	@Scheduled(fixedRate = 5000)
 	public synchronized void getBlocks() {
 		Iterator<Peer> peers = getConnectedPeers().iterator();
 		while (peers.hasNext() && BLOCKS_QUEUE.size() > 0) {

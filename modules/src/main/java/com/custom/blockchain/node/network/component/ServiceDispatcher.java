@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
@@ -174,9 +175,12 @@ public class ServiceDispatcher {
 	private void getBlockResponse(String jsonBlock) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event");
 		try {
-			blockStateManagement.foundBlock(jsonBlock);
-			BLOCKS_QUEUE.poll();
-		} catch (BlockException e) {
+			Block block = objectMapper.readValue(jsonBlock, Block.class);
+			if (BLOCKS_QUEUE.peek().equals(block.getHeight())) {
+				blockStateManagement.foundBlock(block);
+				BLOCKS_QUEUE.poll();
+			}
+		} catch (BlockException | IOException e) {
 			throw new NetworkException("Block[" + jsonBlock + "] found error: " + e.getMessage());
 		}
 	}
