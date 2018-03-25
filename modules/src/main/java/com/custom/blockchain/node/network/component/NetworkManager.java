@@ -18,6 +18,7 @@ import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.node.network.peer.component.PeerFinder;
 import com.custom.blockchain.node.network.peer.component.PeerListener;
 import com.custom.blockchain.node.network.peer.component.PeerSender;
+import com.custom.blockchain.node.network.request.BlockchainRequest;
 
 /**
  * 
@@ -71,7 +72,8 @@ public class NetworkManager {
 		for (Peer p : PEERS) {
 			PEERS_STATUS.put(p, false);
 			this.peerSender.connect(p);
-			this.peerSender.send(Service.PING.getService());
+			this.peerSender.send(BlockchainRequest.createBuilder()
+					.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.PING).build());
 			this.peerSender.close();
 		}
 		;
@@ -84,7 +86,8 @@ public class NetworkManager {
 	public synchronized void getState() {
 		for (Peer p : getConnectedPeers()) {
 			this.peerSender.connect(p);
-			this.peerSender.send(Service.GET_STATE.getService());
+			this.peerSender.send(BlockchainRequest.createBuilder()
+					.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.GET_STATE).build());
 			this.peerSender.close();
 		}
 	}
@@ -97,7 +100,9 @@ public class NetworkManager {
 		Iterator<Peer> peers = getConnectedPeers().iterator();
 		while (peers.hasNext() && BLOCKS_QUEUE.size() > 0) {
 			this.peerSender.connect(peers.next());
-			this.peerSender.send(Service.GET_BLOCK.getService(), Long.toString(BLOCKS_QUEUE.peek()));
+			this.peerSender
+					.send(BlockchainRequest.createBuilder().withSignature(blockchainProperties.getNetworkSignature())
+							.withService(Service.GET_BLOCK).withArguments(BLOCKS_QUEUE.peek()).build());
 			this.peerSender.close();
 		}
 	}

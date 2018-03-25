@@ -1,9 +1,7 @@
 package com.custom.blockchain.node.network.peer.component;
 
-import static com.custom.blockchain.costants.ChainConstants.REQUEST_SEPARATOR;
 import static com.custom.blockchain.node.NodeStateManagement.LISTENING_THREAD;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
@@ -16,6 +14,8 @@ import org.springframework.stereotype.Component;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.node.network.component.ServiceDispatcher;
 import com.custom.blockchain.node.network.peer.Peer;
+import com.custom.blockchain.node.network.peer.util.PeerUtil;
+import com.custom.blockchain.node.network.request.BlockchainRequest;
 
 @Component
 public class PeerListener {
@@ -49,6 +49,7 @@ public class PeerListener {
 				} catch (IOException | NoSuchMethodException | SecurityException | IllegalAccessException
 						| IllegalArgumentException | InvocationTargetException e) {
 					LOG.error("[Crypto] Could not start server: " + e.getMessage());
+					isRunning = false;
 					if (!server.isClosed()) {
 						try {
 							server.close();
@@ -78,36 +79,26 @@ public class PeerListener {
 		LOG.debug("[Crypto] Server Starting");
 		server = new ServerSocket(blockchainProperties.getNetworkPort());
 		LOG.debug("[Crypto] Server Started port: " + blockchainProperties.getNetworkPort());
-		String[] service;
 
 		Socket clientSocket;
 
-		DataInputStream input;
-
 		while (isRunning) {
 			clientSocket = server.accept();
-			input = new DataInputStream(clientSocket.getInputStream());
-
 			LOG.debug("[Crypto] Connection Received from: " + clientSocket.toString());
 
-			String request = input.readUTF();
-			LOG.trace("[Crypto] Raw Request: " + request);
-			service = request.split(REQUEST_SEPARATOR);
+			BlockchainRequest request = PeerUtil.receive(clientSocket.getInputStream());
+			LOG.debug("[Crypto] Reques: " + request);
+
 			Peer newPeer = new Peer(clientSocket.getInetAddress().getHostAddress(), clientSocket.getLocalPort());
 
-			if (service.length < 2 || !service[0].equals(blockchainProperties.getNetworkSignature())) {
+			if (!request.getSignature().equals(blockchainProperties.getNetworkSignature())) {
 				LOG.error("[Crypto] Received an invalid signature from peer [" + newPeer + "]");
-				input.close();
 				clientSocket.close();
 				continue;
 			}
 
-			if (service.length == 3)
-				serviceDispatcher.launch(clientSocket, newPeer, service[1], service[2]);
-			else
-				serviceDispatcher.launch(clientSocket, newPeer, service[1]);
+			serviceDispatcher.launch(clientSocket, newPeer, request);
 
-			input.close();
 			clientSocket.close();
 		}
 	}

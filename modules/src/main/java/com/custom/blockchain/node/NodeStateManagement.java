@@ -6,6 +6,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.custom.blockchain.node.network.Service;
+import com.custom.blockchain.node.network.request.arguments.BlockArguments;
 
 /**
  * 
@@ -18,7 +19,7 @@ public class NodeStateManagement {
 
 	public static final Set<Service> SERVICES = new HashSet<>();
 
-	public static final Queue<Long> BLOCKS_QUEUE = new LinkedList<>();
+	public static final Queue<BlockArguments> BLOCKS_QUEUE = new LinkedList<>();
 
 	public static Integer DIFFICULTY = 5;
 

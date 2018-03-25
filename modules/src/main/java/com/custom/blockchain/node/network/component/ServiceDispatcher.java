@@ -3,6 +3,7 @@ package com.custom.blockchain.node.network.component;
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
 import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY_ADJUSTMENT_BLOCK;
 import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
+import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 
 import java.io.IOException;
@@ -25,6 +26,12 @@ import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.node.network.peer.component.PeerSender;
 import com.custom.blockchain.node.network.peer.exception.PeerException;
+import com.custom.blockchain.node.network.request.BlockchainRequest;
+import com.custom.blockchain.node.network.request.arguments.BlockArguments;
+import com.custom.blockchain.node.network.request.arguments.BlockResponseArguments;
+import com.custom.blockchain.node.network.request.arguments.PeerResponseArguments;
+import com.custom.blockchain.node.network.request.arguments.StateResponseArguments;
+import com.custom.blockchain.node.network.request.arguments.TransactionsResponseArguments;
 import com.custom.blockchain.service.PeerService;
 import com.custom.blockchain.util.FileUtil;
 import com.fasterxml.jackson.databind.JavaType;
@@ -66,43 +73,29 @@ public class ServiceDispatcher {
 	 * 
 	 * @param clientSocket
 	 * @param peer
-	 * @param command
-	 * @throws NoSuchMethodException
-	 * @throws SecurityException
+	 * @param request
 	 * @throws IllegalAccessException
 	 * @throws IllegalArgumentException
 	 * @throws InvocationTargetException
-	 */
-	public void launch(Socket clientSocket, Peer peer, String command) throws NoSuchMethodException, SecurityException,
-			IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		LOG.debug("[Crypto] Service: " + command);
-		this.clientSocket = clientSocket;
-		this.peer = peer;
-		if (!SERVICES.stream().map(s -> s.getService()).collect(Collectors.toList()).contains(command))
-			return;
-		this.getClass().getDeclaredMethod(command).invoke(this);
-	}
-
-	/**
-	 * 
-	 * @param clientSocket
-	 * @param peer
-	 * @param command
-	 * @param args
 	 * @throws NoSuchMethodException
 	 * @throws SecurityException
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InvocationTargetException
 	 */
-	public void launch(Socket clientSocket, Peer peer, String command, String arg) throws NoSuchMethodException,
-			SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		LOG.debug("[Crypto] Service: " + command + ", Arguments: " + arg);
+	public void launch(Socket clientSocket, Peer peer, BlockchainRequest request) throws IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+		LOG.debug("[Crypto] Service: " + request.getService() + ", Arguments: " + request.getArguments());
 		this.clientSocket = clientSocket;
 		this.peer = peer;
-		if (!SERVICES.stream().map(s -> s.getService()).collect(Collectors.toList()).contains(command))
+		if (!SERVICES.stream().map(s -> s.getService()).collect(Collectors.toList())
+				.contains(request.getService().getService()))
 			return;
-		this.getClass().getDeclaredMethod(command, String.class).invoke(this, arg);
+		if (request.hasArguments()) {
+			LOG.debug("Request with arguments: " + request.getService().getService() + " - " + request.getArguments());
+			this.getClass().getDeclaredMethod(request.getService().getService(), request.getArguments().getClass())
+					.invoke(this, request.getArguments());
+		} else {
+			LOG.debug("Request without arguments: " + request.getService().getService());
+			this.getClass().getDeclaredMethod(request.getService().getService()).invoke(this);
+		}
 	}
 
 	/**
@@ -112,7 +105,7 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void ping() {
 		LOG.debug("[Crypto] Found a " + Service.PING.getService() + " event from peer [" + peer + "]");
-		simpleSend(Service.PONG);
+		simpleSend(BlockchainRequest.createBuilder().withService(Service.PONG).build());
 		try {
 			peerService.addPeer(peer);
 		} catch (PeerException e) {
@@ -136,7 +129,8 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getState() {
 		LOG.debug("[Crypto] Found a " + Service.GET_STATE.getService() + " event");
-		simpleSend(Service.GET_STATE_RESPONSE, Long.toString(currentBlockChainstateDB.get().getHeight()));
+		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_STATE_RESPONSE)
+				.withArguments(new StateResponseArguments(currentBlockChainstateDB.get().getHeight())).build());
 	}
 
 	/**
@@ -144,15 +138,16 @@ public class ServiceDispatcher {
 	 * @param state
 	 */
 	@SuppressWarnings("unused")
-	private void getStateResponse(String currentBlock) {
+	private void getStateResponse(StateResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_STATE_RESPONSE.getService() + " event");
+		Long currentBlock = args.getCurrentBlock();
 		LOG.debug("[Crypto] peer [" + peer + "] current block [" + currentBlock + "]");
 		Long currentMappedHeight = (currentBlockChainstateDB.get().getHeight() + BLOCKS_QUEUE.size());
-		if (Long.valueOf(currentBlock) > currentMappedHeight) {
+		if (currentBlock > currentMappedHeight) {
 			LOG.info("[Crypto] Found new block from peer [" + peer + "], requesting block...");
-			long blockNumber = Long.valueOf(currentBlock) - currentBlockChainstateDB.get().getHeight();
-			for (long i = (currentMappedHeight + 1); i <= Long.valueOf(currentBlock); i++) {
-				BLOCKS_QUEUE.add(i);
+			long blockNumber = currentBlock - currentBlockChainstateDB.get().getHeight();
+			for (long i = (currentMappedHeight + 1); i <= currentBlock; i++) {
+				BLOCKS_QUEUE.add(new BlockArguments(i));
 			}
 		}
 	}
@@ -162,7 +157,7 @@ public class ServiceDispatcher {
 	 * @param block
 	 */
 	@SuppressWarnings("unused")
-	private void getBlock(String height) {
+	private void getBlock(BlockResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event");
 		// simpleSend(Service.GET_BLOCK_RESPONSE,
 		// objectMapper.writeValueAsString(arg0));
@@ -173,10 +168,10 @@ public class ServiceDispatcher {
 	 * @param block
 	 */
 	@SuppressWarnings("unused")
-	private void getBlockResponse(String jsonBlock) {
+	private void getBlockResponse(BlockResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event");
+		Block block = args.getBlock();
 		try {
-			Block block = objectMapper.readValue(jsonBlock, Block.class);
 			if (BLOCKS_QUEUE.peek().equals(block.getHeight())) {
 				blockStateManagement.foundBlock(block);
 				BLOCKS_QUEUE.poll();
@@ -184,8 +179,8 @@ public class ServiceDispatcher {
 			if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
 				// TODO: adjust difficulty
 			}
-		} catch (BlockException | IOException e) {
-			throw new NetworkException("Block[" + jsonBlock + "] found error: " + e.getMessage());
+		} catch (BlockException e) {
+			throw new NetworkException("Block[" + block + "] found error: " + e.getMessage());
 		}
 	}
 
@@ -195,22 +190,19 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getPeers() {
 		LOG.debug("[Crypto] Found a " + Service.GET_PEERS.getService() + " event");
-		try {
-			simpleSend(Service.GET_PEERS_RESPONSE, FileUtil.readPeer(blockchainProperties.getCoinName()));
-		} catch (IOException e) {
-			throw new NetworkException("Could not get peer list: " + e.getMessage());
-		}
+		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_PEERS_RESPONSE)
+				.withArguments(new PeerResponseArguments(PEERS)).build());
 	}
 
 	/**
 	 * 
 	 */
 	@SuppressWarnings("unused")
-	private void getPeersResponse(String peers) {
+	private void getPeersResponse(PeerResponseArguments peers) {
 		LOG.debug("[Crypto] Found a " + Service.GET_PEERS_RESPONSE.getService() + " event");
 		JavaType collectionPeerClass = objectMapper.getTypeFactory().constructCollectionType(Set.class, Peer.class);
+		Set<Peer> requestPeers = peers.getPeers();
 		try {
-			Set<Peer> requestPeers = objectMapper.readValue(peers, collectionPeerClass);
 			Set<Peer> nodePeers = objectMapper.readValue(FileUtil.readPeer(blockchainProperties.getCoinName()),
 					collectionPeerClass);
 			nodePeers.addAll(requestPeers);
@@ -232,28 +224,18 @@ public class ServiceDispatcher {
 	 * 
 	 */
 	@SuppressWarnings("unused")
-	private void getTransactionsResponse(String transactions) {
+	private void getTransactionsResponse(TransactionsResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_TRANSACTIONS_RESPONSE.getService() + " event");
 	}
 
 	/**
 	 * 
-	 * @param service
+	 * @param request
 	 */
-	private void simpleSend(Service service) {
+	private void simpleSend(BlockchainRequest request) {
+		request.setSignature(blockchainProperties.getNetworkSignature());
 		peerSender.connect(peer);
-		peerSender.send(service.getService());
-		peerSender.close();
-	}
-
-	/**
-	 * 
-	 * @param service
-	 * @param param
-	 */
-	private void simpleSend(Service service, String param) {
-		peerSender.connect(peer);
-		peerSender.send(service.getService(), param);
+		peerSender.send(request);
 		peerSender.close();
 	}
 

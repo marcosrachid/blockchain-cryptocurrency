@@ -23,8 +23,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  */
 public class SimpleTransaction extends Transaction implements Serializable {
 
-	private static final long serialVersionUID = 7034357259560766328L;
-
+	private static final long serialVersionUID = 1L;
+	
 	@JsonSerialize(using = PublicKeySerializer.class)
 	@JsonDeserialize(using = PublicKeyDeserializer.class)
 	private PublicKey sender;

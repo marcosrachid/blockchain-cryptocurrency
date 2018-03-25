@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class Peer implements Serializable {
 
-	private static final long serialVersionUID = -6246549703936086338L;
+	private static final long serialVersionUID = 1L;
 
 	private String ip;
 	private int serverPort;
