@@ -37,6 +37,11 @@ import com.custom.blockchain.util.FileUtil;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 @Component
 public class ServiceDispatcher {
 
@@ -135,7 +140,7 @@ public class ServiceDispatcher {
 
 	/**
 	 * 
-	 * @param state
+	 * @param args
 	 */
 	@SuppressWarnings("unused")
 	private void getStateResponse(StateResponseArguments args) {
@@ -154,7 +159,7 @@ public class ServiceDispatcher {
 
 	/**
 	 * 
-	 * @param block
+	 * @param args
 	 */
 	@SuppressWarnings("unused")
 	private void getBlock(BlockResponseArguments args) {
@@ -165,7 +170,7 @@ public class ServiceDispatcher {
 
 	/**
 	 * 
-	 * @param block
+	 * @param args
 	 */
 	@SuppressWarnings("unused")
 	private void getBlockResponse(BlockResponseArguments args) {
