@@ -32,6 +32,25 @@ public class TransactionMempool {
 		this.objectMapper = objectMapper;
 	}
 
+	/**
+	 * 
+	 * @throws TransactionException
+	 */
+	public void restartMempool() throws TransactionException {
+		try {
+			TRANSACTION_MEMPOOL = objectMapper.readValue(
+					FileUtil.restartUnminedTransactions(blockchainProperties.getCoinName()),
+					new TypeReference<Set<Transaction>>() {
+					});
+		} catch (IOException e) {
+			throw new TransactionException("Could not get transactions from mempool: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * 
+	 * @throws TransactionException
+	 */
 	public void getUnminedTransactions() throws TransactionException {
 		try {
 			TRANSACTION_MEMPOOL = objectMapper.readValue(
@@ -51,7 +70,7 @@ public class TransactionMempool {
 	public void updateMempool(SimpleTransaction transaction) throws TransactionException {
 		TRANSACTION_MEMPOOL.add(transaction);
 		try {
-			FileUtil.addUnminedTransaction(blockchainProperties.getCoinName(),
+			FileUtil.saveUnminedTransaction(blockchainProperties.getCoinName(),
 					this.objectMapper.writeValueAsString(TRANSACTION_MEMPOOL));
 		} catch (IOException e) {
 			throw new TransactionException("Could not update to transaction mempool: " + e.getMessage());

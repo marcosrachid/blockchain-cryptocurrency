@@ -66,7 +66,7 @@ public class FileUtil {
 	 * @throws IOException
 	 * @throws BlockException
 	 */
-	public static void addBlock(String coinName, String blockJson, Long fileNumber) throws IOException {
+	public static void saveBlock(String coinName, String blockJson, Long fileNumber) throws IOException {
 		String path = String.format(OsUtil.getRootDirectory(), coinName);
 		String fileName = String.format(BLOCK_FILE, fileNumber);
 		File file = new File(path + BLOCKS_DIRECTORY + fileName);
@@ -96,7 +96,7 @@ public class FileUtil {
 	 * @param peerJson
 	 * @throws IOException
 	 */
-	public static void addPeer(String coinName, String peerJson) throws IOException {
+	public static void savePeer(String coinName, String peerJson) throws IOException {
 		String path = String.format(OsUtil.getRootDirectory(), coinName);
 		File file = new File(path + PEERS_FILE);
 		FileUtils.writeByteArrayToFile(file, compress(peerJson));
@@ -123,10 +123,24 @@ public class FileUtil {
 	 * @param transactionJson
 	 * @throws IOException
 	 */
-	public static void addUnminedTransaction(String coinName, String transactionJson) throws IOException {
+	public static void saveUnminedTransaction(String coinName, String transactionJson) throws IOException {
 		String path = String.format(OsUtil.getRootDirectory(), coinName);
 		File file = new File(path + MEMPOOL_FILE);
 		FileUtils.writeByteArrayToFile(file, compress(transactionJson));
+	}
+	
+	/**
+	 * 
+	 * @param coinName
+	 * @return
+	 * @throws IOException
+	 */
+	public static String restartUnminedTransactions(String coinName) throws IOException {
+		String path = String.format(OsUtil.getRootDirectory(), coinName);
+		File file = new File(path + MEMPOOL_FILE);
+		FileUtils.writeByteArrayToFile(file, compress(EMPTY_LIST));
+		byte[] content = Files.readAllBytes(file.toPath());
+		return decompress(content);
 	}
 
 	/**

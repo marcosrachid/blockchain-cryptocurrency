@@ -1,6 +1,7 @@
 package com.custom.blockchain.node.network.peer;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +23,8 @@ public class Peer implements Serializable {
 
 	private String ip;
 	private int serverPort;
+	private LocalDateTime createDatetime;
+	private LocalDateTime lastConnected;
 
 	@JsonIgnore
 	private List<Service> services;
@@ -50,6 +53,22 @@ public class Peer implements Serializable {
 
 	public void setServerPort(int port) {
 		this.serverPort = port;
+	}
+
+	public LocalDateTime getCreateDatetime() {
+		return createDatetime;
+	}
+
+	public void setCreateDatetime(LocalDateTime createDatetime) {
+		this.createDatetime = createDatetime;
+	}
+
+	public LocalDateTime getLastConnected() {
+		return lastConnected;
+	}
+
+	public void setLastConnected(LocalDateTime lastConnected) {
+		this.lastConnected = lastConnected;
 	}
 
 	public void addService(Service service) {

@@ -1,15 +1,13 @@
 package com.custom.blockchain.node.network.peer.component;
 
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
-import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
@@ -19,6 +17,7 @@ import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.node.network.request.BlockchainRequest;
 import com.custom.blockchain.util.FileUtil;
+import com.custom.blockchain.util.PeerUtil;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -29,6 +28,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Component
 public class PeerFinder {
+
+	private static final String INVALID_LOCALHOST = "localhost";
+
+	private static final String INVALID_LOCALHOST_IP = "127.0.0.1";
 
 	private BlockchainProperties blockchainProperties;
 
@@ -47,12 +50,17 @@ public class PeerFinder {
 	 * 
 	 */
 	public void findPeers() {
-		if (isPeerConnectionsFull())
+		if (PeerUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds()))
 			return;
 		findFromFile();
 		findFromDNS();
 		findFromPeers();
 		findMockedPeers();
+		try {
+			FileUtil.savePeer(blockchainProperties.getCoinName(), this.objectMapper.writeValueAsString(PEERS));
+		} catch (IOException e) {
+			throw new NetworkException("It was not possible deserialize peer request");
+		}
 	}
 
 	/**
@@ -89,7 +97,7 @@ public class PeerFinder {
 	 * 
 	 */
 	private void findFromPeers() {
-		for (Peer p : getConnectedPeers()) {
+		for (Peer p : PeerUtil.getConnectedPeers()) {
 			this.peerSender.connect(p);
 			this.peerSender.send(BlockchainRequest.createBuilder()
 					.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.GET_PEERS).build());
@@ -112,36 +120,21 @@ public class PeerFinder {
 
 	/**
 	 * 
-	 * @return
-	 */
-	private boolean isPeerConnectionsFull() {
-		return PEERS_STATUS.values().stream().filter(v -> v.equals(true)).collect(Collectors.toList())
-				.size() >= blockchainProperties.getNetworkMaximumSeeds();
-	}
-
-	/**
-	 * 
 	 * @param peer
 	 */
 	private void addPeer(Peer peer) {
 		InetAddress hostname;
 		try {
 			hostname = InetAddress.getByName(peer.getIp());
-			if (!hostname.equals(InetAddress.getLocalHost())) {
+			if (!hostname.equals(InetAddress.getByName(INVALID_LOCALHOST))
+					&& !hostname.equals(InetAddress.getByName(INVALID_LOCALHOST_IP))
+					&& !hostname.equals(InetAddress.getLocalHost())) {
+				peer.setCreateDatetime(LocalDateTime.now());
 				PEERS.add(peer);
 			}
 		} catch (UnknownHostException e) {
 			throw new NetworkException("Could read peer " + peer.getIp() + " as an InetAddress");
 		}
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	private Set<Peer> getConnectedPeers() {
-		return PEERS_STATUS.entrySet().stream().filter(entry -> entry.getValue().equals(true)).map(e -> e.getKey())
-				.collect(Collectors.toSet());
 	}
 
 }

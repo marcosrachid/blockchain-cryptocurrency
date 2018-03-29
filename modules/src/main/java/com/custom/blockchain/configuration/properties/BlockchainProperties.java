@@ -9,10 +9,12 @@ import javax.validation.constraints.Min;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import com.custom.blockchain.util.DigestUtil;
 
 @ConfigurationProperties(prefix = "application.blockchain")
+@Validated
 @Component
 public class BlockchainProperties {
 

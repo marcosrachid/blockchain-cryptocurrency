@@ -12,9 +12,9 @@ import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.blockindex.CurrentFileBlockIndexDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
-import com.custom.blockchain.node.network.component.NetworkManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
+import com.custom.blockchain.transaction.component.TransactionMempool;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
@@ -24,20 +24,23 @@ public abstract class AbstractNode {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractNode.class);
 
+	protected ObjectMapper objectMapper;
+
 	protected BlockchainProperties blockchainProperties;
 
 	protected UTXOChainstateDB utxoChainstateDb;
 
 	protected CurrentFileBlockIndexDB currentFileBlockIndexDB;
 
-	protected ObjectMapper objectMapper;
-
-	protected NetworkManager networkManagement;
-
 	protected BlockStateManagement blockStateManagement;
+
+	protected TransactionMempool transactionMempool;
 
 	public abstract void startBlocks() throws Exception;
 
+	/**
+	 * Services able to receive
+	 */
 	protected abstract void loadServices();
 
 	/**

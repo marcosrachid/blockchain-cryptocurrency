@@ -57,7 +57,7 @@ public class BlockStateManagement {
 				currentFileBlockIndexDB.put(fileNumber);
 				jsonBlockList = addBlockToCurrentFile(block, fileNumber);
 			}
-			FileUtil.addBlock(blockchainProperties.getCoinName(), jsonBlockList, fileNumber);
+			FileUtil.saveBlock(blockchainProperties.getCoinName(), jsonBlockList, fileNumber);
 		} catch (IOException e) {
 			throw new BlockException("Could not register new Block");
 		}

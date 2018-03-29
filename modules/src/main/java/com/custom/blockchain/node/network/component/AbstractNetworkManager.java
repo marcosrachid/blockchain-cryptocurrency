@@ -3,14 +3,14 @@ package com.custom.blockchain.node.network.component;
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
 import static com.custom.blockchain.node.NodeStateManagement.LISTENING_THREAD;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
-import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
+import static com.custom.blockchain.node.network.peer.PeerStateManagement.REMOVED_PEERS;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.node.network.Service;
@@ -19,37 +19,32 @@ import com.custom.blockchain.node.network.peer.component.PeerFinder;
 import com.custom.blockchain.node.network.peer.component.PeerListener;
 import com.custom.blockchain.node.network.peer.component.PeerSender;
 import com.custom.blockchain.node.network.request.BlockchainRequest;
+import com.custom.blockchain.util.PeerUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
  * @author marcosrachid
  *
  */
-@Component
-public class NetworkManager {
+public abstract class AbstractNetworkManager {
 
-	private BlockchainProperties blockchainProperties;
+	protected ObjectMapper objectMapper;
 
-	private PeerFinder peerFinder;
+	protected BlockchainProperties blockchainProperties;
 
-	private PeerListener peerListener;
+	protected PeerFinder peerFinder;
 
-	private PeerSender peerSender;
+	protected PeerListener peerListener;
 
-	public NetworkManager(final BlockchainProperties blockchainProperties, final PeerFinder peerFinder,
-			final PeerListener peerListener, final PeerSender peerSender) {
-		this.blockchainProperties = blockchainProperties;
-		this.peerFinder = peerFinder;
-		this.peerListener = peerListener;
-		this.peerSender = peerSender;
-	}
+	protected PeerSender peerSender;
 
 	/**
 	 * 
 	 */
 	@Scheduled(fixedRate = 300000)
 	public synchronized void searchPeers() {
-		if (getConnectedPeersNumber() >= blockchainProperties.getNetworkMaximumSeeds()) {
+		if (PeerUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())) {
 			return;
 		}
 		this.peerFinder.findPeers();
@@ -68,15 +63,27 @@ public class NetworkManager {
 	 * 
 	 */
 	@Scheduled(fixedRate = 60000)
-	public synchronized void pingPeers() {
-		for (Peer p : PEERS) {
-			PEERS_STATUS.put(p, false);
+	public synchronized void checkPeersConnection() {
+		if (PeerUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())) {
+			return;
+		}
+		Set<Peer> disconectedPeers = new HashSet<>(PEERS);
+		disconectedPeers.removeAll(PeerUtil.getConnectedPeers());
+		for (Peer p : disconectedPeers) {
+			if ((p.getLastConnected() == null && p.getCreateDatetime().isBefore(LocalDateTime.now().minusDays(1)))
+					|| (p.getLastConnected() != null
+							&& p.getLastConnected().isBefore(LocalDateTime.now().minusMonths(1)))) {
+				REMOVED_PEERS.add(p);
+				continue;
+			}
 			this.peerSender.connect(p);
 			this.peerSender.send(BlockchainRequest.createBuilder()
 					.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.PING).build());
 			this.peerSender.close();
 		}
-		;
+		for (Peer r : REMOVED_PEERS) {
+			PEERS.remove(r);
+		}
 	}
 
 	/**
@@ -84,7 +91,7 @@ public class NetworkManager {
 	 */
 	@Scheduled(fixedRate = 60000)
 	public synchronized void getState() {
-		for (Peer p : getConnectedPeers()) {
+		for (Peer p : PeerUtil.getConnectedPeers()) {
 			this.peerSender.connect(p);
 			this.peerSender.send(BlockchainRequest.createBuilder()
 					.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.GET_STATE).build());
@@ -97,7 +104,7 @@ public class NetworkManager {
 	 */
 	@Scheduled(fixedRate = 1000)
 	public synchronized void getBlocks() {
-		Iterator<Peer> peers = getConnectedPeers().iterator();
+		Iterator<Peer> peers = PeerUtil.getConnectedPeers().iterator();
 		while (peers.hasNext() && BLOCKS_QUEUE.size() > 0) {
 			this.peerSender.connect(peers.next());
 			this.peerSender
@@ -109,19 +116,10 @@ public class NetworkManager {
 
 	/**
 	 * 
-	 * @return
 	 */
-	private Set<Peer> getConnectedPeers() {
-		return PEERS_STATUS.entrySet().stream().filter(entry -> entry.getValue().equals(true)).map(e -> e.getKey())
-				.collect(Collectors.toSet());
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	private int getConnectedPeersNumber() {
-		return getConnectedPeers().size();
+	@Scheduled(cron = "0 0 * * * *")
+	public synchronized void emptyRemovedPeers() {
+		REMOVED_PEERS.clear();
 	}
 
 }

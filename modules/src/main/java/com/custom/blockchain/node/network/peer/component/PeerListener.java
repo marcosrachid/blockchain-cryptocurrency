@@ -76,18 +76,18 @@ public class PeerListener {
 	 */
 	private void start() throws IOException, NoSuchMethodException, SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException {
-		LOG.debug("[Crypto] Server Starting");
+		LOG.info("[Crypto] Server Starting");
 		server = new ServerSocket(blockchainProperties.getNetworkPort());
-		LOG.debug("[Crypto] Server Started port: " + blockchainProperties.getNetworkPort());
+		LOG.info("[Crypto] Server Started port: " + blockchainProperties.getNetworkPort());
 
 		Socket clientSocket;
 
 		while (isRunning) {
 			clientSocket = server.accept();
-			LOG.debug("[Crypto] Connection Received from: " + clientSocket.toString());
+			LOG.trace("[Crypto] Connection Received from: " + clientSocket.toString());
 
 			BlockchainRequest request = PeerUtil.receive(clientSocket.getInputStream());
-			LOG.debug("[Crypto] Reques: " + request);
+			LOG.trace("[Crypto] Reques: " + request);
 
 			Peer newPeer = new Peer(clientSocket.getInetAddress().getHostAddress(), clientSocket.getLocalPort());
 
