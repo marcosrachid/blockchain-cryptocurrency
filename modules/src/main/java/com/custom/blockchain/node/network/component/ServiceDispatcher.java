@@ -185,7 +185,7 @@ public class ServiceDispatcher {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event");
 		Block block = args.getBlock();
 		try {
-			if (BLOCKS_QUEUE.peek().equals(block.getHeight())) {
+			if (BLOCKS_QUEUE.peek().getHeight().equals(block.getHeight())) {
 				blockStateManagement.foundBlock(block);
 				BLOCKS_QUEUE.poll();
 			}
