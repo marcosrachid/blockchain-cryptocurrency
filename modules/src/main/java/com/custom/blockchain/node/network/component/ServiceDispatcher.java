@@ -5,6 +5,7 @@ import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY_ADJUSTME
 import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
+import static com.custom.blockchain.transaction.component.TransactionMempool.TRANSACTION_MEMPOOL;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -33,6 +34,9 @@ import com.custom.blockchain.node.network.request.arguments.PeerResponseArgument
 import com.custom.blockchain.node.network.request.arguments.StateResponseArguments;
 import com.custom.blockchain.node.network.request.arguments.TransactionsResponseArguments;
 import com.custom.blockchain.service.PeerService;
+import com.custom.blockchain.transaction.SimpleTransaction;
+import com.custom.blockchain.transaction.component.TransactionMempool;
+import com.custom.blockchain.transaction.exception.TransactionException;
 import com.custom.blockchain.util.FileUtil;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,19 +63,23 @@ public class ServiceDispatcher {
 
 	private BlockStateManagement blockStateManagement;
 
+	private TransactionMempool transactionMempool;
+
 	private Socket clientSocket;
 
 	private Peer peer;
 
 	public ServiceDispatcher(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
 			final PeerService peerService, final PeerSender peerSender,
-			final CurrentBlockChainstateDB currentBlockChainstateDB, final BlockStateManagement blockStateManagement) {
+			final CurrentBlockChainstateDB currentBlockChainstateDB, final BlockStateManagement blockStateManagement,
+			final TransactionMempool transactionMempool) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
 		this.peerService = peerService;
 		this.peerSender = peerSender;
 		this.currentBlockChainstateDB = currentBlockChainstateDB;
 		this.blockStateManagement = blockStateManagement;
+		this.transactionMempool = transactionMempool;
 	}
 
 	/**
@@ -223,6 +231,8 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getTransactions() {
 		LOG.debug("[Crypto] Found a " + Service.GET_TRANSACTIONS.getService() + " event");
+		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_TRANSACTIONS_RESPONSE)
+				.withArguments(new TransactionsResponseArguments(TRANSACTION_MEMPOOL)).build());
 	}
 
 	/**
@@ -231,6 +241,13 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getTransactionsResponse(TransactionsResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_TRANSACTIONS_RESPONSE.getService() + " event");
+		for (SimpleTransaction t : args.getTransactions()) {
+			try {
+				transactionMempool.updateMempool(t);
+			} catch (TransactionException e) {
+				throw new NetworkException("Transaction[" + t + "] found error: " + e.getMessage());
+			}
+		}
 	}
 
 	/**
