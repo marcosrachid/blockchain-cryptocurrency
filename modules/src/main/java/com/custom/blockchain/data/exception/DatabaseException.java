@@ -5,11 +5,11 @@ package com.custom.blockchain.data.exception;
  * @author marcosrachid
  *
  */
-public class LevelDBException extends RuntimeException {
+public class DatabaseException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
-	public LevelDBException(String msg) {
+	public DatabaseException(String msg) {
 		super(msg);
 	}
 

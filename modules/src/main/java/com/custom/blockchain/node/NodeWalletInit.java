@@ -1,7 +1,9 @@
 package com.custom.blockchain.node;
 
-import static com.custom.blockchain.costants.SystemConstants.BLOCKS_DIRECTORY;
+import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_BLOCKS_DIRECTORY;
 import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
+import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_MEMPOOL_DIRECTORY;
+import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_PEERS_DIRECTORY;
 
 import java.io.File;
 import java.security.Security;
@@ -17,12 +19,11 @@ import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockFactory;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.blockindex.CurrentFileBlockIndexDB;
+import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.component.WalletNetworkManager;
 import com.custom.blockchain.transaction.component.TransactionMempool;
-import com.custom.blockchain.util.FileUtil;
 import com.custom.blockchain.util.OsUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,13 +42,13 @@ public class NodeWalletInit extends AbstractNode {
 	private WalletNetworkManager networkManagement;
 
 	public NodeWalletInit(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final UTXOChainstateDB utxoChainstateDb, final CurrentFileBlockIndexDB currentFileBlockIndexDB,
+			final UTXOChainstateDB utxoChainstateDb, final CurrentBlockDB currentBlockDB,
 			final BlockStateManagement blockStateManagement, final WalletNetworkManager networkManagement,
 			final TransactionMempool transactionMempool) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
 		this.utxoChainstateDb = utxoChainstateDb;
-		this.currentFileBlockIndexDB = currentFileBlockIndexDB;
+		this.currentBlockDB = currentBlockDB;
 		this.blockStateManagement = blockStateManagement;
 		this.networkManagement = networkManagement;
 		this.transactionMempool = transactionMempool;
@@ -64,12 +65,18 @@ public class NodeWalletInit extends AbstractNode {
 		Security.setProperty("crypto.policy", "unlimited");
 
 		// creating data storage path if not exists
-		File blocks = new File(
-				String.format(OsUtil.getRootDirectory() + BLOCKS_DIRECTORY, blockchainProperties.getCoinName()));
+		File blocks = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_BLOCKS_DIRECTORY,
+				blockchainProperties.getCoinName()));
 		blocks.mkdirs();
 		File chainstate = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY,
 				blockchainProperties.getCoinName()));
 		chainstate.mkdirs();
+		File peers = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_PEERS_DIRECTORY,
+				blockchainProperties.getCoinName()));
+		peers.mkdirs();
+		File mempool = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_MEMPOOL_DIRECTORY,
+				blockchainProperties.getCoinName()));
+		mempool.mkdirs();
 
 		// load node services for a simple wallet
 		loadServices();
@@ -83,7 +90,8 @@ public class NodeWalletInit extends AbstractNode {
 		// read current Transaction mempool
 		transactionMempool.getUnminedTransactions();
 
-		if (!FileUtil.isBlockchainStarted(blockchainProperties.getCoinName())) {
+		Block currentBlock = currentBlockDB.get();
+		if (currentBlock == null) {
 			LOG.info("[Crypto] Starting first block on Blockchain");
 			Block genesis = BlockFactory.getGenesisBlock(blockchainProperties.getCoinName());
 			Wallet owner = new Wallet();

@@ -1,17 +1,14 @@
 package com.custom.blockchain.transaction.component;
 
-import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 
+import org.iq80.leveldb.DBIterator;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.transaction.SimpleTransaction;
-import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.exception.TransactionException;
-import com.custom.blockchain.util.FileUtil;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -21,15 +18,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class TransactionMempool {
 
-	public static Set<SimpleTransaction> TRANSACTION_MEMPOOL = null;
+	private MempoolDB mempoolDB;
 
-	private BlockchainProperties blockchainProperties;
-
-	private ObjectMapper objectMapper;
-
-	public TransactionMempool(final BlockchainProperties blockchainProperties, final ObjectMapper objectMapper) {
-		this.blockchainProperties = blockchainProperties;
-		this.objectMapper = objectMapper;
+	public TransactionMempool(final MempoolDB mempoolDB) {
+		this.mempoolDB = mempoolDB;
 	}
 
 	/**
@@ -37,13 +29,10 @@ public class TransactionMempool {
 	 * @throws TransactionException
 	 */
 	public void restartMempool() throws TransactionException {
-		try {
-			TRANSACTION_MEMPOOL = objectMapper.readValue(
-					FileUtil.restartUnminedTransactions(blockchainProperties.getCoinName()),
-					new TypeReference<Set<Transaction>>() {
-					});
-		} catch (IOException e) {
-			throw new TransactionException("Could not get transactions from mempool: " + e.getMessage());
+		DBIterator iterator = mempoolDB.iterator();
+		while (iterator.hasNext()) {
+			SimpleTransaction transaction = mempoolDB.next(iterator);
+			mempoolDB.delete(transaction.getTransactionId());
 		}
 	}
 
@@ -51,15 +40,13 @@ public class TransactionMempool {
 	 * 
 	 * @throws TransactionException
 	 */
-	public void getUnminedTransactions() throws TransactionException {
-		try {
-			TRANSACTION_MEMPOOL = objectMapper.readValue(
-					FileUtil.readUnminedTransaction(blockchainProperties.getCoinName()),
-					new TypeReference<Set<Transaction>>() {
-					});
-		} catch (IOException e) {
-			throw new TransactionException("Could not get transactions from mempool: " + e.getMessage());
+	public Set<SimpleTransaction> getUnminedTransactions() throws TransactionException {
+		Set<SimpleTransaction> mempoolTransactions = new HashSet<>();
+		DBIterator iterator = mempoolDB.iterator();
+		while (iterator.hasNext()) {
+			mempoolTransactions.add(mempoolDB.next(iterator));
 		}
+		return mempoolTransactions;
 	}
 
 	/**
@@ -68,13 +55,7 @@ public class TransactionMempool {
 	 * @throws TransactionException
 	 */
 	public void updateMempool(SimpleTransaction transaction) throws TransactionException {
-		TRANSACTION_MEMPOOL.add(transaction);
-		try {
-			FileUtil.saveUnminedTransaction(blockchainProperties.getCoinName(),
-					this.objectMapper.writeValueAsString(TRANSACTION_MEMPOOL));
-		} catch (IOException e) {
-			throw new TransactionException("Could not update to transaction mempool: " + e.getMessage());
-		}
+		mempoolDB.put(transaction.getTransactionId(), transaction);
 	}
 
 }

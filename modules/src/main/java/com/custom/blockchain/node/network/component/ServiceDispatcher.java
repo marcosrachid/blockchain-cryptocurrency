@@ -6,7 +6,6 @@ import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.REMOVED_PEERS;
-import static com.custom.blockchain.transaction.component.TransactionMempool.TRANSACTION_MEMPOOL;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -24,7 +23,7 @@ import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
@@ -57,7 +56,7 @@ public class ServiceDispatcher {
 
 	private PeerSender peerSender;
 
-	private CurrentBlockChainstateDB currentBlockChainstateDB;
+	private CurrentBlockDB currentBlockChainstateDB;
 
 	private BlockStateManagement blockStateManagement;
 
@@ -68,7 +67,7 @@ public class ServiceDispatcher {
 	private Peer peer;
 
 	public ServiceDispatcher(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final PeerSender peerSender, final CurrentBlockChainstateDB currentBlockChainstateDB,
+			final PeerSender peerSender, final CurrentBlockDB currentBlockChainstateDB,
 			final BlockStateManagement blockStateManagement, final TransactionMempool transactionMempool) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
@@ -240,10 +239,11 @@ public class ServiceDispatcher {
 	 */
 	@SuppressWarnings("unused")
 	private void getTransactions() {
-		LOG.trace("[Crypto] Found a " + Service.GET_TRANSACTIONS.getService() + " event");
-		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_TRANSACTIONS_RESPONSE)
-				.withArguments(new TransactionsResponseArguments(TRANSACTION_MEMPOOL)).build());
 		try {
+			LOG.trace("[Crypto] Found a " + Service.GET_TRANSACTIONS.getService() + " event");
+			simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_TRANSACTIONS_RESPONSE)
+					.withArguments(new TransactionsResponseArguments(transactionMempool.getUnminedTransactions()))
+					.build());
 			transactionMempool.restartMempool();
 		} catch (TransactionException e) {
 			throw new NetworkException("Could not restart mempool: " + e.getMessage());

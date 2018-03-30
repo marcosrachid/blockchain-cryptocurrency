@@ -6,19 +6,17 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
+import org.iq80.leveldb.DBIterator;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.data.peers.PeersDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.node.network.request.BlockchainRequest;
-import com.custom.blockchain.util.FileUtil;
 import com.custom.blockchain.util.PeerUtil;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -39,11 +37,14 @@ public class PeerFinder {
 
 	private PeerSender peerSender;
 
+	private PeersDB peersDB;
+
 	public PeerFinder(final BlockchainProperties blockchainProperties, final ObjectMapper objectMapper,
-			final PeerSender peerSender) {
+			final PeerSender peerSender, PeersDB peersDB) {
 		this.blockchainProperties = blockchainProperties;
 		this.objectMapper = objectMapper;
 		this.peerSender = peerSender;
+		this.peersDB = peersDB;
 	}
 
 	/**
@@ -56,10 +57,8 @@ public class PeerFinder {
 		findFromDNS();
 		findFromPeers();
 		findMockedPeers();
-		try {
-			FileUtil.savePeer(blockchainProperties.getCoinName(), this.objectMapper.writeValueAsString(PEERS));
-		} catch (IOException e) {
-			throw new NetworkException("It was not possible deserialize peer request");
+		for (Peer p : PEERS) {
+			peersDB.put(p.getIp(), p);
 		}
 	}
 
@@ -67,23 +66,12 @@ public class PeerFinder {
 	 * 
 	 */
 	private void findFromFile() {
-		List<Peer> filePeers;
-		try {
-			JavaType collectionPeerClass = objectMapper.getTypeFactory().constructCollectionType(List.class,
-					Peer.class);
-			filePeers = objectMapper.readValue(FileUtil.readPeer(blockchainProperties.getCoinName()),
-					collectionPeerClass);
-			for (Peer peer : new ArrayList<Peer>(filePeers)) {
-				if (PEERS.contains(peer))
-					filePeers.remove(peer);
-			}
-		} catch (IOException e) {
-			throw new NetworkException("Could not read peers data: " + e.getMessage());
+		DBIterator iterator = peersDB.iterator();
+		while (iterator.hasNext()) {
+			Peer peer = peersDB.next(iterator);
+			if (!PEERS.contains(peer))
+				addPeer(peer);
 		}
-		for (Peer peer : filePeers) {
-			addPeer(peer);
-		}
-
 	}
 
 	/**

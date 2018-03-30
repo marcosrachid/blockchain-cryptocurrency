@@ -1,13 +1,17 @@
 package com.custom.blockchain.data;
 
-public abstract class FlagAbstractLevelDB<Value> {
-	
-	public abstract Value get();
+import org.iq80.leveldb.DBIterator;
 
-	public abstract void put(String value);
+public abstract class FlagAbstractLevelDB<Key> {
 
-	public abstract void put(Value value);
+	public abstract Boolean get(Key key);
 
-	public abstract void delete();
+	public abstract void put(Key key, Boolean Boolean);
+
+	public abstract void delete(Key key);
+
+	public abstract DBIterator iterator();
+
+	public abstract Boolean next(final DBIterator iterator);
 
 }

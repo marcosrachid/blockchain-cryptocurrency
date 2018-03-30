@@ -1,4 +1,6 @@
-package com.custom.blockchain.data.chainstate;
+package com.custom.blockchain.data.block;
+
+import java.io.IOException;
 
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
@@ -8,9 +10,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.Block;
-import com.custom.blockchain.data.FlagAbstractLevelDB;
-import com.custom.blockchain.data.exception.LevelDBException;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.custom.blockchain.data.PropertyAbstractLevelDB;
+import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
+import com.custom.blockchain.data.exception.DatabaseException;
+import com.custom.blockchain.util.StringUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -19,18 +22,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 @Component
-public class CurrentBlockChainstateDB extends FlagAbstractLevelDB<Block> {
+public class CurrentBlockDB extends PropertyAbstractLevelDB<Block> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(UTXOChainstateDB.class);
 
 	private static final String KEY_BINDER = "B";
 
-	private DB chainstateDb;
+	private DB blockDb;
 
 	private ObjectMapper objectMapper;
 
-	public CurrentBlockChainstateDB(final @Qualifier("ChainStateDB") DB chainstateDb, final ObjectMapper objectMapper) {
-		this.chainstateDb = chainstateDb;
+	public CurrentBlockDB(final @Qualifier("BlockDB") DB blockDb, final ObjectMapper objectMapper) {
+		this.blockDb = blockDb;
 		this.objectMapper = objectMapper;
 	}
 
@@ -38,16 +41,10 @@ public class CurrentBlockChainstateDB extends FlagAbstractLevelDB<Block> {
 	public Block get() {
 		LOG.trace("[Crypto] ChainstateDB Get - Key: " + KEY_BINDER);
 		try {
-			return objectMapper.readValue(chainstateDb.get(KEY_BINDER.getBytes()), Block.class);
+			return objectMapper.readValue(StringUtil.decompress(blockDb.get(KEY_BINDER.getBytes())), Block.class);
 		} catch (Exception e) {
-			throw new LevelDBException("Could not get data from key " + KEY_BINDER + ": " + e.getMessage());
+			return null;
 		}
-	}
-
-	@Override
-	public void put(String value) {
-		LOG.trace("[Crypto] ChainstateDB Add String - Key: " + KEY_BINDER + ", Value: " + value);
-		chainstateDb.put(KEY_BINDER.getBytes(), value.getBytes());
 	}
 
 	@Override
@@ -55,9 +52,9 @@ public class CurrentBlockChainstateDB extends FlagAbstractLevelDB<Block> {
 		try {
 			String v = objectMapper.writeValueAsString(value);
 			LOG.trace("[Crypto] ChainstateDB Add Object - Key: " + KEY_BINDER + ", Value: " + v);
-			chainstateDb.put(KEY_BINDER.getBytes(), v.getBytes());
-		} catch (DBException | JsonProcessingException e) {
-			throw new LevelDBException(
+			blockDb.put(KEY_BINDER.getBytes(), StringUtil.compress(v));
+		} catch (DBException | IOException e) {
+			throw new DatabaseException(
 					"Could not put data from key [" + KEY_BINDER + "] and Block [" + value + "]: " + e.getMessage());
 		}
 	}
@@ -65,7 +62,7 @@ public class CurrentBlockChainstateDB extends FlagAbstractLevelDB<Block> {
 	@Override
 	public void delete() {
 		LOG.trace("[Crypto] ChainstateDB Deleted - Key: " + KEY_BINDER);
-		chainstateDb.delete(KEY_BINDER.getBytes());
+		blockDb.delete(KEY_BINDER.getBytes());
 	}
 
 }

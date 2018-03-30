@@ -1,7 +1,5 @@
 package com.custom.blockchain.block;
 
-import static com.custom.blockchain.costants.ChainConstants.GENESIS_PREVIOUS_HASH;
-
 import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -27,7 +25,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public class Block implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
+	private static final String GENESIS_PREVIOUS_HASH = "0";
+
 	private boolean genesis = false;
 	private long height;
 	private String hash;

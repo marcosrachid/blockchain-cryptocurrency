@@ -10,16 +10,16 @@ public class SystemConstants {
 	public static final String COIN_ROOT_UNIX_DIRECTORY = System.getProperty("user.home") + File.separator + "%s"
 			+ File.separator;
 
-	public static final String BLOCKS_DIRECTORY = "blocks" + File.separator;
+	public static final String LEVEL_DB_BLOCKS_DIRECTORY = "blocks" + File.separator;
 
-	public static final String LEVEL_DB_BLOCK_INDEX_DIRECTORY = BLOCKS_DIRECTORY + "index" + File.separator;
+	public static final int LEVEL_DB_BLOCKS_BLOCK_SIZE = 2 * 1024;
 
 	public static final String LEVEL_DB_CHAINSTATE_DIRECTORY = "chainstate" + File.separator;
 
-	public static final String BLOCK_FILE = "blk%s.dat";
+	public static final int LEVEL_DB_CHAINSTATE_BLOCK_SIZE = 2 * 1024;
 
-	public static final String MEMPOOL_FILE = "mempool.dat";
+	public static final String LEVEL_DB_PEERS_DIRECTORY = "peers" + File.separator;
 
-	public static final String PEERS_FILE = "peers.dat";
+	public static final String LEVEL_DB_MEMPOOL_DIRECTORY = "mempool" + File.separator;
 
 }

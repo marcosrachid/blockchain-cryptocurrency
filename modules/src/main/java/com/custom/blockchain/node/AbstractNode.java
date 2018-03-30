@@ -1,8 +1,5 @@
 package com.custom.blockchain.node;
 
-import static com.custom.blockchain.costants.ChainConstants.BLK_DAT_INITIAL_VALUE;
-import static com.custom.blockchain.costants.ChainConstants.GENESIS_TX_ID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +7,7 @@ import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.blockindex.CurrentFileBlockIndexDB;
+import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
@@ -24,13 +21,15 @@ public abstract class AbstractNode {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractNode.class);
 
+	protected static final String GENESIS_TX_ID = "0";
+
 	protected ObjectMapper objectMapper;
 
 	protected BlockchainProperties blockchainProperties;
 
 	protected UTXOChainstateDB utxoChainstateDb;
 
-	protected CurrentFileBlockIndexDB currentFileBlockIndexDB;
+	protected CurrentBlockDB currentBlockDB;
 
 	protected BlockStateManagement blockStateManagement;
 
@@ -81,7 +80,6 @@ public abstract class AbstractNode {
 	 */
 	protected void setGenesis(Block genesis) {
 		try {
-			currentFileBlockIndexDB.put(BLK_DAT_INITIAL_VALUE);
 			blockStateManagement.foundBlock(genesis);
 		} catch (BlockException e) {
 			LOG.error("Premined block error: " + e.getMessage());
