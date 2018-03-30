@@ -101,8 +101,8 @@ public class TransactionOutput {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("id", id).append("reciepient", reciepient).append("value", value)
-				.append("parentTransactionId", parentTransactionId).build();
+		return new ToStringBuilder(this).append("id", id).append("reciepient", WalletUtil.getStringFromKey(reciepient))
+				.append("value", value).append("parentTransactionId", parentTransactionId).build();
 	}
 
 }

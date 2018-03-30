@@ -28,7 +28,6 @@ public class PeerListener {
 
 	// Listener variables
 	private ServerSocket server;
-	private Thread peerThread;
 	private boolean isRunning;
 
 	public PeerListener(final BlockchainProperties blockchainProperties, final ServiceDispatcher serviceDispatcher) {
@@ -42,7 +41,7 @@ public class PeerListener {
 	 */
 	public void listen() {
 		isRunning = true;
-		peerThread = new Thread(new Runnable() {
+		LISTENING_THREAD = new Thread(new Runnable() {
 			public void run() {
 				try {
 					start();
@@ -60,8 +59,7 @@ public class PeerListener {
 			}
 		});
 
-		LISTENING_THREAD = peerThread;
-		peerThread.start();
+		LISTENING_THREAD.start();
 	}
 
 	/**

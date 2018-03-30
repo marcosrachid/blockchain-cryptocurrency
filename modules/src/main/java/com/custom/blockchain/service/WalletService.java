@@ -4,8 +4,8 @@ import static com.custom.blockchain.wallet.WalletStateManagement.CURRENT_WALLET;
 
 import java.math.BigDecimal;
 import java.security.PublicKey;
+import java.util.List;
 
-import org.iq80.leveldb.DBIterator;
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
@@ -55,12 +55,10 @@ public class WalletService {
 	 */
 	public BigDecimal getBalance(String publicKey) throws Exception {
 		PublicKey key = WalletUtil.getPublicKeyFromString(publicKey);
+		List<TransactionOutput> outputs = chainstateDb.get(key);
 		BigDecimal total = BigDecimal.ZERO;
-		DBIterator iterator = chainstateDb.iterator();
-		while (iterator.hasNext()) {
-			TransactionOutput utxo = chainstateDb.next(iterator);
-			if (utxo.isMine(key))
-				total = utxo.getValue().add(total);
+		for (TransactionOutput o : outputs) {
+			total = total.add(o.getValue());
 		}
 		return total;
 	}

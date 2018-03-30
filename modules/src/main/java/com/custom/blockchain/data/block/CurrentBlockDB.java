@@ -32,14 +32,14 @@ public class CurrentBlockDB extends PropertyAbstractLevelDB<Block> {
 
 	private ObjectMapper objectMapper;
 
-	public CurrentBlockDB(final @Qualifier("BlockDB") DB blockDb, final ObjectMapper objectMapper) {
-		this.blockDb = blockDb;
+	public CurrentBlockDB(final ObjectMapper objectMapper, final @Qualifier("BlockDB") DB blockDb) {
 		this.objectMapper = objectMapper;
+		this.blockDb = blockDb;
 	}
 
 	@Override
 	public Block get() {
-		LOG.trace("[Crypto] ChainstateDB Get - Key: " + KEY_BINDER);
+		LOG.trace("[Crypto] BlockDB Get - Key: " + KEY_BINDER);
 		try {
 			return objectMapper.readValue(StringUtil.decompress(blockDb.get(KEY_BINDER.getBytes())), Block.class);
 		} catch (Exception e) {
@@ -51,7 +51,7 @@ public class CurrentBlockDB extends PropertyAbstractLevelDB<Block> {
 	public void put(Block value) {
 		try {
 			String v = objectMapper.writeValueAsString(value);
-			LOG.trace("[Crypto] ChainstateDB Add Object - Key: " + KEY_BINDER + ", Value: " + v);
+			LOG.trace("[Crypto] BlockDB Add Object - Key: " + KEY_BINDER + ", Value: " + v);
 			blockDb.put(KEY_BINDER.getBytes(), StringUtil.compress(v));
 		} catch (DBException | IOException e) {
 			throw new DatabaseException(
@@ -61,7 +61,7 @@ public class CurrentBlockDB extends PropertyAbstractLevelDB<Block> {
 
 	@Override
 	public void delete() {
-		LOG.trace("[Crypto] ChainstateDB Deleted - Key: " + KEY_BINDER);
+		LOG.trace("[Crypto] BlockDB Deleted - Key: " + KEY_BINDER);
 		blockDb.delete(KEY_BINDER.getBytes());
 	}
 

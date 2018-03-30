@@ -75,8 +75,9 @@ public class MempoolDB extends AbstractLevelDB<String, SimpleTransaction> {
 	public SimpleTransaction next(DBIterator iterator) {
 		try {
 			Entry<byte[], byte[]> entry = iterator.next();
+			String key = StringUtil.decompress(entry.getKey());
 			String value = StringUtil.decompress(entry.getValue());
-			LOG.trace("[Crypto] MempoolDB Current Iterator - Key: " + new String(entry.getKey()) + ", Value: " + value);
+			LOG.trace("[Crypto] MempoolDB Current Iterator - Key: " + key + ", Value: " + value);
 			return objectMapper.readValue(value, SimpleTransaction.class);
 		} catch (Exception e) {
 			throw new DatabaseException("Could not get data from iterator: " + e.getMessage());

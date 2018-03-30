@@ -13,6 +13,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.custom.blockchain.serializers.PublicKeyDeserializer;
 import com.custom.blockchain.serializers.PublicKeySerializer;
+import com.custom.blockchain.util.WalletUtil;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -121,7 +122,7 @@ public class SimpleTransaction extends Transaction implements Serializable {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("transactionId", transactionId).append("sender", sender)
+		return new ToStringBuilder(this).append("transactionId", transactionId).append("sender", WalletUtil.getStringFromKey(sender))
 				.append("value", value).append("timeStamp", timeStamp).append("signature", signature)
 				.append("inputs", inputs).append("outputs", outputs).build();
 	}

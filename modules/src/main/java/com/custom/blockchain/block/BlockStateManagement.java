@@ -1,5 +1,7 @@
 package com.custom.blockchain.block;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.exception.BlockException;
@@ -13,6 +15,8 @@ import com.custom.blockchain.data.block.CurrentBlockDB;
  */
 @Component
 public class BlockStateManagement {
+
+	private static final Logger LOG = LoggerFactory.getLogger(BlockStateManagement.class);
 
 	private BlockDB blockDB;
 
@@ -31,9 +35,11 @@ public class BlockStateManagement {
 	 * @throws BlockException
 	 */
 	public void foundBlock(Block block) throws BlockException {
+		LOG.info("[Crypto] Found new block: " + block);
 		blockDB.put(block.getHeight(), block);
 		currentBlockDB.put(block);
 		nextBlock = BlockFactory.getBlock(block);
+
 	}
 
 	/**
@@ -41,6 +47,11 @@ public class BlockStateManagement {
 	 * @return
 	 */
 	public Block getNextBlock() {
+		Block currentBlock = currentBlockDB.get();
+		LOG.debug("[Crypto] Retrieving current Block: " + currentBlock);
+		if (nextBlock == null) {
+			nextBlock = BlockFactory.getBlock(currentBlock);
+		}
 		return nextBlock;
 	}
 

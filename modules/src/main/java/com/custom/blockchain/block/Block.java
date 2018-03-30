@@ -14,6 +14,7 @@ import com.custom.blockchain.serializers.PublicKeyDeserializer;
 import com.custom.blockchain.serializers.PublicKeySerializer;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.util.DigestUtil;
+import com.custom.blockchain.util.WalletUtil;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -166,8 +167,8 @@ public class Block implements Serializable {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("blockNumber", height).append("hash", hash)
-				.append("merkleRoot", merkleRoot).append("miner", miner).append("difficulty", difficulty)
+		return new ToStringBuilder(this).append("height", height).append("hash", hash)
+				.append("merkleRoot", merkleRoot).append("miner", WalletUtil.getStringFromKey(miner)).append("difficulty", difficulty)
 				.append("nonce", nonce).append("previousHash", getPreviousHash()).append("timeStamp", timeStamp)
 				.append("transactions", transactions).build();
 	}

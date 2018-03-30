@@ -35,7 +35,7 @@ public class BannedPeersDB extends FlagAbstractLevelDB<String> {
 			LOG.trace("[Crypto] PeersDB Get - Key: " + KEY_BINDER + key);
 			return Boolean.valueOf(StringUtil.decompress(peersDB.get(StringUtil.compress(KEY_BINDER + key))));
 		} catch (DBException | IOException e) {
-			throw new DatabaseException("Could not get data from key " + key + ": " + e.getMessage());
+			return false;
 		}
 	}
 
@@ -72,9 +72,9 @@ public class BannedPeersDB extends FlagAbstractLevelDB<String> {
 	public Boolean next(DBIterator iterator) {
 		try {
 			Entry<byte[], byte[]> entry = iterator.next();
+			String key = StringUtil.decompress(entry.getKey());
 			String value = StringUtil.decompress(entry.getValue());
-			LOG.trace("[Crypto] PeersDB Current Iterator - Key: " + KEY_BINDER + new String(entry.getKey())
-					+ ", Value: " + value);
+			LOG.trace("[Crypto] PeersDB Current Iterator - Key: " + key + ", Value: " + value);
 			return Boolean.valueOf(value);
 		} catch (Exception e) {
 			throw new DatabaseException("Could not get data from iterator: " + e.getMessage());

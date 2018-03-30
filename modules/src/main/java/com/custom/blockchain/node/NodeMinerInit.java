@@ -23,7 +23,6 @@ import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.component.MinerNetworkManager;
-import com.custom.blockchain.transaction.component.TransactionMempool;
 import com.custom.blockchain.util.OsUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,17 +40,15 @@ public class NodeMinerInit extends AbstractNode {
 
 	private MinerNetworkManager networkManagement;
 
-	public NodeMinerInit(final BlockchainProperties blockchainProperties, final UTXOChainstateDB utxoChainstateDb,
-			final CurrentBlockDB currentBlockDB, final BlockStateManagement blockStateManagement,
-			final ObjectMapper objectMapper, final MinerNetworkManager networkManagement,
-			final TransactionMempool transactionMempool) {
+	public NodeMinerInit(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
+			final UTXOChainstateDB utxoChainstateDb, final CurrentBlockDB currentBlockDB,
+			final BlockStateManagement blockStateManagement, final MinerNetworkManager networkManagement) {
+		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
 		this.utxoChainstateDb = utxoChainstateDb;
 		this.currentBlockDB = currentBlockDB;
 		this.blockStateManagement = blockStateManagement;
-		this.objectMapper = objectMapper;
 		this.networkManagement = networkManagement;
-		this.transactionMempool = transactionMempool;
 	}
 
 	/**
@@ -87,10 +84,8 @@ public class NodeMinerInit extends AbstractNode {
 		this.networkManagement.startServer();
 		this.networkManagement.checkPeersConnection();
 
-		// read current Transaction mempool
-		transactionMempool.getUnminedTransactions();
-
 		Block currentBlock = currentBlockDB.get();
+		LOG.info("[Crypto] Current block state: " + currentBlock);
 		if (currentBlock == null) {
 			LOG.info("[Crypto] Starting first block on Blockchain");
 			Block genesis = BlockFactory.getGenesisBlock(blockchainProperties.getCoinName());
@@ -101,6 +96,7 @@ public class NodeMinerInit extends AbstractNode {
 			setGenesis(genesis);
 		} else {
 			LOG.info("[Crypto] Blockchain already");
+			blockStateManagement.getNextBlock();
 		}
 	}
 

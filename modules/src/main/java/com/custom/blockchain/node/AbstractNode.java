@@ -11,7 +11,6 @@ import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
-import com.custom.blockchain.transaction.component.TransactionMempool;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
@@ -32,8 +31,6 @@ public abstract class AbstractNode {
 	protected CurrentBlockDB currentBlockDB;
 
 	protected BlockStateManagement blockStateManagement;
-
-	protected TransactionMempool transactionMempool;
 
 	public abstract void startBlocks() throws Exception;
 
@@ -65,13 +62,15 @@ public abstract class AbstractNode {
 	 * @param owner
 	 */
 	protected void premined(Wallet owner) {
+		if (blockchainProperties.getPremined() == null)
+			return;
 		RewardTransaction genesisTransaction = new RewardTransaction(blockchainProperties.getCoinbase(),
 				blockchainProperties.getPremined());
 		genesisTransaction.setTransactionId(GENESIS_TX_ID);
 		genesisTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), genesisTransaction.getValue(),
 				genesisTransaction.getTransactionId()));
-		utxoChainstateDb.put(genesisTransaction.getOutput().getId(), genesisTransaction.getOutput());
-		LOG.info("Premined transaction: {}", utxoChainstateDb.get(genesisTransaction.getOutput().getId()));
+		utxoChainstateDb.add(genesisTransaction.getOutput().getReciepient(), genesisTransaction.getOutput());
+		LOG.info("Premined transaction: {}", utxoChainstateDb.get(genesisTransaction.getOutput().getReciepient()));
 	}
 
 	/**

@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -21,22 +22,41 @@ public class BlockchainProperties {
 	@NotBlank
 	private String coinName;
 
+	@NotBlank
 	private String version;
 
+	@NotNull
+	@Min(0)
 	private BigDecimal minimunTransaction;
 
+	@NotNull
+	@Min(0)
 	private BigDecimal coinLimit;
 
+	@NotNull
+	@Min(0)
 	private Long miningTimeRate;
 
+	@NotNull
+	@Min(0)
+	private BigDecimal reward;
+
+	@NotNull
+	@Min(0)
+	private Long blockSize;
+
+	@NotBlank
 	private String coinbase;
 
 	private BigDecimal premined;
 
+	@NotNull
 	@Min(1025)
 	@Max(65536)
 	private Integer networkPort;
 
+	@NotNull
+	@Min(0)
 	private Integer networkMaximumSeeds;
 
 	private List<String> networkMockedPeers;
@@ -131,9 +151,25 @@ public class BlockchainProperties {
 		this.miningTimeRate = miningTimeRate;
 	}
 
+	public BigDecimal getReward() {
+		return reward;
+	}
+
+	public void setReward(BigDecimal reward) {
+		this.reward = reward;
+	}
+
+	public Long getBlockSize() {
+		return blockSize;
+	}
+
+	public void setBlockSize(Long blockSize) {
+		this.blockSize = blockSize;
+	}
+
 	public String getNetworkSignature() {
-		return DigestUtil.applySha256(DigestUtil.applySha256(
-				coinName + version + minimunTransaction.toPlainString() + coinLimit.toPlainString() + miningTimeRate));
+		return DigestUtil.applySha256(DigestUtil.applySha256(coinName + version + minimunTransaction.toPlainString()
+				+ coinLimit.toPlainString() + miningTimeRate + reward.toPlainString() + blockSize));
 	}
 
 }

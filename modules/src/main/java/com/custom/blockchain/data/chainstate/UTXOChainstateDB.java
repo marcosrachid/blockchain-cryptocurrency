@@ -1,6 +1,9 @@
 package com.custom.blockchain.data.chainstate;
 
 import java.io.IOException;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.iq80.leveldb.DB;
@@ -15,6 +18,8 @@ import com.custom.blockchain.data.AbstractLevelDB;
 import com.custom.blockchain.data.exception.DatabaseException;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.StringUtil;
+import com.custom.blockchain.util.WalletUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -23,9 +28,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 @Component
-public class UTXOChainstateDB extends AbstractLevelDB<String, TransactionOutput> {
+public class UTXOChainstateDB extends AbstractLevelDB<PublicKey, List<TransactionOutput>> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(UTXOChainstateDB.class);
+
+	private static final TypeReference<List<TransactionOutput>> MAPPER = new TypeReference<List<TransactionOutput>>() {
+	};
 
 	private DB chainstateDb;
 
@@ -37,22 +45,23 @@ public class UTXOChainstateDB extends AbstractLevelDB<String, TransactionOutput>
 	}
 
 	@Override
-	public TransactionOutput get(String key) {
+	public List<TransactionOutput> get(PublicKey key) {
 		try {
 			LOG.trace("[Crypto] ChainstateDB Get - Key: " + key);
-			return objectMapper.readValue(StringUtil.decompress(chainstateDb.get(key.getBytes())),
-					TransactionOutput.class);
-		} catch (Exception e) {
-			throw new DatabaseException("Could not get data from key " + key + ": " + e.getMessage());
+			return objectMapper.readValue(
+					StringUtil.decompress(chainstateDb.get(StringUtil.compress(WalletUtil.getStringFromKey(key)))),
+					MAPPER);
+		} catch (DBException | IOException e) {
+			return new ArrayList<TransactionOutput>();
 		}
 	}
 
 	@Override
-	public void put(String key, TransactionOutput value) {
+	public void put(PublicKey key, List<TransactionOutput> value) {
 		try {
 			String v = objectMapper.writeValueAsString(value);
 			LOG.trace("[Crypto] ChainstateDB Add Object - Key: " + key + ", Value: " + v);
-			chainstateDb.put(key.getBytes(), StringUtil.compress(v));
+			chainstateDb.put(StringUtil.compress(WalletUtil.getStringFromKey(key)), StringUtil.compress(v));
 		} catch (DBException | IOException e) {
 			throw new DatabaseException("Could not put data from key [" + key + "] and TransactionOutput [" + value
 					+ "]: " + e.getMessage());
@@ -60,9 +69,13 @@ public class UTXOChainstateDB extends AbstractLevelDB<String, TransactionOutput>
 	}
 
 	@Override
-	public void delete(String key) {
+	public void delete(PublicKey key) {
 		LOG.trace("[Crypto] ChainstateDB Deleted - Key: " + key);
-		chainstateDb.delete(key.getBytes());
+		try {
+			chainstateDb.delete(StringUtil.compress(WalletUtil.getStringFromKey(key)));
+		} catch (DBException | IOException e) {
+			throw new DatabaseException("Could not delete data from key [" + key + "]: " + e.getMessage());
+		}
 	}
 
 	@Override
@@ -73,16 +86,38 @@ public class UTXOChainstateDB extends AbstractLevelDB<String, TransactionOutput>
 	}
 
 	@Override
-	public TransactionOutput next(final DBIterator iterator) {
+	public List<TransactionOutput> next(final DBIterator iterator) {
 		try {
 			Entry<byte[], byte[]> entry = iterator.next();
+			String key = StringUtil.decompress(entry.getKey());
 			String value = StringUtil.decompress(entry.getValue());
-			LOG.trace("[Crypto] ChainstateDB Current Iterator - Key: " + new String(entry.getKey()) + ", Value: "
-					+ value);
-			return objectMapper.readValue(value, TransactionOutput.class);
+			LOG.trace("[Crypto] ChainstateDB Current Iterator - Key: " + key + ", Value: " + value);
+			return objectMapper.readValue(value, MAPPER);
 		} catch (Exception e) {
 			throw new DatabaseException("Could not get data from iterator: " + e.getMessage());
 		}
+	}
+
+	/**
+	 * 
+	 * @param key
+	 * @param transactionOutput
+	 */
+	public void leftOver(PublicKey key, TransactionOutput transactionOutput) {
+		List<TransactionOutput> transactionOutputs = new ArrayList<>();
+		transactionOutputs.add(transactionOutput);
+		put(key, transactionOutputs);
+	}
+
+	/**
+	 * 
+	 * @param key
+	 * @param transactionOutput
+	 */
+	public void add(PublicKey key, TransactionOutput transactionOutput) {
+		List<TransactionOutput> transactionOutputs = get(key);
+		transactionOutputs.add(transactionOutput);
+		put(key, transactionOutputs);
 	}
 
 }

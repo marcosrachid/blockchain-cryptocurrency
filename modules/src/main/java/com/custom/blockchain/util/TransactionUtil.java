@@ -3,6 +3,7 @@ package com.custom.blockchain.util;
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKED;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.custom.blockchain.transaction.Transaction;
@@ -45,7 +46,7 @@ public class TransactionUtil {
 	 * @param transactions
 	 * @return
 	 */
-	public static String getMerkleRoot(List<Transaction> transactions) {
+	public static String getMerkleRoot(Collection<Transaction> transactions) {
 		int count = transactions.size();
 		List<String> previousTreeLayer = new ArrayList<String>();
 		for (Transaction transaction : transactions) {

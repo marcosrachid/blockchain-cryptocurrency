@@ -8,22 +8,18 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.iq80.leveldb.DBIterator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
+import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.resource.dto.request.RequestSendFundsDTO;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
-import com.custom.blockchain.transaction.component.TransactionMempool;
 import com.custom.blockchain.transaction.exception.TransactionException;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
@@ -38,26 +34,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 @Service
 public class TransactionService {
 
-	private static final Logger LOG = LoggerFactory.getLogger(TransactionService.class);
-
 	private BlockchainProperties blockchainProperties;
 
 	private UTXOChainstateDB utxoChainstateDb;
 
-	private BlockStateManagement blockStateManagement;
+	private MempoolDB mempoolDB;
 
 	private SignatureManager signatureManager;
 
-	private TransactionMempool transactionMempool;
-
-	public TransactionService(final BlockchainProperties blockchainProperties, final UTXOChainstateDB chainstateDb,
-			final BlockStateManagement blockStateManagement, final SignatureManager signatureManager,
-			final TransactionMempool transactionMempool) {
+	public TransactionService(final BlockchainProperties blockchainProperties, final UTXOChainstateDB utxoChainstateDb,
+			final MempoolDB mempoolDB, final BlockStateManagement blockStateManagement,
+			final SignatureManager signatureManager) {
 		this.blockchainProperties = blockchainProperties;
-		this.utxoChainstateDb = chainstateDb;
-		this.blockStateManagement = blockStateManagement;
+		this.utxoChainstateDb = utxoChainstateDb;
+		this.mempoolDB = mempoolDB;
 		this.signatureManager = signatureManager;
-		this.transactionMempool = transactionMempool;
 	}
 
 	/**
@@ -69,15 +60,18 @@ public class TransactionService {
 	 */
 	public SimpleTransaction sendFunds(Wallet from, PublicKey to, BigDecimal fromBalance, BigDecimal value)
 			throws Exception {
+		if (value.compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
+			throw new TransactionException("Transaction sent funds are too low. Transaction Discarded");
+		}
 		if (fromBalance.compareTo(value) < 0) {
 			throw new TransactionException("Not Enough funds to send transaction. Transaction Discarded");
 		}
 
 		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
 
-		List<TransactionOutput> UTXOsSender = getUnspentTransactionOutput(from.getPublicKey());
+		List<TransactionOutput> UTXOsSender = utxoChainstateDb.get(from.getPublicKey());
 		UTXOsSender.forEach(u -> {
-			inputs.add(new TransactionInput(u.getId()));
+			inputs.add(new TransactionInput(u));
 		});
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), value, inputs);
@@ -85,7 +79,7 @@ public class TransactionService {
 		newTransaction.getOutputs().add(new TransactionOutput(to, value, newTransaction.getTransactionId()));
 		signatureManager.generateSignature(newTransaction, from);
 
-		transactionMempool.updateMempool(newTransaction);
+		mempoolDB.put(newTransaction.getTransactionId(), newTransaction);
 
 		return newTransaction;
 	}
@@ -99,15 +93,18 @@ public class TransactionService {
 	 */
 	public SimpleTransaction sendFunds(Wallet from, BigDecimal fromBalance, BigDecimal totalSentFunds,
 			RequestSendFundsDTO.RequestSendFundsListDTO funds) throws Exception {
+		if (totalSentFunds.compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
+			throw new TransactionException("Transaction sent funds are too low. Transaction Discarded");
+		}
 		if (fromBalance.compareTo(totalSentFunds) < 0) {
 			throw new TransactionException("Not Enough funds to send transaction. Transaction Discarded");
 		}
 
 		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
 
-		List<TransactionOutput> UTXOsSender = getUnspentTransactionOutput(from.getPublicKey());
+		List<TransactionOutput> UTXOsSender = utxoChainstateDb.get(from.getPublicKey());
 		UTXOsSender.forEach(u -> {
-			inputs.add(new TransactionInput(u.getId()));
+			inputs.add(new TransactionInput(u));
 		});
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), totalSentFunds, inputs);
@@ -124,79 +121,9 @@ public class TransactionService {
 		}
 		signatureManager.generateSignature(newTransaction, from);
 
-		transactionMempool.updateMempool(newTransaction);
+		mempoolDB.put(newTransaction.getTransactionId(), newTransaction);
 
 		return newTransaction;
-	}
-
-	// TODO: move method to BlockService futurely
-	/**
-	 * 
-	 * @param block
-	 * @param transaction
-	 * @throws TransactionException
-	 */
-	public void addTransaction(SimpleTransaction transaction) throws TransactionException {
-		Block block = blockStateManagement.getNextBlock();
-		if (transaction == null)
-			throw new TransactionException("Non existent transaction");
-		processTransaction(transaction);
-		block.getTransactions().add(transaction);
-		LOG.info("[Crypto] Transaction Successfully added to Block");
-	}
-
-	// TODO: move method to BlockService futurely
-	/**
-	 * 
-	 * @param transaction
-	 * @param minimunTransaction
-	 * @return
-	 * @throws TransactionException
-	 */
-	private void processTransaction(SimpleTransaction transaction) throws TransactionException {
-
-		if (signatureManager.verifiySignature(transaction) == false) {
-			throw new TransactionException("Transaction Signature failed to verify");
-		}
-
-		for (TransactionInput i : transaction.getInputs()) {
-			i.setUnspentTransactionOutput(utxoChainstateDb.get(i.getTransactionOutputId()));
-		}
-
-		if (transaction.getInputsValue().compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
-			throw new TransactionException("Transaction Inputs too small: " + transaction.getInputsValue());
-		}
-
-		// TODO: mining reward
-		BigDecimal leftOver = transaction.getInputsValue().subtract(transaction.getValue());
-		transaction.getOutputs()
-				.add(new TransactionOutput(transaction.getSender(), leftOver, transaction.getTransactionId()));
-
-		for (TransactionOutput o : transaction.getOutputs()) {
-			utxoChainstateDb.put(o.getId(), o);
-		}
-
-		for (TransactionInput i : transaction.getInputs()) {
-			utxoChainstateDb.delete(i.getUnspentTransactionOutput().getId());
-		}
-
-		// TODO remove transaction from mempool
-	}
-
-	/**
-	 * 
-	 * @param publicKey
-	 * @return
-	 */
-	private List<TransactionOutput> getUnspentTransactionOutput(PublicKey publicKey) {
-		List<TransactionOutput> UTXOs = new ArrayList<>();
-		DBIterator iterator = utxoChainstateDb.iterator();
-		while (iterator.hasNext()) {
-			TransactionOutput UTXO = utxoChainstateDb.next(iterator);
-			if (UTXO.isMine(publicKey))
-				UTXOs.add(UTXO);
-		}
-		return UTXOs;
 	}
 
 	/**

@@ -42,7 +42,7 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 	public Block get(Long key) {
 		try {
 			LOG.trace("[Crypto] BlockDB Get - Key: " + KEY_BINDER + key);
-			return objectMapper.readValue(StringUtil.decompress(blockDb.get((KEY_BINDER + key).getBytes())),
+			return objectMapper.readValue(StringUtil.decompress(blockDb.get(StringUtil.compress(KEY_BINDER + key))),
 					Block.class);
 		} catch (Exception e) {
 			throw new DatabaseException("Could not get data from key " + key + ": " + e.getMessage());
@@ -54,7 +54,7 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 		try {
 			String v = objectMapper.writeValueAsString(value);
 			LOG.trace("[Crypto] BlockDB Add Object - Key: " + KEY_BINDER + key + ", Value: " + v);
-			blockDb.put((KEY_BINDER + key).getBytes(), StringUtil.compress(v));
+			blockDb.put(StringUtil.compress(KEY_BINDER + key), StringUtil.compress(v));
 		} catch (DBException | IOException e) {
 			throw new DatabaseException("Could not put data from key [" + KEY_BINDER + key + "] and Block [" + value
 					+ "]: " + e.getMessage());
@@ -64,7 +64,11 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 	@Override
 	public void delete(Long key) {
 		LOG.trace("[Crypto] BlockDB Deleted - Key: " + key);
-		blockDb.delete((KEY_BINDER + key).getBytes());
+		try {
+			blockDb.delete(StringUtil.compress(KEY_BINDER + key));
+		} catch (DBException | IOException e) {
+			throw new DatabaseException("Could not delete data from key [" + KEY_BINDER + key + "]: " + e.getMessage());
+		}
 	}
 
 	@Override
@@ -78,9 +82,9 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 	public Block next(DBIterator iterator) {
 		try {
 			Entry<byte[], byte[]> entry = iterator.next();
+			String key = StringUtil.decompress(entry.getKey());
 			String value = StringUtil.decompress(entry.getValue());
-			LOG.trace("[Crypto] BlockDB Current Iterator - Key: " + KEY_BINDER + new String(entry.getKey())
-					+ ", Value: " + value);
+			LOG.trace("[Crypto] BlockDB Current Iterator - Key: " + key + ", Value: " + value);
 			return objectMapper.readValue(value, Block.class);
 		} catch (Exception e) {
 			throw new DatabaseException("Could not get data from iterator: " + e.getMessage());

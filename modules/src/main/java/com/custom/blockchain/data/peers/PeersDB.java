@@ -77,9 +77,9 @@ public class PeersDB extends AbstractLevelDB<String, Peer> {
 	public Peer next(DBIterator iterator) {
 		try {
 			Entry<byte[], byte[]> entry = iterator.next();
+			String key = StringUtil.decompress(entry.getKey());
 			String value = StringUtil.decompress(entry.getValue());
-			LOG.trace("[Crypto] PeersDB Current Iterator - Key: " + KEY_BINDER + new String(entry.getKey())
-					+ ", Value: " + value);
+			LOG.trace("[Crypto] PeersDB Current Iterator - Key: " + key + ", Value: " + value);
 			return objectMapper.readValue(value, Peer.class);
 		} catch (Exception e) {
 			throw new DatabaseException("Could not get data from iterator: " + e.getMessage());

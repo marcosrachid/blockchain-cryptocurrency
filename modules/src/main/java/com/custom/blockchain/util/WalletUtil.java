@@ -31,7 +31,9 @@ public class WalletUtil {
 	 * @return
 	 */
 	public static String getStringFromKey(Key key) {
-		return Base64.getEncoder().encodeToString(key.getEncoded());
+		if (key != null)
+			return Base64.getEncoder().encodeToString(key.getEncoded());
+		return null;
 	}
 
 	/**

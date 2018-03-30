@@ -11,10 +11,12 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.iq80.leveldb.DBIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,7 @@ import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.CurrentBlockDB;
+import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
@@ -35,8 +38,6 @@ import com.custom.blockchain.node.network.request.arguments.PeerResponseArgument
 import com.custom.blockchain.node.network.request.arguments.StateResponseArguments;
 import com.custom.blockchain.node.network.request.arguments.TransactionsResponseArguments;
 import com.custom.blockchain.transaction.SimpleTransaction;
-import com.custom.blockchain.transaction.component.TransactionMempool;
-import com.custom.blockchain.transaction.exception.TransactionException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -58,23 +59,23 @@ public class ServiceDispatcher {
 
 	private CurrentBlockDB currentBlockChainstateDB;
 
-	private BlockStateManagement blockStateManagement;
+	private MempoolDB mempoolDB;
 
-	private TransactionMempool transactionMempool;
+	private BlockStateManagement blockStateManagement;
 
 	private Socket clientSocket;
 
 	private Peer peer;
 
 	public ServiceDispatcher(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final PeerSender peerSender, final CurrentBlockDB currentBlockChainstateDB,
-			final BlockStateManagement blockStateManagement, final TransactionMempool transactionMempool) {
+			final PeerSender peerSender, final CurrentBlockDB currentBlockChainstateDB, final MempoolDB mempoolDB,
+			final BlockStateManagement blockStateManagement) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
 		this.peerSender = peerSender;
 		this.currentBlockChainstateDB = currentBlockChainstateDB;
+		this.mempoolDB = mempoolDB;
 		this.blockStateManagement = blockStateManagement;
-		this.transactionMempool = transactionMempool;
 	}
 
 	/**
@@ -239,15 +240,14 @@ public class ServiceDispatcher {
 	 */
 	@SuppressWarnings("unused")
 	private void getTransactions() {
-		try {
-			LOG.trace("[Crypto] Found a " + Service.GET_TRANSACTIONS.getService() + " event");
-			simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_TRANSACTIONS_RESPONSE)
-					.withArguments(new TransactionsResponseArguments(transactionMempool.getUnminedTransactions()))
-					.build());
-			transactionMempool.restartMempool();
-		} catch (TransactionException e) {
-			throw new NetworkException("Could not restart mempool: " + e.getMessage());
+		LOG.trace("[Crypto] Found a " + Service.GET_TRANSACTIONS.getService() + " event");
+		Set<SimpleTransaction> mempoolTransactions = new HashSet<>();
+		DBIterator iterator = mempoolDB.iterator();
+		while (iterator.hasNext()) {
+			mempoolTransactions.add(mempoolDB.next(iterator));
 		}
+		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_TRANSACTIONS_RESPONSE)
+				.withArguments(new TransactionsResponseArguments(mempoolTransactions)).build());
 
 	}
 
@@ -258,11 +258,7 @@ public class ServiceDispatcher {
 	private void getTransactionsResponse(TransactionsResponseArguments args) {
 		LOG.trace("[Crypto] Found a " + Service.GET_TRANSACTIONS_RESPONSE.getService() + " event");
 		for (SimpleTransaction t : args.getTransactions()) {
-			try {
-				transactionMempool.updateMempool(t);
-			} catch (TransactionException e) {
-				throw new NetworkException("Transaction[" + t + "] found error: " + e.getMessage());
-			}
+			mempoolDB.put(t.getTransactionId(), t);
 		}
 	}
 
