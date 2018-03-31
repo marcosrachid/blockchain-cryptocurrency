@@ -22,7 +22,7 @@ public abstract class Transaction {
 
 	protected String transactionId;
 	protected BigDecimal value;
-	protected long timeStamp;
+	protected Long timeStamp;
 
 	public static int sequence = 0;
 
@@ -42,11 +42,11 @@ public abstract class Transaction {
 		this.value = value;
 	}
 
-	public long getTimeStamp() {
+	public Long getTimeStamp() {
 		return timeStamp;
 	}
 
-	public void setTimeStamp(long timeStamp) {
+	public void setTimeStamp(Long timeStamp) {
 		this.timeStamp = timeStamp;
 	}
 

@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 @Component
-public class BlockDB extends AbstractLevelDB<Long, Block> {
+public class BlockDB extends AbstractLevelDB<String, Block> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BlockDB.class);
 
@@ -41,7 +41,7 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 	}
 
 	@Override
-	public Block get(Long key) {
+	public Block get(String key) {
 		try {
 			LOG.trace("[Crypto] BlockDB Get - Key: " + KEY_BINDER + key);
 			return objectMapper.readValue(StringUtil.decompress(blockDb.get(StringUtil.compress(KEY_BINDER + key))),
@@ -52,7 +52,7 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 	}
 
 	@Override
-	public void put(Long key, Block value) {
+	public void put(String key, Block value) {
 		try {
 			String v = objectMapper.writeValueAsString(value);
 			LOG.trace("[Crypto] BlockDB Add Object - Key: " + KEY_BINDER + key + ", Value: " + v);
@@ -64,7 +64,7 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 	}
 
 	@Override
-	public void delete(Long key) {
+	public void delete(String key) {
 		LOG.trace("[Crypto] BlockDB Deleted - Key: " + key);
 		try {
 			blockDb.delete(StringUtil.compress(KEY_BINDER + key));

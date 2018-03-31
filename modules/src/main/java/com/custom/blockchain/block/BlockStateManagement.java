@@ -131,7 +131,7 @@ public class BlockStateManagement {
 	 */
 	public void foundBlock(Block block) {
 		LOG.info("[Crypto] Found new block: " + block);
-		blockDB.put(block.getHeight(), block);
+		blockDB.put(block.getHash(), block);
 		currentBlockDB.put(block);
 		utxo(block.getTransactions());
 		nextBlock = BlockFactory.getBlock(block);

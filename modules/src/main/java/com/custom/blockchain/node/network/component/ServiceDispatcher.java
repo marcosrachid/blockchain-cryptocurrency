@@ -60,7 +60,7 @@ public class ServiceDispatcher {
 
 	private BlockDB blockDB;
 
-	private CurrentBlockDB currentBlockChainstateDB;
+	private CurrentBlockDB currentBlockDB;
 
 	private MempoolDB mempoolDB;
 
@@ -71,12 +71,12 @@ public class ServiceDispatcher {
 	private Peer peer;
 
 	public ServiceDispatcher(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final BlockDB blockDB, final CurrentBlockDB currentBlockChainstateDB, final MempoolDB mempoolDB,
+			final BlockDB blockDB, final CurrentBlockDB currentBlockDB, final MempoolDB mempoolDB,
 			final BlockStateManagement blockStateManagement, final PeerSender peerSender) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
 		this.blockDB = blockDB;
-		this.currentBlockChainstateDB = currentBlockChainstateDB;
+		this.currentBlockDB = currentBlockDB;
 		this.mempoolDB = mempoolDB;
 		this.blockStateManagement = blockStateManagement;
 		this.peerSender = peerSender;
@@ -161,7 +161,7 @@ public class ServiceDispatcher {
 	private void getState() {
 		LOG.trace("[Crypto] Found a " + Service.GET_STATE.getService() + " event");
 		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_STATE_RESPONSE)
-				.withArguments(new StateResponseArguments(currentBlockChainstateDB.get().getHeight())).build());
+				.withArguments(new StateResponseArguments(currentBlockDB.get().getHeight())).build());
 	}
 
 	/**
@@ -173,10 +173,10 @@ public class ServiceDispatcher {
 		LOG.trace("[Crypto] Found a " + Service.GET_STATE_RESPONSE.getService() + " event");
 		Long peerCurrentBlock = args.getCurrentBlock();
 		LOG.debug("[Crypto] peer [" + peer + "] current block [" + peerCurrentBlock + "]");
-		Long currentMappedHeight = (currentBlockChainstateDB.get().getHeight() + BLOCKS_QUEUE.size());
+		Long currentMappedHeight = (currentBlockDB.get().getHeight() + BLOCKS_QUEUE.size());
 		if (peerCurrentBlock > currentMappedHeight) {
 			LOG.info("[Crypto] Found new block from peer [" + peer + "], requesting block...");
-			long blockNumber = peerCurrentBlock - currentBlockChainstateDB.get().getHeight();
+			long blockNumber = peerCurrentBlock - currentBlockDB.get().getHeight();
 			for (long i = (currentMappedHeight + 1); i <= peerCurrentBlock; i++) {
 				BLOCKS_QUEUE.add(new BlockArguments(i));
 			}
@@ -190,8 +190,9 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getBlock(BlockArguments args) {
 		LOG.trace("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event");
+		Block block = mapUntil(currentBlockDB.get(), args.getHeight());
 		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_BLOCK_RESPONSE)
-				.withArguments(new BlockResponseArguments(blockDB.get(args.getHeight()))).build());
+				.withArguments(new BlockResponseArguments(block)).build());
 	}
 
 	/**
@@ -260,6 +261,19 @@ public class ServiceDispatcher {
 		for (SimpleTransaction t : args.getTransactions()) {
 			mempoolDB.put(t.getTransactionId(), t);
 		}
+	}
+
+	/**
+	 * 
+	 * @param block
+	 * @param height
+	 * @return
+	 */
+	private Block mapUntil(Block block, Long height) {
+		if (block.getHeight().equals(height)) {
+			return block;
+		}
+		return mapUntil(blockDB.get(block.getPreviousHash()), height);
 	}
 
 	/**

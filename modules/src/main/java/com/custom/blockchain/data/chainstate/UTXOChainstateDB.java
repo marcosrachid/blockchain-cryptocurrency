@@ -51,7 +51,7 @@ public class UTXOChainstateDB extends AbstractLevelDB<PublicKey, List<Transactio
 		try {
 			return objectMapper.readValue(StringUtil.decompress(chainstateDb.get(StringUtil.compress(k))), MAPPER);
 		} catch (DBException | IOException e) {
-			LOG.debug("[Crypto] BlockDB Error from key [" + k + "]: " + e.getMessage());
+			LOG.debug("[Crypto] ChainstateDB Error from key [" + k + "]: " + e.getMessage());
 			return new ArrayList<TransactionOutput>();
 		}
 	}

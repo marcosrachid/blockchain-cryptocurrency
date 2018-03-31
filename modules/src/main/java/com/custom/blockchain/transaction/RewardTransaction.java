@@ -20,10 +20,6 @@ public class RewardTransaction extends Transaction {
 	public RewardTransaction() {
 	}
 
-	public RewardTransaction(Long difficulty) {
-		this.difficulty = difficulty;
-	}
-
 	public RewardTransaction(String coinbase, BigDecimal value, Long difficulty) {
 		this.coinbase = coinbase;
 		this.difficulty = difficulty;

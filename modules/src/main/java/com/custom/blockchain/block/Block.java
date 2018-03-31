@@ -31,16 +31,16 @@ public class Block implements Serializable {
 
 	private static final String GENESIS_PREVIOUS_HASH = "0";
 
-	private boolean genesis = false;
-	private long height;
+	private Boolean genesis = false;
+	private Long height;
 	private String hash;
 	private String previousHash;
 	private String merkleRoot;
 	@JsonSerialize(using = PublicKeySerializer.class)
 	@JsonDeserialize(using = PublicKeyDeserializer.class)
 	private PublicKey miner;
-	private long timeStamp;
-	private int nonce;
+	private Long timeStamp;
+	private Integer nonce;
 
 	private Set<Transaction> transactions = new HashSet<>();
 
@@ -49,6 +49,7 @@ public class Block implements Serializable {
 		this.genesis = true;
 		this.height = 1L;
 		this.timeStamp = new Date().getTime();
+		this.nonce = 0;
 		calculateHash();
 	}
 
@@ -57,22 +58,23 @@ public class Block implements Serializable {
 		this.height = previousBlock.getHeight() + 1;
 		this.previousHash = previousBlock.getHash();
 		this.timeStamp = new Date().getTime();
+		this.nonce = 0;
 		calculateHash();
 	}
 
-	public boolean isGenesis() {
+	public Boolean isGenesis() {
 		return genesis;
 	}
 
-	public void setGenesis(boolean genesis) {
+	public void setGenesis(Boolean genesis) {
 		this.genesis = genesis;
 	}
 
-	public long getHeight() {
+	public Long getHeight() {
 		return height;
 	}
 
-	public void setHeight(long height) {
+	public void setHeight(Long height) {
 		this.height = height;
 	}
 
@@ -108,19 +110,19 @@ public class Block implements Serializable {
 		this.miner = miner;
 	}
 
-	public long getTimeStamp() {
+	public Long getTimeStamp() {
 		return timeStamp;
 	}
 
-	public void setTimeStamp(long timeStamp) {
+	public void setTimeStamp(Long timeStamp) {
 		this.timeStamp = timeStamp;
 	}
 
-	public int getNonce() {
+	public Integer getNonce() {
 		return nonce;
 	}
 
-	public void setNonce(int nonce) {
+	public void setNonce(Integer nonce) {
 		this.nonce = nonce;
 	}
 
@@ -144,8 +146,7 @@ public class Block implements Serializable {
 	 * 
 	 */
 	public void calculateHash() {
-		hash = DigestUtil
-				.applySha256(getPreviousHash() + Long.toString(timeStamp) + Integer.toString(nonce) + merkleRoot);
+		hash = DigestUtil.applySha256(getPreviousHash() + timeStamp + nonce + merkleRoot);
 	}
 
 	@Override

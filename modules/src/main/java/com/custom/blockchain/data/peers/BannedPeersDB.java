@@ -12,14 +12,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.data.FlagAbstractLevelDB;
-import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.exception.DatabaseException;
 import com.custom.blockchain.util.StringUtil;
 
 @Component
 public class BannedPeersDB extends FlagAbstractLevelDB<String> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(BlockDB.class);
+	private static final Logger LOG = LoggerFactory.getLogger(BannedPeersDB.class);
 
 	private static final String KEY_BINDER = "P";
 
