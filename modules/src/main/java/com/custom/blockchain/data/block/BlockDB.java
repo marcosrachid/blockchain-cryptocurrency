@@ -47,7 +47,7 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 			return objectMapper.readValue(StringUtil.decompress(blockDb.get(StringUtil.compress(KEY_BINDER + key))),
 					Block.class);
 		} catch (DBException | IOException e) {
-			throw new DatabaseException("Could not get data from key " + key + ": " + e.getMessage());
+			return null;
 		}
 	}
 

@@ -1,7 +1,5 @@
 package com.custom.blockchain.transaction;
 
-import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY;
-
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -17,11 +15,18 @@ public class RewardTransaction extends Transaction {
 
 	private TransactionOutput output;
 
+	private Long difficulty;
+
 	public RewardTransaction() {
 	}
 
-	public RewardTransaction(String coinbase, BigDecimal value) {
+	public RewardTransaction(Long difficulty) {
+		this.difficulty = difficulty;
+	}
+
+	public RewardTransaction(String coinbase, BigDecimal value, Long difficulty) {
 		this.coinbase = coinbase;
+		this.difficulty = difficulty;
 		generateCoinbase();
 		this.value = value;
 		this.timeStamp = new Date().getTime();
@@ -48,6 +53,14 @@ public class RewardTransaction extends Transaction {
 		this.output = output;
 	}
 
+	public Long getDifficulty() {
+		return difficulty;
+	}
+
+	public void setDifficulty(Long difficulty) {
+		this.difficulty = difficulty;
+	}
+
 	@Override
 	public BigDecimal getInputsValue() {
 		return BigDecimal.ZERO;
@@ -60,8 +73,8 @@ public class RewardTransaction extends Transaction {
 
 	private void generateCoinbase() {
 		Transaction.sequence++;
-		coinbase = DigestUtil.applySha256(
-				DigestUtil.applySha256(Long.toString(DIFFICULTY) + timeStamp + Transaction.sequence + coinbase));
+		coinbase = DigestUtil
+				.applySha256(DigestUtil.applySha256(difficulty + timeStamp + Transaction.sequence + coinbase));
 	}
 
 	@Override

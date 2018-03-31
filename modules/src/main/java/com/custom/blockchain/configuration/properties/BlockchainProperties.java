@@ -49,6 +49,10 @@ public class BlockchainProperties {
 	private String coinbase;
 
 	private BigDecimal premined;
+	
+	@NotNull
+	@Min(0)
+	private Long startingDifficulty;
 
 	@NotNull
 	@Min(1025)
@@ -165,6 +169,14 @@ public class BlockchainProperties {
 
 	public void setBlockSize(Long blockSize) {
 		this.blockSize = blockSize;
+	}
+
+	public Long getStartingDifficulty() {
+		return startingDifficulty;
+	}
+
+	public void setStartingDifficulty(Long startingDifficulty) {
+		this.startingDifficulty = startingDifficulty;
 	}
 
 	public String getNetworkSignature() {

@@ -12,7 +12,7 @@ public class BlockFactory {
 	 * @param coinName
 	 * @return
 	 */
-	public static Block getGenesisBlock(String coinName) {
+	public static Block getGenesisBlock() {
 		return new Block();
 	}
 

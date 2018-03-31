@@ -2,9 +2,10 @@ package com.custom.blockchain.block;
 
 import java.io.Serializable;
 import java.security.PublicKey;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -12,6 +13,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.custom.blockchain.serializers.PublicKeyDeserializer;
 import com.custom.blockchain.serializers.PublicKeySerializer;
+import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
@@ -37,11 +39,10 @@ public class Block implements Serializable {
 	@JsonSerialize(using = PublicKeySerializer.class)
 	@JsonDeserialize(using = PublicKeyDeserializer.class)
 	private PublicKey miner;
-	private int difficulty;
 	private long timeStamp;
 	private int nonce;
 
-	private List<Transaction> transactions = new ArrayList<Transaction>();
+	private Set<Transaction> transactions = new HashSet<>();
 
 	public Block() {
 		super();
@@ -107,14 +108,6 @@ public class Block implements Serializable {
 		this.miner = miner;
 	}
 
-	public int getDifficulty() {
-		return difficulty;
-	}
-
-	public void setDifficulty(int difficulty) {
-		this.difficulty = difficulty;
-	}
-
 	public long getTimeStamp() {
 		return timeStamp;
 	}
@@ -131,12 +124,20 @@ public class Block implements Serializable {
 		this.nonce = nonce;
 	}
 
-	public List<Transaction> getTransactions() {
+	public Set<Transaction> getTransactions() {
 		return transactions;
 	}
 
-	public void setTransactions(List<Transaction> transactions) {
+	public void setTransactions(Set<Transaction> transactions) {
 		this.transactions = transactions;
+	}
+
+	public RewardTransaction getRewardTransaction() {
+		Optional<Transaction> transaction = getTransactions().stream().filter(t -> t instanceof RewardTransaction)
+				.findFirst();
+		if (transaction.isPresent())
+			return (RewardTransaction) transaction.get();
+		return null;
 	}
 
 	/**
@@ -149,8 +150,8 @@ public class Block implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(height).append(hash).append(merkleRoot).append(miner).append(difficulty)
-				.append(nonce).append(getPreviousHash()).append(timeStamp).append(transactions).hashCode();
+		return new HashCodeBuilder().append(height).append(hash).append(merkleRoot).append(miner).append(nonce)
+				.append(getPreviousHash()).append(timeStamp).append(transactions).hashCode();
 	}
 
 	@Override
@@ -167,9 +168,9 @@ public class Block implements Serializable {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("height", height).append("hash", hash)
-				.append("merkleRoot", merkleRoot).append("miner", WalletUtil.getStringFromKey(miner)).append("difficulty", difficulty)
-				.append("nonce", nonce).append("previousHash", getPreviousHash()).append("timeStamp", timeStamp)
+		return new ToStringBuilder(this).append("height", height).append("hash", hash).append("merkleRoot", merkleRoot)
+				.append("miner", WalletUtil.getStringFromKey(miner)).append("nonce", nonce)
+				.append("previousHash", getPreviousHash()).append("timeStamp", timeStamp)
 				.append("transactions", transactions).build();
 	}
 

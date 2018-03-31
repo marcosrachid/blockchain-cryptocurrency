@@ -1,7 +1,6 @@
 package com.custom.blockchain.node.network.component;
 
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
-import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY_ADJUSTMENT_BLOCK;
 import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
@@ -25,6 +24,7 @@ import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.node.network.Service;
@@ -38,6 +38,7 @@ import com.custom.blockchain.node.network.request.arguments.PeerResponseArgument
 import com.custom.blockchain.node.network.request.arguments.StateResponseArguments;
 import com.custom.blockchain.node.network.request.arguments.TransactionsResponseArguments;
 import com.custom.blockchain.transaction.SimpleTransaction;
+import com.custom.blockchain.util.ConnectionUtil;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -57,6 +58,8 @@ public class ServiceDispatcher {
 
 	private PeerSender peerSender;
 
+	private BlockDB blockDB;
+
 	private CurrentBlockDB currentBlockChainstateDB;
 
 	private MempoolDB mempoolDB;
@@ -68,14 +71,15 @@ public class ServiceDispatcher {
 	private Peer peer;
 
 	public ServiceDispatcher(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final PeerSender peerSender, final CurrentBlockDB currentBlockChainstateDB, final MempoolDB mempoolDB,
-			final BlockStateManagement blockStateManagement) {
+			final BlockDB blockDB, final CurrentBlockDB currentBlockChainstateDB, final MempoolDB mempoolDB,
+			final BlockStateManagement blockStateManagement, final PeerSender peerSender) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
-		this.peerSender = peerSender;
+		this.blockDB = blockDB;
 		this.currentBlockChainstateDB = currentBlockChainstateDB;
 		this.mempoolDB = mempoolDB;
 		this.blockStateManagement = blockStateManagement;
+		this.peerSender = peerSender;
 	}
 
 	/**
@@ -167,13 +171,13 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getStateResponse(StateResponseArguments args) {
 		LOG.trace("[Crypto] Found a " + Service.GET_STATE_RESPONSE.getService() + " event");
-		Long currentBlock = args.getCurrentBlock();
-		LOG.debug("[Crypto] peer [" + peer + "] current block [" + currentBlock + "]");
+		Long peerCurrentBlock = args.getCurrentBlock();
+		LOG.debug("[Crypto] peer [" + peer + "] current block [" + peerCurrentBlock + "]");
 		Long currentMappedHeight = (currentBlockChainstateDB.get().getHeight() + BLOCKS_QUEUE.size());
-		if (currentBlock > currentMappedHeight) {
+		if (peerCurrentBlock > currentMappedHeight) {
 			LOG.info("[Crypto] Found new block from peer [" + peer + "], requesting block...");
-			long blockNumber = currentBlock - currentBlockChainstateDB.get().getHeight();
-			for (long i = (currentMappedHeight + 1); i <= currentBlock; i++) {
+			long blockNumber = peerCurrentBlock - currentBlockChainstateDB.get().getHeight();
+			for (long i = (currentMappedHeight + 1); i <= peerCurrentBlock; i++) {
 				BLOCKS_QUEUE.add(new BlockArguments(i));
 			}
 		}
@@ -184,10 +188,10 @@ public class ServiceDispatcher {
 	 * @param args
 	 */
 	@SuppressWarnings("unused")
-	private void getBlock(BlockResponseArguments args) {
+	private void getBlock(BlockArguments args) {
 		LOG.trace("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event");
-		// simpleSend(Service.GET_BLOCK_RESPONSE,
-		// objectMapper.writeValueAsString(arg0));
+		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_BLOCK_RESPONSE)
+				.withArguments(new BlockResponseArguments(blockDB.get(args.getHeight()))).build());
 	}
 
 	/**
@@ -199,15 +203,11 @@ public class ServiceDispatcher {
 		LOG.trace("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event");
 		Block block = args.getBlock();
 		try {
-			if (BLOCKS_QUEUE.peek().getHeight().equals(block.getHeight())) {
-				blockStateManagement.foundBlock(block);
-				BLOCKS_QUEUE.poll();
-			}
-			if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
-				// TODO: adjust difficulty
-			}
+			blockStateManagement.validateBlock(block);
+			blockStateManagement.foundBlock(block);
+			BLOCKS_QUEUE.poll();
 		} catch (BlockException e) {
-			throw new NetworkException("Block[" + block + "] found error: " + e.getMessage());
+			throw new NetworkException("Block[" + block + "] was identified as invalid: " + e.getMessage());
 		}
 	}
 
@@ -218,7 +218,7 @@ public class ServiceDispatcher {
 	private void getPeers() {
 		LOG.trace("[Crypto] Found a " + Service.GET_PEERS.getService() + " event");
 		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_PEERS_RESPONSE)
-				.withArguments(new PeerResponseArguments(PEERS)).build());
+				.withArguments(new PeerResponseArguments(ConnectionUtil.getConnectedPeers())).build());
 	}
 
 	/**

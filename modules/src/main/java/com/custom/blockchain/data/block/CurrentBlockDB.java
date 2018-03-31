@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.data.PropertyAbstractLevelDB;
-import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.exception.DatabaseException;
 import com.custom.blockchain.util.StringUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class CurrentBlockDB extends PropertyAbstractLevelDB<Block> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(UTXOChainstateDB.class);
+	private static final Logger LOG = LoggerFactory.getLogger(CurrentBlockDB.class);
 
 	private static final String KEY_BINDER = "B";
 

@@ -19,7 +19,7 @@ import com.custom.blockchain.node.network.peer.component.PeerFinder;
 import com.custom.blockchain.node.network.peer.component.PeerListener;
 import com.custom.blockchain.node.network.peer.component.PeerSender;
 import com.custom.blockchain.node.network.request.BlockchainRequest;
-import com.custom.blockchain.util.PeerUtil;
+import com.custom.blockchain.util.ConnectionUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -44,7 +44,7 @@ public abstract class AbstractNetworkManager {
 	 */
 	@Scheduled(fixedRate = 300000)
 	public synchronized void searchPeers() {
-		if (PeerUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())) {
+		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())) {
 			return;
 		}
 		this.peerFinder.findPeers();
@@ -64,11 +64,11 @@ public abstract class AbstractNetworkManager {
 	 */
 	@Scheduled(fixedRate = 60000)
 	public synchronized void checkPeersConnection() {
-		if (PeerUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())) {
+		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())) {
 			return;
 		}
 		Set<Peer> disconectedPeers = new HashSet<>(PEERS);
-		disconectedPeers.removeAll(PeerUtil.getConnectedPeers());
+		disconectedPeers.removeAll(ConnectionUtil.getConnectedPeers());
 		for (Peer p : disconectedPeers) {
 			if ((p.getLastConnected() == null && p.getCreateDatetime().isBefore(LocalDateTime.now().minusDays(1)))
 					|| (p.getLastConnected() != null
@@ -91,7 +91,7 @@ public abstract class AbstractNetworkManager {
 	 */
 	@Scheduled(fixedRate = 60000)
 	public synchronized void getState() {
-		for (Peer p : PeerUtil.getConnectedPeers()) {
+		for (Peer p : ConnectionUtil.getConnectedPeers()) {
 			this.peerSender.connect(p);
 			this.peerSender.send(BlockchainRequest.createBuilder()
 					.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.GET_STATE).build());
@@ -104,7 +104,7 @@ public abstract class AbstractNetworkManager {
 	 */
 	@Scheduled(fixedRate = 1000)
 	public synchronized void getBlocks() {
-		Iterator<Peer> peers = PeerUtil.getConnectedPeers().iterator();
+		Iterator<Peer> peers = ConnectionUtil.getConnectedPeers().iterator();
 		while (peers.hasNext() && BLOCKS_QUEUE.size() > 0) {
 			this.peerSender.connect(peers.next());
 			this.peerSender

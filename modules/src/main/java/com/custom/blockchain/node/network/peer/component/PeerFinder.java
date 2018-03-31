@@ -16,7 +16,7 @@ import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.node.network.request.BlockchainRequest;
-import com.custom.blockchain.util.PeerUtil;
+import com.custom.blockchain.util.ConnectionUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -51,7 +51,7 @@ public class PeerFinder {
 	 * 
 	 */
 	public void findPeers() {
-		if (PeerUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds()))
+		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds()))
 			return;
 		findFromFile();
 		findFromDNS();
@@ -85,7 +85,7 @@ public class PeerFinder {
 	 * 
 	 */
 	private void findFromPeers() {
-		for (Peer p : PeerUtil.getConnectedPeers()) {
+		for (Peer p : ConnectionUtil.getConnectedPeers()) {
 			this.peerSender.connect(p);
 			this.peerSender.send(BlockchainRequest.createBuilder()
 					.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.GET_PEERS).build());

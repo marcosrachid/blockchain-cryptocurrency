@@ -11,7 +11,7 @@ import com.custom.blockchain.node.network.peer.component.PeerFinder;
 import com.custom.blockchain.node.network.peer.component.PeerListener;
 import com.custom.blockchain.node.network.peer.component.PeerSender;
 import com.custom.blockchain.node.network.request.BlockchainRequest;
-import com.custom.blockchain.util.PeerUtil;
+import com.custom.blockchain.util.ConnectionUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -37,7 +37,7 @@ public class MinerNetworkManager extends AbstractNetworkManager {
 	 */
 	@Scheduled(fixedRate = 60000)
 	public synchronized void getTransactions() {
-		for (Peer p : PeerUtil.getConnectedPeers()) {
+		for (Peer p : ConnectionUtil.getConnectedPeers()) {
 			this.peerSender.connect(p);
 			this.peerSender
 					.send(BlockchainRequest.createBuilder().withSignature(blockchainProperties.getNetworkSignature())

@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.node.network.component.ServiceDispatcher;
 import com.custom.blockchain.node.network.peer.Peer;
-import com.custom.blockchain.node.network.peer.util.PeerUtil;
 import com.custom.blockchain.node.network.request.BlockchainRequest;
+import com.custom.blockchain.util.PeerUtil;
 
 @Component
 public class PeerListener {

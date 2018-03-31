@@ -1,13 +1,12 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY;
+import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY_ADJUSTMENT_BLOCK;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.iq80.leveldb.DBIterator;
@@ -19,7 +18,7 @@ import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
+import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.RewardTransaction;
@@ -48,7 +47,7 @@ public class BlockService {
 
 	private BlockchainProperties blockchainProperties;
 
-	private UTXOChainstateDB utxoChainstateDb;
+	private CurrentBlockDB currentBlockDB;
 
 	private MempoolDB mempoolDB;
 
@@ -57,11 +56,11 @@ public class BlockService {
 	private SignatureManager signatureManager;
 
 	public BlockService(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final UTXOChainstateDB utxoChainstateDb, final MempoolDB mempoolDB,
+			final CurrentBlockDB currentBlockDB, final MempoolDB mempoolDB,
 			final BlockStateManagement blockStateManagement, final SignatureManager signatureManager) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
-		this.utxoChainstateDb = utxoChainstateDb;
+		this.currentBlockDB = currentBlockDB;
 		this.mempoolDB = mempoolDB;
 		this.blockStateManagement = blockStateManagement;
 		this.signatureManager = signatureManager;
@@ -73,25 +72,31 @@ public class BlockService {
 	 * @throws BlockException
 	 */
 	public void mineBlock() throws BlockException {
+		long currentTimeInMillis = System.currentTimeMillis();
 		Block block = blockStateManagement.getNextBlock();
-		String target = StringUtil.getDificultyString(DIFFICULTY);
-		while (!block.getHash().substring(0, DIFFICULTY).equals(target)) {
+
+		Long difficulty = null;
+		if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
+			// TODO: adjust difficulty
+		} else {
+			difficulty = currentBlockDB.get().getRewardTransaction().getDifficulty();
+		}
+
+		String target = StringUtil.getDificultyString(difficulty.intValue());
+		while (!block.getHash().substring(0, difficulty.intValue()).equals(target)) {
 			block.setNonce(block.getNonce() + 1);
 			block.calculateHash();
 		}
 
-		block.setDifficulty(DIFFICULTY);
 		try {
 			block.setMiner(WalletUtil.getPublicKeyFromString(blockchainProperties.getMiner()));
 		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
 			throw new BlockException("Invalid miner public key: " + blockchainProperties.getMiner());
 		}
 
-		Set<Transaction> transactions = new HashSet<>();
-
 		// Miner reward
 		RewardTransaction reward = new RewardTransaction(blockchainProperties.getCoinbase(),
-				blockchainProperties.getReward());
+				blockchainProperties.getReward(), difficulty);
 		try {
 			reward.setTransactionId(calulateRewardHash(reward));
 		} catch (JsonProcessingException e) {
@@ -99,53 +104,25 @@ public class BlockService {
 					"Could not generate a txId for reward transaction: " + blockchainProperties.getMiner());
 		}
 		reward.setOutput(new TransactionOutput(block.getMiner(), reward.getValue(), reward.getTransactionId()));
-		transactions.add(reward);
+		block.getTransactions().add(reward);
 
 		// Transactions from pool
 		DBIterator iterator = mempoolDB.iterator();
 		try {
-			while (iterator.hasNext() && !isBlockFull(transactions)) {
-				transactions.add(mempoolDB.next(iterator));
+			while (iterator.hasNext() && !isBlockFull(block.getTransactions())) {
+				addTransaction(block, mempoolDB.next(iterator));
 			}
 		} catch (UnsupportedEncodingException | JsonProcessingException e) {
 			throw new BlockException("Could not validate if block is full of transactions: " + e.getMessage());
 		}
-		LOG.trace("[Crypto] Transactions imported on block: " + transactions);
-		block.setMerkleRoot(TransactionUtil.getMerkleRoot(transactions));
-		for (Transaction t : transactions) {
-			addTransaction(block, t);
-		}
+		LOG.trace("[Crypto] Transactions imported on block: " + block.getTransactions());
+
+		block.setMerkleRoot(TransactionUtil.getMerkleRoot(block.getTransactions()));
+
 		blockStateManagement.foundBlock(block);
-		LOG.info("[Crypto] Block Mined!!! : " + block.getHash());
+		LOG.info("[Crypto] Block Mined in " + (System.currentTimeMillis() - currentTimeInMillis) + " milliseconds: "
+				+ block.getHash());
 		mineBlock();
-	}
-
-	/**
-	 * 
-	 * @param block
-	 * @param transaction
-	 * @throws BlockException
-	 */
-	private void addTransaction(final Block block, Transaction transaction) throws BlockException {
-		if (transaction instanceof SimpleTransaction) {
-			addTransaction(block, (SimpleTransaction) transaction);
-		}
-		if (transaction instanceof RewardTransaction) {
-			addTransaction(block, (RewardTransaction) transaction);
-		}
-	}
-
-	/**
-	 * 
-	 * @param block
-	 * @param transaction
-	 * @throws TransactionException
-	 */
-	private void addTransaction(final Block block, RewardTransaction transaction) throws BlockException {
-		if (transaction == null)
-			throw new BlockException("Non existent transaction");
-		processTransaction(transaction);
-		block.getTransactions().add(transaction);
 	}
 
 	/**
@@ -157,21 +134,9 @@ public class BlockService {
 	private void addTransaction(final Block block, SimpleTransaction transaction) throws BlockException {
 		if (transaction == null)
 			throw new BlockException("Non existent transaction");
+		mempoolDB.delete(transaction.getTransactionId());
 		processTransaction(transaction);
 		block.getTransactions().add(transaction);
-	}
-
-	/**
-	 * 
-	 * @param transaction
-	 * @throws BlockException
-	 */
-	private void processTransaction(RewardTransaction transaction) throws BlockException {
-		if (transaction.getValue().compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
-			throw new BlockException("Transaction sent funds are too low. Transaction Discarded");
-		}
-
-		utxoChainstateDb.add(transaction.getOutput().getReciepient(), transaction.getOutput());
 	}
 
 	/**
@@ -181,15 +146,12 @@ public class BlockService {
 	 * @return
 	 * @throws TransactionException
 	 */
-	private void processTransaction(SimpleTransaction transaction) throws BlockException {
-
-		if (signatureManager.verifiySignature(transaction) == false) {
-			mempoolDB.delete(transaction.getTransactionId());
+	private void processTransaction(final SimpleTransaction transaction) throws BlockException {
+		if (signatureManager.verifySignature(transaction) == false) {
 			throw new BlockException("Transaction Signature failed to verify. Transaction Discarded");
 		}
 
 		if (transaction.getValue().compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
-			mempoolDB.delete(transaction.getTransactionId());
 			throw new BlockException("Transaction sent funds are too low. Transaction Discarded");
 		}
 
@@ -199,18 +161,12 @@ public class BlockService {
 		BigDecimal total = leftOutput.getValue().add(transaction.getOutputsValue());
 
 		if (transaction.getInputsValue().compareTo(total) != 0) {
-			mempoolDB.delete(transaction.getTransactionId());
 			throw new BlockException("Transaction Inputs total[" + transaction.getInputsValue().toPlainString()
 					+ "] value differs from Transaction Outputs total[" + total.toPlainString()
 					+ "] value. Transaction Discarded");
 		}
-		utxoChainstateDb.leftOver(leftOutput.getReciepient(), leftOutput);
 
-		for (TransactionOutput o : transaction.getOutputs()) {
-			utxoChainstateDb.add(o.getReciepient(), o);
-		}
-
-		mempoolDB.delete(transaction.getTransactionId());
+		transaction.getOutputs().add(leftOutput);
 	}
 
 	/**

@@ -51,7 +51,7 @@ public class SignatureManager {
 	 * @return
 	 * @throws JsonProcessingException
 	 */
-	public boolean verifiySignature(SimpleTransaction transaction) {
+	public boolean verifySignature(SimpleTransaction transaction) {
 		String data;
 		try {
 			data = WalletUtil.getStringFromKey(transaction.getSender())

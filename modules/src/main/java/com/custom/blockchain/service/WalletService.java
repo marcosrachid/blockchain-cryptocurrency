@@ -22,10 +22,10 @@ import com.custom.blockchain.wallet.exception.WalletException;
 @Service
 public class WalletService {
 
-	private UTXOChainstateDB chainstateDb;
+	private UTXOChainstateDB utxoChainstateDb;
 
-	public WalletService(final UTXOChainstateDB chainstateDb) {
-		this.chainstateDb = chainstateDb;
+	public WalletService(final UTXOChainstateDB utxoChainstateDb) {
+		this.utxoChainstateDb = utxoChainstateDb;
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class WalletService {
 	 */
 	public BigDecimal getBalance(String publicKey) throws Exception {
 		PublicKey key = WalletUtil.getPublicKeyFromString(publicKey);
-		List<TransactionOutput> outputs = chainstateDb.get(key);
+		List<TransactionOutput> outputs = utxoChainstateDb.get(key);
 		BigDecimal total = BigDecimal.ZERO;
 		for (TransactionOutput o : outputs) {
 			total = total.add(o.getValue());

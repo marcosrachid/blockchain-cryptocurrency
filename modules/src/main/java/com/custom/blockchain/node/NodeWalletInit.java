@@ -20,7 +20,6 @@ import com.custom.blockchain.block.BlockFactory;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.CurrentBlockDB;
-import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.component.WalletNetworkManager;
 import com.custom.blockchain.util.OsUtil;
@@ -41,11 +40,10 @@ public class NodeWalletInit extends AbstractNode {
 	private WalletNetworkManager networkManagement;
 
 	public NodeWalletInit(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final UTXOChainstateDB utxoChainstateDb, final CurrentBlockDB currentBlockDB,
-			final BlockStateManagement blockStateManagement, final WalletNetworkManager networkManagement) {
+			final CurrentBlockDB currentBlockDB, final BlockStateManagement blockStateManagement,
+			final WalletNetworkManager networkManagement) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
-		this.utxoChainstateDb = utxoChainstateDb;
 		this.currentBlockDB = currentBlockDB;
 		this.blockStateManagement = blockStateManagement;
 		this.networkManagement = networkManagement;
@@ -88,11 +86,12 @@ public class NodeWalletInit extends AbstractNode {
 		LOG.info("[Crypto] Current block state: " + currentBlock);
 		if (currentBlock == null) {
 			LOG.info("[Crypto] Starting first block on Blockchain");
-			Block genesis = BlockFactory.getGenesisBlock(blockchainProperties.getCoinName());
 			Wallet owner = new Wallet();
+			Block genesis = BlockFactory.getGenesisBlock();
+			genesis.setMiner(owner.getPublicKey());
 
 			logKeys(owner);
-			premined(owner);
+			premined(genesis, owner);
 			setGenesis(genesis);
 		} else {
 			LOG.info("[Crypto] Blockchain already");

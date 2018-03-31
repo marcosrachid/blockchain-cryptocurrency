@@ -1,14 +1,14 @@
 package com.custom.blockchain.node;
 
+import java.math.BigDecimal;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
-import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.CurrentBlockDB;
-import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.StringUtil;
@@ -25,8 +25,6 @@ public abstract class AbstractNode {
 	protected ObjectMapper objectMapper;
 
 	protected BlockchainProperties blockchainProperties;
-
-	protected UTXOChainstateDB utxoChainstateDb;
 
 	protected CurrentBlockDB currentBlockDB;
 
@@ -61,16 +59,17 @@ public abstract class AbstractNode {
 	 * 
 	 * @param owner
 	 */
-	protected void premined(Wallet owner) {
-		if (blockchainProperties.getPremined() == null)
+	protected void premined(final Block genesis, Wallet owner) {
+		if (blockchainProperties.getPremined() == null
+				|| blockchainProperties.getPremined().compareTo(BigDecimal.ZERO) == 0)
 			return;
 		RewardTransaction genesisTransaction = new RewardTransaction(blockchainProperties.getCoinbase(),
-				blockchainProperties.getPremined());
+				blockchainProperties.getPremined(), blockchainProperties.getStartingDifficulty());
 		genesisTransaction.setTransactionId(GENESIS_TX_ID);
 		genesisTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), genesisTransaction.getValue(),
 				genesisTransaction.getTransactionId()));
-		utxoChainstateDb.add(genesisTransaction.getOutput().getReciepient(), genesisTransaction.getOutput());
-		LOG.info("Premined transaction: {}", utxoChainstateDb.get(genesisTransaction.getOutput().getReciepient()));
+		genesis.getTransactions().add(genesisTransaction);
+		LOG.info("Premined transaction: {}", genesis.getTransactions());
 	}
 
 	/**
@@ -78,11 +77,7 @@ public abstract class AbstractNode {
 	 * @param genesis
 	 */
 	protected void setGenesis(Block genesis) {
-		try {
-			blockStateManagement.foundBlock(genesis);
-		} catch (BlockException e) {
-			LOG.error("Premined block error: " + e.getMessage());
-		}
+		blockStateManagement.foundBlock(genesis);
 	}
 
 }
