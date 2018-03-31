@@ -22,10 +22,10 @@ public class RewardTransaction extends Transaction {
 
 	public RewardTransaction(String coinbase, BigDecimal value, Long difficulty) {
 		this.coinbase = coinbase;
-		this.difficulty = difficulty;
-		generateCoinbase();
 		this.value = value;
+		this.difficulty = difficulty;
 		this.timeStamp = new Date().getTime();
+		generateCoinbase();
 	}
 
 	public RewardTransaction(BigDecimal value) {

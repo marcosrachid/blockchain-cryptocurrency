@@ -155,6 +155,7 @@ public class BlockService {
 			throw new BlockException("Transaction sent funds are too low. Transaction Discarded");
 		}
 
+		// leftover
 		BigDecimal leftOver = transaction.getInputsValue().subtract(transaction.getValue());
 		TransactionOutput leftOutput = new TransactionOutput(transaction.getSender(), leftOver,
 				transaction.getTransactionId());
