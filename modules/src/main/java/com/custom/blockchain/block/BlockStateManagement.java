@@ -48,7 +48,7 @@ public class BlockStateManagement {
 	 */
 	public Block getNextBlock() {
 		Block currentBlock = currentBlockDB.get();
-		LOG.debug("[Crypto] Retrieving current Block: " + currentBlock);
+		LOG.trace("[Crypto] Retrieving current Block: " + currentBlock);
 		if (nextBlock == null) {
 			nextBlock = BlockFactory.getBlock(currentBlock);
 		}

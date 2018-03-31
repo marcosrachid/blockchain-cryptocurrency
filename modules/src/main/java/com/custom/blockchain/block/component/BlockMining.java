@@ -23,7 +23,7 @@ public class BlockMining {
 		this.blockService = blockService;
 	}
 
-	@Scheduled(fixedRate = 60000)
+	@Scheduled(fixedRate = 5000)
 	public void mine() {
 		if (MINING_THREAD == null || !MINING_THREAD.isAlive())
 			run();

@@ -29,6 +29,8 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 
 	private static final String KEY_BINDER = "b";
 
+	private static final String EXCLUDING_KEY_BINDER = "B";
+
 	private DB blockDb;
 
 	private ObjectMapper objectMapper;
@@ -83,6 +85,8 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 		try {
 			Entry<byte[], byte[]> entry = iterator.next();
 			String key = StringUtil.decompress(entry.getKey());
+			if (key.startsWith(EXCLUDING_KEY_BINDER))
+				return next(iterator);
 			String value = StringUtil.decompress(entry.getValue());
 			LOG.trace("[Crypto] BlockDB Current Iterator - Key: " + key + ", Value: " + value);
 			return objectMapper.readValue(value, Block.class);

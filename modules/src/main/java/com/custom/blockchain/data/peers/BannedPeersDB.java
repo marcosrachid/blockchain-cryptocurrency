@@ -23,6 +23,8 @@ public class BannedPeersDB extends FlagAbstractLevelDB<String> {
 
 	private static final String KEY_BINDER = "P";
 
+	private static final String EXCLUDING_KEY_BINDER = "p";
+
 	private DB peersDB;
 
 	public BannedPeersDB(final @Qualifier("PeersDB") DB peersDB) {
@@ -73,6 +75,8 @@ public class BannedPeersDB extends FlagAbstractLevelDB<String> {
 		try {
 			Entry<byte[], byte[]> entry = iterator.next();
 			String key = StringUtil.decompress(entry.getKey());
+			if (key.startsWith(EXCLUDING_KEY_BINDER))
+				return next(iterator);
 			String value = StringUtil.decompress(entry.getValue());
 			LOG.trace("[Crypto] PeersDB Current Iterator - Key: " + key + ", Value: " + value);
 			return Boolean.valueOf(value);

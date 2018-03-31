@@ -17,6 +17,9 @@ public class RewardTransaction extends Transaction {
 
 	private TransactionOutput output;
 
+	public RewardTransaction() {
+	}
+
 	public RewardTransaction(String coinbase, BigDecimal value) {
 		this.coinbase = coinbase;
 		generateCoinbase();

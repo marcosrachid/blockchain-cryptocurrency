@@ -14,6 +14,9 @@ public class TransactionInput {
 	private String transactionOutputId;
 	private TransactionOutput unspentTransactionOutput;
 
+	public TransactionInput() {
+	}
+
 	public TransactionInput(TransactionOutput u) {
 		this.transactionOutputId = u.getId();
 		this.unspentTransactionOutput = u;

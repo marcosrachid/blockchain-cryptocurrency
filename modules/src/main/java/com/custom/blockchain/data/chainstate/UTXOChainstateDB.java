@@ -39,42 +39,44 @@ public class UTXOChainstateDB extends AbstractLevelDB<PublicKey, List<Transactio
 
 	private ObjectMapper objectMapper;
 
-	public UTXOChainstateDB(final @Qualifier("ChainStateDB") DB chainstateDb, final ObjectMapper objectMapper) {
-		this.chainstateDb = chainstateDb;
+	public UTXOChainstateDB(final ObjectMapper objectMapper, final @Qualifier("ChainStateDB") DB chainstateDb) {
 		this.objectMapper = objectMapper;
+		this.chainstateDb = chainstateDb;
 	}
 
 	@Override
 	public List<TransactionOutput> get(PublicKey key) {
+		String k = WalletUtil.getStringFromKey(key);
+		LOG.trace("[Crypto] ChainstateDB Get - Key: " + k);
 		try {
-			LOG.trace("[Crypto] ChainstateDB Get - Key: " + key);
-			return objectMapper.readValue(
-					StringUtil.decompress(chainstateDb.get(StringUtil.compress(WalletUtil.getStringFromKey(key)))),
-					MAPPER);
-		} catch (DBException | IOException e) {
+			return objectMapper.readValue(StringUtil.decompress(chainstateDb.get(StringUtil.compress(k))), MAPPER);
+		} catch (Exception e) {
+			LOG.debug("[Crypto] BlockDB Error from key [" + k + "]: " + e.getMessage());
 			return new ArrayList<TransactionOutput>();
 		}
 	}
 
 	@Override
 	public void put(PublicKey key, List<TransactionOutput> value) {
+		String k = WalletUtil.getStringFromKey(key);
 		try {
 			String v = objectMapper.writeValueAsString(value);
-			LOG.trace("[Crypto] ChainstateDB Add Object - Key: " + key + ", Value: " + v);
-			chainstateDb.put(StringUtil.compress(WalletUtil.getStringFromKey(key)), StringUtil.compress(v));
+			LOG.trace("[Crypto] ChainstateDB Add Object - Key: " + k + ", Value: " + v);
+			chainstateDb.put(StringUtil.compress(k), StringUtil.compress(v));
 		} catch (DBException | IOException e) {
-			throw new DatabaseException("Could not put data from key [" + key + "] and TransactionOutput [" + value
-					+ "]: " + e.getMessage());
+			throw new DatabaseException(
+					"Could not put data from key [" + k + "] and TransactionOutput [" + value + "]: " + e.getMessage());
 		}
 	}
 
 	@Override
 	public void delete(PublicKey key) {
-		LOG.trace("[Crypto] ChainstateDB Deleted - Key: " + key);
+		String k = WalletUtil.getStringFromKey(key);
+		LOG.trace("[Crypto] ChainstateDB Deleted - Key: " + k);
 		try {
-			chainstateDb.delete(StringUtil.compress(WalletUtil.getStringFromKey(key)));
+			chainstateDb.delete(StringUtil.compress(k));
 		} catch (DBException | IOException e) {
-			throw new DatabaseException("Could not delete data from key [" + key + "]: " + e.getMessage());
+			throw new DatabaseException("Could not delete data from key [" + k + "]: " + e.getMessage());
 		}
 	}
 

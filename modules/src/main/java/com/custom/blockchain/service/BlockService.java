@@ -110,6 +110,7 @@ public class BlockService {
 		} catch (UnsupportedEncodingException | JsonProcessingException e) {
 			throw new BlockException("Could not validate if block is full of transactions: " + e.getMessage());
 		}
+		LOG.trace("[Crypto] Transactions imported on block: " + transactions);
 		block.setMerkleRoot(TransactionUtil.getMerkleRoot(transactions));
 		for (Transaction t : transactions) {
 			addTransaction(block, t);
@@ -145,7 +146,6 @@ public class BlockService {
 			throw new BlockException("Non existent transaction");
 		processTransaction(transaction);
 		block.getTransactions().add(transaction);
-		LOG.info("[Crypto] Transaction Successfully added to Block");
 	}
 
 	/**
@@ -159,7 +159,6 @@ public class BlockService {
 			throw new BlockException("Non existent transaction");
 		processTransaction(transaction);
 		block.getTransactions().add(transaction);
-		LOG.info("[Crypto] Transaction Successfully added to Block");
 	}
 
 	/**
@@ -185,20 +184,26 @@ public class BlockService {
 	private void processTransaction(SimpleTransaction transaction) throws BlockException {
 
 		if (signatureManager.verifiySignature(transaction) == false) {
-			throw new BlockException("Transaction Signature failed to verify");
+			mempoolDB.delete(transaction.getTransactionId());
+			throw new BlockException("Transaction Signature failed to verify. Transaction Discarded");
 		}
 
 		if (transaction.getValue().compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
+			mempoolDB.delete(transaction.getTransactionId());
 			throw new BlockException("Transaction sent funds are too low. Transaction Discarded");
-		}
-
-		if (transaction.getInputsValue().compareTo(transaction.getOutputsValue()) != 0) {
-			throw new BlockException("Transaction Inputs total value differs from Transaction Outputs total value");
 		}
 
 		BigDecimal leftOver = transaction.getInputsValue().subtract(transaction.getValue());
 		TransactionOutput leftOutput = new TransactionOutput(transaction.getSender(), leftOver,
 				transaction.getTransactionId());
+		BigDecimal total = leftOutput.getValue().add(transaction.getOutputsValue());
+
+		if (transaction.getInputsValue().compareTo(total) != 0) {
+			mempoolDB.delete(transaction.getTransactionId());
+			throw new BlockException("Transaction Inputs total[" + transaction.getInputsValue().toPlainString()
+					+ "] value differs from Transaction Outputs total[" + total.toPlainString()
+					+ "] value. Transaction Discarded");
+		}
 		utxoChainstateDb.leftOver(leftOutput.getReciepient(), leftOutput);
 
 		for (TransactionOutput o : transaction.getOutputs()) {
@@ -229,7 +234,7 @@ public class BlockService {
 	 */
 	private boolean isBlockFull(final Set<Transaction> transactions)
 			throws UnsupportedEncodingException, JsonProcessingException {
-		return StringUtil.sizeof(objectMapper.writeValueAsString(transactions)) < blockchainProperties.getBlockSize();
+		return StringUtil.sizeof(objectMapper.writeValueAsString(transactions)) > blockchainProperties.getBlockSize();
 	}
 
 }

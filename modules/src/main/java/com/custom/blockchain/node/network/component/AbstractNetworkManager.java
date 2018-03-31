@@ -53,7 +53,7 @@ public abstract class AbstractNetworkManager {
 	/**
 	 * 
 	 */
-	@Scheduled(fixedRate = 60000)
+	@Scheduled(fixedRate = 5000)
 	public synchronized void startServer() {
 		if (LISTENING_THREAD == null || !LISTENING_THREAD.isAlive())
 			this.peerListener.listen();

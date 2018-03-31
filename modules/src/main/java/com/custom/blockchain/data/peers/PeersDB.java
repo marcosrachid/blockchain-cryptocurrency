@@ -24,6 +24,8 @@ public class PeersDB extends AbstractLevelDB<String, Peer> {
 
 	private static final String KEY_BINDER = "p";
 
+	private static final String EXCLUDING_KEY_BINDER = "P";
+
 	private DB peersDB;
 
 	private ObjectMapper objectMapper;
@@ -78,6 +80,8 @@ public class PeersDB extends AbstractLevelDB<String, Peer> {
 		try {
 			Entry<byte[], byte[]> entry = iterator.next();
 			String key = StringUtil.decompress(entry.getKey());
+			if (key.startsWith(EXCLUDING_KEY_BINDER))
+				return next(iterator);
 			String value = StringUtil.decompress(entry.getValue());
 			LOG.trace("[Crypto] PeersDB Current Iterator - Key: " + key + ", Value: " + value);
 			return objectMapper.readValue(value, Peer.class);

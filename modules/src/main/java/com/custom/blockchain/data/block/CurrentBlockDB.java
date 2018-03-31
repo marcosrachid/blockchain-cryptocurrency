@@ -43,6 +43,7 @@ public class CurrentBlockDB extends PropertyAbstractLevelDB<Block> {
 		try {
 			return objectMapper.readValue(StringUtil.decompress(blockDb.get(KEY_BINDER.getBytes())), Block.class);
 		} catch (Exception e) {
+			LOG.debug("[Crypto] BlockDB Error from key [" + KEY_BINDER + "]: " + e.getMessage());
 			return null;
 		}
 	}
