@@ -2,6 +2,8 @@ package com.custom.blockchain.node;
 
 import java.math.BigDecimal;
 
+import javax.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +14,7 @@ import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.data.peers.PeersDB;
+import com.custom.blockchain.node.network.peer.component.PeerListener;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.StringUtil;
@@ -39,9 +42,19 @@ public abstract class AbstractNode {
 
 	protected BlockStateManagement blockStateManagement;
 
+	protected PeerListener peerListener;
+
 	public abstract void startBlocks() throws Exception;
 
-	public abstract void closeConnections();
+	@PreDestroy
+	public void closeConnections() {
+		LOG.info("[Crypto] closing connections...");
+		peerListener.stop();
+		currentBlockDB.close();
+		utxoChainstateDB.close();
+		peersDB.close();
+		mempoolDB.close();
+	}
 
 	/**
 	 * Services able to receive

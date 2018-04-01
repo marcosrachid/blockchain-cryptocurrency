@@ -9,7 +9,6 @@ import java.io.File;
 import java.security.Security;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,7 @@ import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.data.peers.PeersDB;
 import com.custom.blockchain.node.network.Service;
-import com.custom.blockchain.node.network.component.WalletNetworkManager;
+import com.custom.blockchain.node.network.peer.component.PeerListener;
 import com.custom.blockchain.util.OsUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,12 +40,10 @@ public class NodeWalletInit extends AbstractNode {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NodeWalletInit.class);
 
-	private WalletNetworkManager networkManagement;
-
 	public NodeWalletInit(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
 			final CurrentBlockDB currentBlockDB, final UTXOChainstateDB utxoChainstateDB, final PeersDB peersDB,
 			final MempoolDB mempoolDB, final BlockStateManagement blockStateManagement,
-			final WalletNetworkManager networkManagement) {
+			final PeerListener peerListener) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
 		this.currentBlockDB = currentBlockDB;
@@ -54,7 +51,7 @@ public class NodeWalletInit extends AbstractNode {
 		this.peersDB = peersDB;
 		this.mempoolDB = mempoolDB;
 		this.blockStateManagement = blockStateManagement;
-		this.networkManagement = networkManagement;
+		this.peerListener = peerListener;
 	}
 
 	/**
@@ -84,12 +81,6 @@ public class NodeWalletInit extends AbstractNode {
 		// load node services for a simple wallet
 		loadServices();
 
-		// start thread for searching blocks and transactions
-		LOG.info("[Crypto] Starting peer and actions searching thread...");
-		this.networkManagement.searchPeers();
-		this.networkManagement.startServer();
-		this.networkManagement.checkPeersConnection();
-
 		Block currentBlock = currentBlockDB.get();
 		LOG.info("[Crypto] Current block state: " + currentBlock);
 		if (currentBlock == null) {
@@ -105,19 +96,6 @@ public class NodeWalletInit extends AbstractNode {
 			LOG.info("[Crypto] Blockchain already");
 			blockStateManagement.getNextBlock();
 		}
-	}
-
-	/**
-	 * 
-	 */
-	@Override
-	@PreDestroy
-	public void closeConnections() {
-		LOG.info("[Crypto] closing connections...");
-		currentBlockDB.close();
-		utxoChainstateDB.close();
-		peersDB.close();
-		mempoolDB.close();
 	}
 
 	@Override

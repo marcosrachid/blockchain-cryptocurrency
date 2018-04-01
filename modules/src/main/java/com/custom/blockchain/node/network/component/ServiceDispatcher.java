@@ -282,9 +282,10 @@ public class ServiceDispatcher {
 	 */
 	private void simpleSend(BlockchainRequest request) {
 		request.setSignature(blockchainProperties.getNetworkSignature());
-		peerSender.connect(peer);
-		peerSender.send(request);
-		peerSender.close();
+		if (peerSender.connect(peer)) {
+			peerSender.send(request);
+			peerSender.close();
+		}
 	}
 
 }

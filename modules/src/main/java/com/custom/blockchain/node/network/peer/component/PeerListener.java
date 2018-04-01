@@ -28,6 +28,7 @@ public class PeerListener {
 
 	// Listener variables
 	private ServerSocket server;
+	private Socket client;
 	private boolean isRunning;
 
 	public PeerListener(final BlockchainProperties blockchainProperties, final ServiceDispatcher serviceDispatcher) {
@@ -78,26 +79,24 @@ public class PeerListener {
 		server = new ServerSocket(blockchainProperties.getNetworkPort());
 		LOG.info("[Crypto] Server Started port: " + blockchainProperties.getNetworkPort());
 
-		Socket clientSocket;
-
 		while (isRunning) {
-			clientSocket = server.accept();
-			LOG.trace("[Crypto] Connection Received from: " + clientSocket.toString());
+			client = server.accept();
+			LOG.trace("[Crypto] Connection Received from: " + client.toString());
 
-			BlockchainRequest request = PeerUtil.receive(clientSocket.getInputStream());
+			BlockchainRequest request = PeerUtil.receive(client.getInputStream());
 			LOG.trace("[Crypto] Request: " + request);
 
-			Peer newPeer = new Peer(clientSocket.getInetAddress().getHostAddress(), clientSocket.getLocalPort());
+			Peer newPeer = new Peer(client.getInetAddress().getHostAddress(), client.getLocalPort());
 
 			if (!request.getSignature().equals(blockchainProperties.getNetworkSignature())) {
 				LOG.error("[Crypto] Received an invalid signature from peer [" + newPeer + "]");
-				clientSocket.close();
+				client.close();
 				continue;
 			}
 
-			serviceDispatcher.launch(clientSocket, newPeer, request);
+			serviceDispatcher.launch(client, newPeer, request);
 
-			clientSocket.close();
+			client.close();
 		}
 	}
 
@@ -106,7 +105,21 @@ public class PeerListener {
 	 * @param peer
 	 */
 	public void stop() {
+		LOG.info("[Crypto] Stoping listener...");
 		isRunning = false;
+		if (server != null && !server.isClosed()) {
+			try {
+				server.close();
+			} catch (IOException e1) {
+				LOG.error("[Crypto] Could not close server...");
+			}
+		}
+		try {
+			if (client != null)
+				client.close();
+		} catch (IOException e) {
+			LOG.error("[Crypto] Could not close client...");
+		}
 	}
 
 }

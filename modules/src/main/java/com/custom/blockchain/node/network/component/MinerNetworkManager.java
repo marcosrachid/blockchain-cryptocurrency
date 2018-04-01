@@ -1,5 +1,7 @@
 package com.custom.blockchain.node.network.component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -23,6 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class MinerNetworkManager extends AbstractNetworkManager {
 
+	private static final Logger LOG = LoggerFactory.getLogger(MinerNetworkManager.class);
+
 	public MinerNetworkManager(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
 			final PeerFinder peerFinder, final PeerListener peerListener, final PeerSender peerSender) {
 		this.objectMapper = objectMapper;
@@ -37,12 +41,14 @@ public class MinerNetworkManager extends AbstractNetworkManager {
 	 */
 	@Scheduled(fixedRate = 60000)
 	public synchronized void getTransactions() {
+		LOG.debug("[Crypto] Getting transactions request from connected peers...");
 		for (Peer p : ConnectionUtil.getConnectedPeers()) {
-			this.peerSender.connect(p);
-			this.peerSender
-					.send(BlockchainRequest.createBuilder().withSignature(blockchainProperties.getNetworkSignature())
-							.withService(Service.GET_TRANSACTIONS).build());
-			this.peerSender.close();
+			if (this.peerSender.connect(p)) {
+				this.peerSender.send(
+						BlockchainRequest.createBuilder().withSignature(blockchainProperties.getNetworkSignature())
+								.withService(Service.GET_TRANSACTIONS).build());
+				this.peerSender.close();
+			}
 		}
 	}
 

@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
@@ -29,6 +31,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public abstract class AbstractNetworkManager {
 
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractNetworkManager.class);
+
 	protected ObjectMapper objectMapper;
 
 	protected BlockchainProperties blockchainProperties;
@@ -44,6 +48,7 @@ public abstract class AbstractNetworkManager {
 	 */
 	@Scheduled(fixedRate = 300000)
 	public synchronized void searchPeers() {
+		LOG.debug("[Crypto] Executing search for new peers...");
 		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())) {
 			return;
 		}
@@ -56,7 +61,8 @@ public abstract class AbstractNetworkManager {
 	@Scheduled(fixedRate = 5000)
 	public synchronized void startServer() {
 		if (LISTENING_THREAD == null || !LISTENING_THREAD.isAlive())
-			this.peerListener.listen();
+			LOG.debug("[Crypto] Starting socket listener...");
+		this.peerListener.listen();
 	}
 
 	/**
@@ -67,6 +73,7 @@ public abstract class AbstractNetworkManager {
 		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())) {
 			return;
 		}
+		LOG.debug("[Crypto] Checking connections...");
 		Set<Peer> disconectedPeers = new HashSet<>(PEERS);
 		disconectedPeers.removeAll(ConnectionUtil.getConnectedPeers());
 		for (Peer p : disconectedPeers) {
@@ -76,10 +83,11 @@ public abstract class AbstractNetworkManager {
 				REMOVED_PEERS.add(p);
 				continue;
 			}
-			this.peerSender.connect(p);
-			this.peerSender.send(BlockchainRequest.createBuilder()
-					.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.PING).build());
-			this.peerSender.close();
+			if (this.peerSender.connect(p)) {
+				this.peerSender.send(BlockchainRequest.createBuilder()
+						.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.PING).build());
+				this.peerSender.close();
+			}
 		}
 		for (Peer r : REMOVED_PEERS) {
 			PEERS.remove(r);
@@ -91,11 +99,14 @@ public abstract class AbstractNetworkManager {
 	 */
 	@Scheduled(fixedRate = 60000)
 	public synchronized void getState() {
+		LOG.debug("[Crypto] Getting state from connected peers...");
 		for (Peer p : ConnectionUtil.getConnectedPeers()) {
-			this.peerSender.connect(p);
-			this.peerSender.send(BlockchainRequest.createBuilder()
-					.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.GET_STATE).build());
-			this.peerSender.close();
+			if (this.peerSender.connect(p)) {
+				this.peerSender.send(
+						BlockchainRequest.createBuilder().withSignature(blockchainProperties.getNetworkSignature())
+								.withService(Service.GET_STATE).build());
+				this.peerSender.close();
+			}
 		}
 	}
 
@@ -106,11 +117,12 @@ public abstract class AbstractNetworkManager {
 	public synchronized void getBlocks() {
 		Iterator<Peer> peers = ConnectionUtil.getConnectedPeers().iterator();
 		while (peers.hasNext() && BLOCKS_QUEUE.size() > 0) {
-			this.peerSender.connect(peers.next());
-			this.peerSender
-					.send(BlockchainRequest.createBuilder().withSignature(blockchainProperties.getNetworkSignature())
-							.withService(Service.GET_BLOCK).withArguments(BLOCKS_QUEUE.peek()).build());
-			this.peerSender.close();
+			if (this.peerSender.connect(peers.next())) {
+				this.peerSender.send(
+						BlockchainRequest.createBuilder().withSignature(blockchainProperties.getNetworkSignature())
+								.withService(Service.GET_BLOCK).withArguments(BLOCKS_QUEUE.peek()).build());
+				this.peerSender.close();
+			}
 		}
 	}
 
