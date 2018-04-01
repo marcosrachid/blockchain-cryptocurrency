@@ -20,6 +20,7 @@ import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
+import com.custom.blockchain.node.component.DifficultyAdjustment;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
@@ -55,15 +56,19 @@ public class BlockService {
 
 	private SignatureManager signatureManager;
 
+	private DifficultyAdjustment difficultyAdjustment;
+
 	public BlockService(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
 			final CurrentBlockDB currentBlockDB, final MempoolDB mempoolDB,
-			final BlockStateManagement blockStateManagement, final SignatureManager signatureManager) {
+			final BlockStateManagement blockStateManagement, final SignatureManager signatureManager,
+			final DifficultyAdjustment difficultyAdjustment) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
 		this.currentBlockDB = currentBlockDB;
 		this.mempoolDB = mempoolDB;
 		this.blockStateManagement = blockStateManagement;
 		this.signatureManager = signatureManager;
+		this.difficultyAdjustment = difficultyAdjustment;
 	}
 
 	/**
@@ -75,9 +80,9 @@ public class BlockService {
 		long currentTimeInMillis = System.currentTimeMillis();
 		Block block = blockStateManagement.getNextBlock();
 
-		Long difficulty = null;
+		Integer difficulty = null;
 		if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
-			// TODO: adjust difficulty
+			difficulty = difficultyAdjustment.adjust();
 		} else {
 			difficulty = currentBlockDB.get().getRewardTransaction().getDifficulty();
 		}

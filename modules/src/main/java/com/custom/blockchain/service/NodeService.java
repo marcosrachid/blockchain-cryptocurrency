@@ -18,7 +18,7 @@ public class NodeService {
 		this.currentBlockDB = currentBlockDB;
 	}
 
-	public Long getCurrentDifficulty() {
+	public Integer getCurrentDifficulty() {
 		return this.currentBlockDB.get().getRewardTransaction().getDifficulty();
 	}
 

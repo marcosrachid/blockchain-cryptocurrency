@@ -35,7 +35,7 @@ public class BlockchainProperties {
 
 	@NotNull
 	@Min(0)
-	private Long miningTimeRate;
+	private BigDecimal miningTimeRate;
 
 	@NotNull
 	@Min(0)
@@ -49,10 +49,11 @@ public class BlockchainProperties {
 	private String coinbase;
 
 	private BigDecimal premined;
-	
+
 	@NotNull
 	@Min(0)
-	private Long startingDifficulty;
+	@Max(32)
+	private Integer startingDifficulty;
 
 	@NotNull
 	@Min(1025)
@@ -147,11 +148,11 @@ public class BlockchainProperties {
 		this.miner = miner;
 	}
 
-	public Long getMiningTimeRate() {
+	public BigDecimal getMiningTimeRate() {
 		return miningTimeRate;
 	}
 
-	public void setMiningTimeRate(Long miningTimeRate) {
+	public void setMiningTimeRate(BigDecimal miningTimeRate) {
 		this.miningTimeRate = miningTimeRate;
 	}
 
@@ -171,11 +172,11 @@ public class BlockchainProperties {
 		this.blockSize = blockSize;
 	}
 
-	public Long getStartingDifficulty() {
+	public Integer getStartingDifficulty() {
 		return startingDifficulty;
 	}
 
-	public void setStartingDifficulty(Long startingDifficulty) {
+	public void setStartingDifficulty(Integer startingDifficulty) {
 		this.startingDifficulty = startingDifficulty;
 	}
 

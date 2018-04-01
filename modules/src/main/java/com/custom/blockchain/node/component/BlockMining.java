@@ -1,4 +1,4 @@
-package com.custom.blockchain.block.component;
+package com.custom.blockchain.node.component;
 
 import static com.custom.blockchain.node.NodeStateManagement.MINING_THREAD;
 

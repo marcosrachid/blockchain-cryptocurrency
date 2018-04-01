@@ -56,8 +56,6 @@ public class ServiceDispatcher {
 
 	private BlockchainProperties blockchainProperties;
 
-	private PeerSender peerSender;
-
 	private BlockDB blockDB;
 
 	private CurrentBlockDB currentBlockDB;
@@ -65,6 +63,8 @@ public class ServiceDispatcher {
 	private MempoolDB mempoolDB;
 
 	private BlockStateManagement blockStateManagement;
+
+	private PeerSender peerSender;
 
 	private Socket clientSocket;
 

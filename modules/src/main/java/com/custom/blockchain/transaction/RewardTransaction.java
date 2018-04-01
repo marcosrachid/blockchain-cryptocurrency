@@ -15,12 +15,12 @@ public class RewardTransaction extends Transaction {
 
 	private TransactionOutput output;
 
-	private Long difficulty;
+	private Integer difficulty;
 
 	public RewardTransaction() {
 	}
 
-	public RewardTransaction(String coinbase, BigDecimal value, Long difficulty) {
+	public RewardTransaction(String coinbase, BigDecimal value, Integer difficulty) {
 		this.coinbase = coinbase;
 		this.value = value;
 		this.difficulty = difficulty;
@@ -49,11 +49,11 @@ public class RewardTransaction extends Transaction {
 		this.output = output;
 	}
 
-	public Long getDifficulty() {
+	public Integer getDifficulty() {
 		return difficulty;
 	}
 
-	public void setDifficulty(Long difficulty) {
+	public void setDifficulty(Integer difficulty) {
 		this.difficulty = difficulty;
 	}
 

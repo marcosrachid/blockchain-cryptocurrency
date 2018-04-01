@@ -17,11 +17,13 @@ import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
+import com.custom.blockchain.node.component.DifficultyAdjustment;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionOutput;
+import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
 
 /**
@@ -44,16 +46,19 @@ public class BlockStateManagement {
 
 	private SignatureManager signatureManager;
 
+	private DifficultyAdjustment difficultyAdjustment;
+
 	private Block nextBlock;
 
 	public BlockStateManagement(final BlockchainProperties blockchainProperties, final BlockDB blockDB,
 			final CurrentBlockDB currentBlockDB, final UTXOChainstateDB utxoChainstateDb,
-			final SignatureManager signatureManager) {
+			final SignatureManager signatureManager, final DifficultyAdjustment difficultyAdjustment) {
 		this.blockchainProperties = blockchainProperties;
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
 		this.utxoChainstateDb = utxoChainstateDb;
 		this.signatureManager = signatureManager;
+		this.difficultyAdjustment = difficultyAdjustment;
 	}
 
 	/**
@@ -65,11 +70,16 @@ public class BlockStateManagement {
 		if (!BLOCKS_QUEUE.peek().getHeight().equals(block.getHeight())) {
 			throw new BlockException("Block from peer was not from the expected height");
 		}
+		Integer difficulty = currentBlockDB.get().getRewardTransaction().getDifficulty();
 		if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
-			// TODO: adjust difficulty
-		} else if (!currentBlockDB.get().getRewardTransaction().getDifficulty()
-				.equals(block.getRewardTransaction().getDifficulty())) {
+			difficulty = difficultyAdjustment.adjust();
+		}
+		if (!difficulty.equals(block.getRewardTransaction().getDifficulty())) {
 			throw new BlockException("Block is on a different difficulty from environment");
+		}
+		String target = StringUtil.getDificultyString(difficulty.intValue());
+		if (!block.getHash().startsWith(target, difficulty.intValue())) {
+			throw new BlockException("Block was not procedurely mined");
 		}
 		if (!TransactionUtil.getMerkleRoot(block.getTransactions()).equals(block.getMerkleRoot())) {
 			throw new BlockException("Block tree does not correspond to its merkle root");
