@@ -60,9 +60,10 @@ public abstract class AbstractNetworkManager {
 	 */
 	@Scheduled(fixedRate = 5000)
 	public synchronized void startServer() {
-		if (LISTENING_THREAD == null || !LISTENING_THREAD.isAlive())
+		if (LISTENING_THREAD == null || !LISTENING_THREAD.isAlive()) {
 			LOG.debug("[Crypto] Starting socket listener...");
-		this.peerListener.listen();
+			this.peerListener.listen();
+		}
 	}
 
 	/**
