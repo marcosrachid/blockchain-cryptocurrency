@@ -85,7 +85,7 @@ public class PeerListener {
 			LOG.trace("[Crypto] Connection Received from: " + clientSocket.toString());
 
 			BlockchainRequest request = PeerUtil.receive(clientSocket.getInputStream());
-			LOG.trace("[Crypto] Reques: " + request);
+			LOG.trace("[Crypto] Request: " + request);
 
 			Peer newPeer = new Peer(clientSocket.getInetAddress().getHostAddress(), clientSocket.getLocalPort());
 

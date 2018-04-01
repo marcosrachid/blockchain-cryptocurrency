@@ -95,4 +95,15 @@ public class BlockDB extends AbstractLevelDB<String, Block> {
 		}
 	}
 
+	@Override
+	public void close() {
+		LOG.info("[Crypto] closing BlockDB");
+		try {
+			blockDb.close();
+			LOG.info("[Crypto] BlockDB closed");
+		} catch (IOException e) {
+			throw new DatabaseException("Could not close connection: " + e.getMessage());
+		}
+	}
+
 }

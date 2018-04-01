@@ -9,6 +9,9 @@ import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.CurrentBlockDB;
+import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
+import com.custom.blockchain.data.mempool.MempoolDB;
+import com.custom.blockchain.data.peers.PeersDB;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.StringUtil;
@@ -28,9 +31,17 @@ public abstract class AbstractNode {
 
 	protected CurrentBlockDB currentBlockDB;
 
+	protected UTXOChainstateDB utxoChainstateDB;
+
+	protected PeersDB peersDB;
+
+	protected MempoolDB mempoolDB;
+
 	protected BlockStateManagement blockStateManagement;
 
 	public abstract void startBlocks() throws Exception;
+
+	public abstract void closeConnections();
 
 	/**
 	 * Services able to receive

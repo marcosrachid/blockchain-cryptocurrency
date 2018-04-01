@@ -75,7 +75,7 @@ public class BlockStateManagement {
 			difficulty = difficultyAdjustment.adjust();
 		}
 		if (!difficulty.equals(block.getRewardTransaction().getDifficulty())) {
-			throw new BlockException("Block is on a different difficulty from environment");
+			throw new BlockException("Block is on a different difficulty from protocol");
 		}
 		String target = StringUtil.getDificultyString(difficulty.intValue());
 		if (!block.getHash().startsWith(target, difficulty.intValue())) {

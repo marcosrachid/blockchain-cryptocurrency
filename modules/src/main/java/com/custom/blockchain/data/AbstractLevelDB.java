@@ -2,7 +2,7 @@ package com.custom.blockchain.data;
 
 import org.iq80.leveldb.DBIterator;
 
-public abstract class AbstractLevelDB<Key, Value> {
+public abstract class AbstractLevelDB<Key, Value> extends AbstractCloseLevelDB {
 
 	public abstract Value get(Key key);
 

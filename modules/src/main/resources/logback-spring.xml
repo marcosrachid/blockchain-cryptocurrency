@@ -16,10 +16,10 @@
 		</encoder>
 	</appender>
 
-	<logger name="com.custom.blockchain" level="DEBUG" />
+	<logger name="com.custom.blockchain" level="TRACE" />
 
 	<root level="INFO">
 		<appender-ref ref="CONSOLE" />
-		<appender-ref ref="FILE" />
+		<!-- <appender-ref ref="FILE" />  -->
 	</root>
 </configuration>

@@ -84,4 +84,15 @@ public class BannedPeersDB extends FlagAbstractLevelDB<String> {
 		}
 	}
 
+	@Override
+	public void close() {
+		LOG.info("[Crypto] closing PeersDB");
+		try {
+			peersDB.close();
+			LOG.info("[Crypto] PeersDB closed");
+		} catch (IOException e) {
+			throw new DatabaseException("Could not close connection: " + e.getMessage());
+		}
+	}
+
 }

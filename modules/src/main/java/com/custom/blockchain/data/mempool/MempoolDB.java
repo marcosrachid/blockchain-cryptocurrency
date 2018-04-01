@@ -84,4 +84,15 @@ public class MempoolDB extends AbstractLevelDB<String, SimpleTransaction> {
 		}
 	}
 
+	@Override
+	public void close() {
+		LOG.info("[Crypto] closing MempoolDB");
+		try {
+			mempoolDB.close();
+			LOG.info("[Crypto] MempoolDB closed");
+		} catch (IOException e) {
+			throw new DatabaseException("Could not close connection: " + e.getMessage());
+		}
+	}
+
 }

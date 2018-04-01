@@ -122,4 +122,15 @@ public class UTXOChainstateDB extends AbstractLevelDB<PublicKey, List<Transactio
 		put(key, transactionOutputs);
 	}
 
+	@Override
+	public void close() {
+		LOG.info("[Crypto] closing ChainstateDb");
+		try {
+			chainstateDb.close();
+			LOG.info("[Crypto] ChainstateDb closed");
+		} catch (IOException e) {
+			throw new DatabaseException("Could not close connection: " + e.getMessage());
+		}
+	}
+
 }

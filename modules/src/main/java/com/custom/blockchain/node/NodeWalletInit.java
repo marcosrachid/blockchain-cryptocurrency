@@ -9,6 +9,7 @@ import java.io.File;
 import java.security.Security;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,9 @@ import com.custom.blockchain.block.BlockFactory;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.CurrentBlockDB;
+import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
+import com.custom.blockchain.data.mempool.MempoolDB;
+import com.custom.blockchain.data.peers.PeersDB;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.component.WalletNetworkManager;
 import com.custom.blockchain.util.OsUtil;
@@ -40,11 +44,15 @@ public class NodeWalletInit extends AbstractNode {
 	private WalletNetworkManager networkManagement;
 
 	public NodeWalletInit(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final CurrentBlockDB currentBlockDB, final BlockStateManagement blockStateManagement,
+			final CurrentBlockDB currentBlockDB, final UTXOChainstateDB utxoChainstateDB, final PeersDB peersDB,
+			final MempoolDB mempoolDB, final BlockStateManagement blockStateManagement,
 			final WalletNetworkManager networkManagement) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
 		this.currentBlockDB = currentBlockDB;
+		this.utxoChainstateDB = utxoChainstateDB;
+		this.peersDB = peersDB;
+		this.mempoolDB = mempoolDB;
 		this.blockStateManagement = blockStateManagement;
 		this.networkManagement = networkManagement;
 	}
@@ -97,6 +105,19 @@ public class NodeWalletInit extends AbstractNode {
 			LOG.info("[Crypto] Blockchain already");
 			blockStateManagement.getNextBlock();
 		}
+	}
+
+	/**
+	 * 
+	 */
+	@Override
+	@PreDestroy
+	public void closeConnections() {
+		LOG.info("[Crypto] closing connections...");
+		currentBlockDB.close();
+		utxoChainstateDB.close();
+		peersDB.close();
+		mempoolDB.close();
 	}
 
 	@Override
