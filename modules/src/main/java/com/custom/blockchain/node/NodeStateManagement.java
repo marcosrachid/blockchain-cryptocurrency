@@ -15,7 +15,7 @@ import com.custom.blockchain.node.network.request.arguments.BlockArguments;
  */
 public class NodeStateManagement {
 
-	public static final Integer DIFFICULTY_ADJUSTMENT_BLOCK = 10;
+	public static final Integer DIFFICULTY_ADJUSTMENT_BLOCK = 1000;
 
 	public static final Set<Service> SERVICES = new HashSet<>();
 
