@@ -103,9 +103,7 @@ public abstract class AbstractNetworkManager {
 		LOG.debug("[Crypto] Getting state from connected peers...");
 		for (Peer p : ConnectionUtil.getConnectedPeers()) {
 			if (this.peerSender.connect(p)) {
-				this.peerSender.send(
-						BlockchainRequest.createBuilder().withSignature(blockchainProperties.getNetworkSignature())
-								.withService(Service.GET_STATE).build());
+				this.peerSender.send(BlockchainRequest.createBuilder().withService(Service.GET_STATE).build());
 				this.peerSender.close();
 			}
 		}

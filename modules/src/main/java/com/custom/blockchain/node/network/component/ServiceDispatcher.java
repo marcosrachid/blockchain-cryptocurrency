@@ -23,7 +23,6 @@ import org.springframework.stereotype.Component;
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.block.exception.BlockException;
-import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
@@ -54,8 +53,6 @@ public class ServiceDispatcher {
 
 	private ObjectMapper objectMapper;
 
-	private BlockchainProperties blockchainProperties;
-
 	private BlockDB blockDB;
 
 	private CurrentBlockDB currentBlockDB;
@@ -70,11 +67,10 @@ public class ServiceDispatcher {
 
 	private Peer peer;
 
-	public ServiceDispatcher(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final BlockDB blockDB, final CurrentBlockDB currentBlockDB, final MempoolDB mempoolDB,
+	public ServiceDispatcher(final ObjectMapper objectMapper, final BlockDB blockDB,
+			final CurrentBlockDB currentBlockDB, final MempoolDB mempoolDB,
 			final BlockStateManagement blockStateManagement, final PeerSender peerSender) {
 		this.objectMapper = objectMapper;
-		this.blockchainProperties = blockchainProperties;
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
 		this.mempoolDB = mempoolDB;
@@ -281,7 +277,6 @@ public class ServiceDispatcher {
 	 * @param request
 	 */
 	private void simpleSend(BlockchainRequest request) {
-		request.setSignature(blockchainProperties.getNetworkSignature());
 		if (peerSender.connect(peer)) {
 			peerSender.send(request);
 			peerSender.close();

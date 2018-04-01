@@ -44,9 +44,7 @@ public class MinerNetworkManager extends AbstractNetworkManager {
 		LOG.debug("[Crypto] Getting transactions request from connected peers...");
 		for (Peer p : ConnectionUtil.getConnectedPeers()) {
 			if (this.peerSender.connect(p)) {
-				this.peerSender.send(
-						BlockchainRequest.createBuilder().withSignature(blockchainProperties.getNetworkSignature())
-								.withService(Service.GET_TRANSACTIONS).build());
+				this.peerSender.send(BlockchainRequest.createBuilder().withService(Service.GET_TRANSACTIONS).build());
 				this.peerSender.close();
 			}
 		}

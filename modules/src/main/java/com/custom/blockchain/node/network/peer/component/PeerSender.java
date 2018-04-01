@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.node.network.request.BlockchainRequest;
 
@@ -18,9 +19,12 @@ public class PeerSender {
 
 	private static final Logger LOG = LoggerFactory.getLogger(PeerSender.class);
 
+	private BlockchainProperties blockchainProperties;
+
 	private Socket socket;
 
-	public PeerSender() {
+	public PeerSender(final BlockchainProperties blockchainProperties) {
+		this.blockchainProperties = blockchainProperties;
 	}
 
 	/**
@@ -48,6 +52,8 @@ public class PeerSender {
 		LOG.trace("[Crypto] Sending request[" + blockchainRequest + "] to client["
 				+ socket.getInetAddress().getHostAddress() + "]");
 		if (socket != null) {
+			blockchainRequest.setSignature(blockchainProperties.getNetworkSignature());
+			blockchainRequest.setResponsePort(blockchainProperties.getNetworkPort());
 			try {
 				OutputStream outputStream = socket.getOutputStream();
 				ObjectOutputStream oos = new ObjectOutputStream(outputStream);

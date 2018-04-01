@@ -14,6 +14,7 @@ public class BlockchainRequest implements Serializable {
 	private static final long serialVersionUID = -2775259804853170049L;
 
 	private String signature;
+	private Integer responsePort;
 	private Service service;
 	private GenericArguments arguments;
 
@@ -21,16 +22,18 @@ public class BlockchainRequest implements Serializable {
 		super();
 	}
 
-	public BlockchainRequest(String signature, Service service, GenericArguments arguments) {
+	public BlockchainRequest(String signature, Integer responsePort, Service service, GenericArguments arguments) {
 		super();
 		this.signature = signature;
+		this.responsePort = responsePort;
 		this.service = service;
 		this.arguments = arguments;
 	}
 
-	public BlockchainRequest(String signature, Service service) {
+	public BlockchainRequest(String signature, Integer responsePort, Service service) {
 		super();
 		this.signature = signature;
+		this.responsePort = responsePort;
 		this.service = service;
 	}
 
@@ -40,6 +43,14 @@ public class BlockchainRequest implements Serializable {
 
 	public void setSignature(String signature) {
 		this.signature = signature;
+	}
+
+	public Integer getResponsePort() {
+		return responsePort;
+	}
+
+	public void setResponsePort(Integer responsePort) {
+		this.responsePort = responsePort;
 	}
 
 	public Service getService() {
@@ -68,7 +79,8 @@ public class BlockchainRequest implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(signature).append(service).append(arguments).hashCode();
+		return new HashCodeBuilder().append(signature).append(responsePort).append(service).append(arguments)
+				.hashCode();
 	}
 
 	@Override
@@ -80,14 +92,14 @@ public class BlockchainRequest implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		BlockchainRequest other = (BlockchainRequest) obj;
-		return new EqualsBuilder().append(signature, other.signature).append(service, other.service)
-				.append(arguments, other.arguments).isEquals();
+		return new EqualsBuilder().append(signature, other.signature).append(responsePort, other.responsePort)
+				.append(service, other.service).append(arguments, other.arguments).isEquals();
 	}
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("signature", signature).append("service", service)
-				.append("arguments", arguments).build();
+		return new ToStringBuilder(this).append("signature", signature).append("responsePort", responsePort)
+				.append("service", service).append("arguments", arguments).build();
 	}
 
 	public static class BlockchainRequestBuilder {
@@ -100,6 +112,11 @@ public class BlockchainRequest implements Serializable {
 
 		public BlockchainRequestBuilder withSignature(String signature) {
 			this.instance.signature = signature;
+			return this;
+		}
+
+		public BlockchainRequestBuilder withResponsePort(Integer responsePort) {
+			this.instance.responsePort = responsePort;
 			return this;
 		}
 

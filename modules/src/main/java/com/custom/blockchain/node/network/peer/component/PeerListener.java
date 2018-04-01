@@ -86,7 +86,7 @@ public class PeerListener {
 			BlockchainRequest request = PeerUtil.receive(client.getInputStream());
 			LOG.trace("[Crypto] Request: " + request);
 
-			Peer newPeer = new Peer(client.getInetAddress().getHostAddress(), client.getLocalPort());
+			Peer newPeer = new Peer(client.getInetAddress().getHostAddress(), request.getResponsePort());
 
 			if (!request.getSignature().equals(blockchainProperties.getNetworkSignature())) {
 				LOG.error("[Crypto] Received an invalid signature from peer [" + newPeer + "]");
