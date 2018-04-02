@@ -1,7 +1,9 @@
 # blockchain-cryptocurrency *TODO* List
 
-* BlockService.java: adjust difficulty
-
-* BlockStateManagement.java: adjust difficulty
-
 * PeerFinder.java: MAYBE
+
+* Transaction mempool must be removed when block found with its transaction
+
+* Fork treatment
+
+* Give back Transaction to mempool if necessary when a Fork is found
