@@ -1,5 +1,6 @@
 package com.custom.blockchain.transaction;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -9,7 +10,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.custom.blockchain.util.DigestUtil;
 
-public class RewardTransaction extends Transaction {
+public class RewardTransaction extends Transaction implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private String coinbase;
 
