@@ -101,6 +101,7 @@ public abstract class AbstractNetworkManager {
 	@Scheduled(fixedRate = 60000)
 	public synchronized void getState() {
 		LOG.debug("[Crypto] Getting state from connected peers...");
+		LOG.debug("[Crypto] peers: " + ConnectionUtil.getConnectedPeers());
 		for (Peer p : ConnectionUtil.getConnectedPeers()) {
 			if (this.peerSender.connect(p)) {
 				this.peerSender.send(BlockchainRequest.createBuilder().withService(Service.GET_STATE).build());

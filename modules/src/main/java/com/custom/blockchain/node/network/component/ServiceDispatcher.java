@@ -155,7 +155,7 @@ public class ServiceDispatcher {
 	 */
 	@SuppressWarnings("unused")
 	private void getState() {
-		LOG.trace("[Crypto] Found a " + Service.GET_STATE.getService() + " event");
+		LOG.debug("[Crypto] Found a " + Service.GET_STATE.getService() + " event");
 		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_STATE_RESPONSE)
 				.withArguments(new StateResponseArguments(currentBlockDB.get().getHeight())).build());
 	}
@@ -185,7 +185,7 @@ public class ServiceDispatcher {
 	 */
 	@SuppressWarnings("unused")
 	private void getBlock(BlockArguments args) {
-		LOG.trace("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event");
+		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event");
 		Block block = mapUntil(currentBlockDB.get(), args.getHeight());
 		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_BLOCK_RESPONSE)
 				.withArguments(new BlockResponseArguments(block)).build());
@@ -197,7 +197,7 @@ public class ServiceDispatcher {
 	 */
 	@SuppressWarnings("unused")
 	private void getBlockResponse(BlockResponseArguments args) {
-		LOG.trace("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event");
+		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event");
 		Block block = args.getBlock();
 		try {
 			blockStateManagement.validateBlock(block);
@@ -213,7 +213,7 @@ public class ServiceDispatcher {
 	 */
 	@SuppressWarnings("unused")
 	private void getPeers() {
-		LOG.trace("[Crypto] Found a " + Service.GET_PEERS.getService() + " event");
+		LOG.debug("[Crypto] Found a " + Service.GET_PEERS.getService() + " event");
 		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_PEERS_RESPONSE)
 				.withArguments(new PeerResponseArguments(ConnectionUtil.getConnectedPeers())).build());
 	}
@@ -223,7 +223,7 @@ public class ServiceDispatcher {
 	 */
 	@SuppressWarnings("unused")
 	private void getPeersResponse(PeerResponseArguments peers) {
-		LOG.trace("[Crypto] Found a " + Service.GET_PEERS_RESPONSE.getService() + " event");
+		LOG.debug("[Crypto] Found a " + Service.GET_PEERS_RESPONSE.getService() + " event");
 		JavaType collectionPeerClass = objectMapper.getTypeFactory().constructCollectionType(Set.class, Peer.class);
 		Set<Peer> requestPeers = peers.getPeers();
 		requestPeers.removeAll(REMOVED_PEERS);
@@ -237,7 +237,7 @@ public class ServiceDispatcher {
 	 */
 	@SuppressWarnings("unused")
 	private void getTransactions() {
-		LOG.trace("[Crypto] Found a " + Service.GET_TRANSACTIONS.getService() + " event");
+		LOG.debug("[Crypto] Found a " + Service.GET_TRANSACTIONS.getService() + " event");
 		Set<SimpleTransaction> mempoolTransactions = new HashSet<>();
 		DBIterator iterator = mempoolDB.iterator();
 		while (iterator.hasNext()) {
@@ -253,7 +253,7 @@ public class ServiceDispatcher {
 	 */
 	@SuppressWarnings("unused")
 	private void getTransactionsResponse(TransactionsResponseArguments args) {
-		LOG.trace("[Crypto] Found a " + Service.GET_TRANSACTIONS_RESPONSE.getService() + " event");
+		LOG.debug("[Crypto] Found a " + Service.GET_TRANSACTIONS_RESPONSE.getService() + " event");
 		for (SimpleTransaction t : args.getTransactions()) {
 			mempoolDB.put(t.getTransactionId(), t);
 		}
