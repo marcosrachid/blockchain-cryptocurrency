@@ -1,6 +1,5 @@
 package com.custom.blockchain.transaction;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -22,10 +21,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @author marcosrachid
  *
  */
-public class SimpleTransaction extends Transaction implements Serializable {
+public class SimpleTransaction extends Transaction {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	@JsonSerialize(using = PublicKeySerializer.class)
 	@JsonDeserialize(using = PublicKeyDeserializer.class)
 	private PublicKey sender;
@@ -122,9 +121,10 @@ public class SimpleTransaction extends Transaction implements Serializable {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("transactionId", transactionId).append("sender", WalletUtil.getStringFromKey(sender))
-				.append("value", value).append("timeStamp", timeStamp).append("signature", signature)
-				.append("inputs", inputs).append("outputs", outputs).build();
+		return new ToStringBuilder(this).append("transactionId", transactionId)
+				.append("sender", WalletUtil.getStringFromKey(sender)).append("value", value)
+				.append("timeStamp", timeStamp).append("signature", signature).append("inputs", inputs)
+				.append("outputs", outputs).build();
 	}
 
 }

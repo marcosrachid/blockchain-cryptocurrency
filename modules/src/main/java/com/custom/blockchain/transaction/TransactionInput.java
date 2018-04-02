@@ -1,5 +1,7 @@
 package com.custom.blockchain.transaction;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -9,7 +11,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  * @author marcosrachid
  *
  */
-public class TransactionInput {
+public class TransactionInput implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private String transactionOutputId;
 	private TransactionOutput unspentTransactionOutput;

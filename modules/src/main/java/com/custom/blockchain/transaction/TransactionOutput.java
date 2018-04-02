@@ -1,5 +1,6 @@
 package com.custom.blockchain.transaction;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.security.PublicKey;
 
@@ -19,7 +20,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @author marcosrachid
  *
  */
-public class TransactionOutput {
+public class TransactionOutput implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private String id;
 	@JsonSerialize(using = PublicKeySerializer.class)

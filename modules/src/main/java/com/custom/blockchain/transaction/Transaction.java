@@ -1,5 +1,6 @@
 package com.custom.blockchain.transaction;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -18,8 +19,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
  */
 @JsonTypeInfo(use = Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({ @Type(value = RewardTransaction.class), @Type(value = SimpleTransaction.class) })
-public abstract class Transaction {
+public abstract class Transaction implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	protected String transactionId;
 	protected BigDecimal value;
 	protected Long timeStamp;
