@@ -3,10 +3,10 @@ package com.custom.blockchain.block;
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
 import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY_ADJUSTMENT_BLOCK;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,9 +68,11 @@ public class BlockStateManagement {
 	 */
 	public void validateBlock(Block block) throws BlockException {
 		LOG.info("[Crypto] Starting block validation...");
+		LOG.trace("[Crypto] Validating if block from peer was not from the expected height...");
 		if (!BLOCKS_QUEUE.peek().getHeight().equals(block.getHeight())) {
 			throw new BlockException("Block from peer was not from the expected height");
 		}
+		LOG.trace("[Crypto] Validating if block is on a different difficulty from protocol...");
 		Integer difficulty = currentBlockDB.get().getRewardTransaction().getDifficulty();
 		if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
 			difficulty = difficultyAdjustment.adjust();
@@ -78,23 +80,25 @@ public class BlockStateManagement {
 		if (!difficulty.equals(block.getRewardTransaction().getDifficulty())) {
 			throw new BlockException("Block is on a different difficulty from protocol");
 		}
+		LOG.trace("[Crypto] Validating if block was procedurely mined...");
 		String target = StringUtil.getDificultyString(difficulty.intValue());
 		if (!block.getHash().startsWith(target)) {
 			throw new BlockException("Block was not procedurely mined");
 		}
+		LOG.trace("[Crypto] Validating if block tree does not correspond to its merkle root...");
 		if (!TransactionUtil.getMerkleRoot(block.getTransactions()).equals(block.getMerkleRoot())) {
 			throw new BlockException("Block tree does not correspond to its merkle root");
 		}
-		Stream<Transaction> rewardStream = block.getTransactions().stream().filter(t -> t instanceof RewardTransaction);
-		if (rewardStream.collect(Collectors.toList()).size() > 1) {
-			throw new BlockException("Block has more then one reward transaction");
+		LOG.trace("[Crypto] Validating if block has more then one reward transaction...");
+		List<RewardTransaction> rewardList = block.getTransactions().stream()
+				.filter(t -> t instanceof RewardTransaction).map(t -> (RewardTransaction) t)
+				.collect(Collectors.toList());
+		if (rewardList.size() != 1) {
+			throw new BlockException("Block has one reward transaction");
 		}
-		Optional<Transaction> optionalReward = rewardStream.findFirst();
-		if (!optionalReward.isPresent()) {
-			throw new BlockException("Block has no reward transaction");
-		}
-		Transaction reward = optionalReward.get();
-		if (reward.getValue().equals(blockchainProperties.getReward())) {
+		LOG.trace("[Crypto] Validating if block has an unexpected reward value...");
+		RewardTransaction reward = rewardList.get(0);
+		if (reward.getValue().compareTo(blockchainProperties.getReward()) != 0) {
 			throw new BlockException("Block has an unexpected reward value[" + reward.getValue() + "]");
 		}
 
