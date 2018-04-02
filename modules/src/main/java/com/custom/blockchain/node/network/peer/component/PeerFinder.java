@@ -91,9 +91,12 @@ public class PeerFinder {
 	 */
 	private void findFromPeers() {
 		for (Peer p : ConnectionUtil.getConnectedPeers()) {
-			this.peerSender.connect(p);
-			this.peerSender.send(BlockchainRequest.createBuilder().withService(Service.GET_PEERS).build());
-			this.peerSender.close();
+			LOG.debug("[Crypto] Trying to send a service[" + Service.GET_PEERS.getService() + "] request to peer[" + p
+					+ "]");
+			if (this.peerSender.connect(p)) {
+				this.peerSender.send(BlockchainRequest.createBuilder().withService(Service.GET_PEERS).build());
+				this.peerSender.close();
+			}
 		}
 	}
 

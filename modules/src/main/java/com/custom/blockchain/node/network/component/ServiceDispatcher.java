@@ -276,6 +276,8 @@ public class ServiceDispatcher {
 	 * @param request
 	 */
 	private void simpleSend(BlockchainRequest request) {
+		LOG.debug("[Crypto] Trying to send a service[" + request.getService().getService() + "] request to peer[" + peer
+				+ "]");
 		if (peerSender.connect(peer)) {
 			peerSender.send(request);
 			peerSender.close();

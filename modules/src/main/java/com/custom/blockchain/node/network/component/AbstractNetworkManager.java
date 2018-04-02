@@ -103,6 +103,8 @@ public abstract class AbstractNetworkManager {
 		LOG.debug("[Crypto] Getting state from connected peers...");
 		LOG.debug("[Crypto] peers: " + ConnectionUtil.getConnectedPeers());
 		for (Peer p : ConnectionUtil.getConnectedPeers()) {
+			LOG.debug("[Crypto] Trying to send a service[" + Service.GET_STATE.getService() + "] request to peer[" + p
+					+ "]");
 			if (this.peerSender.connect(p)) {
 				this.peerSender.send(BlockchainRequest.createBuilder().withService(Service.GET_STATE).build());
 				this.peerSender.close();
@@ -117,7 +119,10 @@ public abstract class AbstractNetworkManager {
 	public synchronized void getBlocks() {
 		Iterator<Peer> peers = ConnectionUtil.getConnectedPeers().iterator();
 		while (peers.hasNext() && BLOCKS_QUEUE.size() > 0) {
-			if (this.peerSender.connect(peers.next())) {
+			Peer p = peers.next();
+			LOG.debug("[Crypto] Trying to send a service[" + Service.GET_BLOCK.getService() + "] request to peer[" + p
+					+ "]");
+			if (this.peerSender.connect(p)) {
 				this.peerSender.send(
 						BlockchainRequest.createBuilder().withSignature(blockchainProperties.getNetworkSignature())
 								.withService(Service.GET_BLOCK).withArguments(BLOCKS_QUEUE.peek()).build());
