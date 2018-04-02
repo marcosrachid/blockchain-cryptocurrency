@@ -8,6 +8,8 @@ import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 
 import org.iq80.leveldb.DBIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
@@ -26,6 +28,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Component
 public class PeerFinder {
+
+	private static final Logger LOG = LoggerFactory.getLogger(PeerFinder.class);
 
 	private static final String INVALID_LOCALHOST = "localhost";
 
@@ -57,6 +61,7 @@ public class PeerFinder {
 		findFromDNS();
 		findFromPeers();
 		findMockedPeers();
+		LOG.debug("[Crypto] Peers found: " + PEERS);
 		for (Peer p : PEERS) {
 			peersDB.put(p.getIp(), p);
 		}

@@ -106,6 +106,7 @@ public class ServiceDispatcher {
 			LOG.trace("[Crypto] Request without arguments: " + request.getService().getService());
 			this.getClass().getDeclaredMethod(request.getService().getService()).invoke(this);
 		}
+		PEERS_STATUS.put(peer, LocalDateTime.now());
 	}
 
 	/**
@@ -126,7 +127,6 @@ public class ServiceDispatcher {
 			peer.setLastConnected(LocalDateTime.now());
 			PEERS.add(peer);
 		}
-		PEERS_STATUS.put(peer, LocalDateTime.now());
 	}
 
 	/**
@@ -147,7 +147,6 @@ public class ServiceDispatcher {
 			peer.setLastConnected(LocalDateTime.now());
 			PEERS.add(peer);
 		}
-		PEERS_STATUS.put(peer, LocalDateTime.now());
 	}
 
 	/**
