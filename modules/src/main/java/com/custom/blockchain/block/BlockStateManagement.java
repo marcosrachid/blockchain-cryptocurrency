@@ -79,7 +79,7 @@ public class BlockStateManagement {
 			throw new BlockException("Block is on a different difficulty from protocol");
 		}
 		String target = StringUtil.getDificultyString(difficulty.intValue());
-		if (!block.getHash().startsWith(target, difficulty.intValue())) {
+		if (!block.getHash().startsWith(target)) {
 			throw new BlockException("Block was not procedurely mined");
 		}
 		if (!TransactionUtil.getMerkleRoot(block.getTransactions()).equals(block.getMerkleRoot())) {
