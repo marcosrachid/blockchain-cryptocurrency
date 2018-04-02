@@ -2,6 +2,8 @@
 
 * PeerFinder.java: MAYBE
 
+* ServiceDispatcher.java: remove singleton variables to prevent concurrency
+
 * Transaction mempool must be removed when block found with its transaction
 
 * Fork treatment
