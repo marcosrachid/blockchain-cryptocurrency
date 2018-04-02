@@ -136,7 +136,6 @@ public class ServiceDispatcher {
 	private void pong() {
 		LOG.trace("[Crypto] Found a " + Service.PONG.getService() + " event");
 		LOG.trace(String.format("[Crypto] node [%s] successfully answered", clientSocket.toString()));
-		simpleSend(BlockchainRequest.createBuilder().withService(Service.PING).build());
 		Optional<Peer> foundPeer = PEERS.stream().filter(p -> p.equals(peer)).findFirst();
 		if (foundPeer.isPresent()) {
 			Peer p = foundPeer.get();

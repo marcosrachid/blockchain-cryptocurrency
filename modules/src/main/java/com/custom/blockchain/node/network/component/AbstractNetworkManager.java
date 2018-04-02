@@ -69,7 +69,7 @@ public abstract class AbstractNetworkManager {
 	/**
 	 * 
 	 */
-	@Scheduled(fixedRate = 60000)
+	@Scheduled(fixedRate = 5000)
 	public synchronized void checkPeersConnection() {
 		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())) {
 			return;
