@@ -203,6 +203,7 @@ public class ServiceDispatcher {
 			blockStateManagement.foundBlock(block);
 			BLOCKS_QUEUE.poll();
 		} catch (BlockException e) {
+			LOG.error("Block[" + block + "] was identified as invalid: " + e.getMessage());
 			throw new NetworkException("Block[" + block + "] was identified as invalid: " + e.getMessage());
 		}
 	}
