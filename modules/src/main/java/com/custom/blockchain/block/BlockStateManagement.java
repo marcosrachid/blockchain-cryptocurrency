@@ -67,6 +67,7 @@ public class BlockStateManagement {
 	 * @throws BlockException
 	 */
 	public void validateBlock(Block block) throws BlockException {
+		LOG.info("[Crypto] Starting block validation...");
 		if (!BLOCKS_QUEUE.peek().getHeight().equals(block.getHeight())) {
 			throw new BlockException("Block from peer was not from the expected height");
 		}
