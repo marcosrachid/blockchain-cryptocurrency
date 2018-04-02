@@ -214,7 +214,9 @@ public class ServiceDispatcher {
 	private void getPeers() {
 		LOG.debug("[Crypto] Found a " + Service.GET_PEERS.getService() + " event");
 		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_PEERS_RESPONSE)
-				.withArguments(new PeerResponseArguments(ConnectionUtil.getConnectedPeers())).build());
+				.withArguments(new PeerResponseArguments(ConnectionUtil.getConnectedPeers().stream()
+						.filter(p -> !p.equals(peer)).collect(Collectors.toSet())))
+				.build());
 	}
 
 	/**
