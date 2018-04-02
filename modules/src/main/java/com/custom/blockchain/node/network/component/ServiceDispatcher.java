@@ -185,6 +185,7 @@ public class ServiceDispatcher {
 	private void getBlock(BlockArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event");
 		Block block = mapUntil(currentBlockDB.get(), args.getHeight());
+		LOG.debug("[Crypto] Found block[" + block + "] to be sent");
 		simpleSend(BlockchainRequest.createBuilder().withService(Service.GET_BLOCK_RESPONSE)
 				.withArguments(new BlockResponseArguments(block)).build());
 	}
