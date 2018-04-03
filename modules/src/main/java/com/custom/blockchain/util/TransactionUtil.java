@@ -1,13 +1,10 @@
 package com.custom.blockchain.util;
 
-import static com.custom.blockchain.node.NodeStateManagement.BLOCKED;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import com.custom.blockchain.transaction.Transaction;
-import com.custom.blockchain.transaction.exception.TransactionException;
 
 /**
  * 
@@ -15,31 +12,6 @@ import com.custom.blockchain.transaction.exception.TransactionException;
  *
  */
 public class TransactionUtil {
-
-	/**
-	 * 
-	 */
-	public static void blockTransactions() {
-		BLOCKED = true;
-	}
-
-	/**
-	 * 
-	 */
-	public static void unblockTransactions() {
-		BLOCKED = false;
-	}
-
-	/**
-	 * 
-	 * @return
-	 * @throws TransactionException
-	 */
-	public static void checkTransactionBlocked() throws TransactionException {
-		if (BLOCKED) {
-			throw new TransactionException("Transactions are currenctly blocked. Node is syncing");
-		}
-	}
 
 	/**
 	 * 

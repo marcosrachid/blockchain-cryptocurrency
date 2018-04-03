@@ -6,7 +6,7 @@ import java.security.Signature;
 
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.signature.exception.SignatureException;
+import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
@@ -31,16 +31,17 @@ public class SignatureManager {
 	 * 
 	 * @param transaction
 	 * @param wallet
+	 * @throws BusinessException
 	 * @throws JsonProcessingException
 	 */
-	public void generateSignature(final SimpleTransaction transaction, Wallet wallet) {
+	public void generateSignature(final SimpleTransaction transaction, Wallet wallet) throws BusinessException {
 		String data;
 		try {
 			data = WalletUtil.getStringFromKey(transaction.getSender())
 					+ objectMapper.writeValueAsString(transaction.getOutputs())
 					+ transaction.getValue().setScale(8).toString();
 		} catch (JsonProcessingException e) {
-			throw new SignatureException("Could not read transaction outputs");
+			throw new BusinessException("Could not read transaction outputs");
 		}
 		transaction.setSignature(applyECDSASig(wallet.getPrivateKey(), data));
 	}

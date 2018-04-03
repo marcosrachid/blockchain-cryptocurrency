@@ -14,13 +14,13 @@ import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
+import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.resource.dto.request.RequestSendFundsDTO;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
-import com.custom.blockchain.transaction.exception.TransactionException;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
@@ -61,10 +61,10 @@ public class TransactionService {
 	public SimpleTransaction sendFunds(Wallet from, PublicKey to, BigDecimal fromBalance, BigDecimal value)
 			throws Exception {
 		if (value.compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
-			throw new TransactionException("Transaction sent funds are too low. Transaction Discarded");
+			throw new BusinessException("Transaction sent funds are too low. Transaction Discarded");
 		}
 		if (fromBalance.compareTo(value) < 0) {
-			throw new TransactionException("Not Enough funds to send transaction. Transaction Discarded");
+			throw new BusinessException("Not Enough funds to send transaction. Transaction Discarded");
 		}
 
 		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
@@ -94,10 +94,10 @@ public class TransactionService {
 	public SimpleTransaction sendFunds(Wallet from, BigDecimal fromBalance, BigDecimal totalSentFunds,
 			RequestSendFundsDTO.RequestSendFundsListDTO funds) throws Exception {
 		if (totalSentFunds.compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
-			throw new TransactionException("Transaction sent funds are too low. Transaction Discarded");
+			throw new BusinessException("Transaction sent funds are too low. Transaction Discarded");
 		}
 		if (fromBalance.compareTo(totalSentFunds) < 0) {
-			throw new TransactionException("Not Enough funds to send transaction. Transaction Discarded");
+			throw new BusinessException("Not Enough funds to send transaction. Transaction Discarded");
 		}
 
 		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
@@ -116,7 +116,7 @@ public class TransactionService {
 				newTransaction.getOutputs()
 						.add(new TransactionOutput(reciepient, f.getValue(), newTransaction.getTransactionId()));
 			} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
-				throw new TransactionException("Invalid reciepient public key [" + f.getReciepientPublicKey() + "]");
+				throw new BusinessException("Invalid reciepient public key [" + f.getReciepientPublicKey() + "]");
 			}
 		}
 		signatureManager.generateSignature(newTransaction, from);

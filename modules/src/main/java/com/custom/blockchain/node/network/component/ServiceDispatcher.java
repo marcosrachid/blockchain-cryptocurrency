@@ -21,10 +21,10 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
-import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
+import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
@@ -208,7 +208,7 @@ public class ServiceDispatcher {
 			blockStateManagement.validateBlock(block);
 			blockStateManagement.foundBlock(block);
 			BLOCKS_QUEUE.poll();
-		} catch (BlockException e) {
+		} catch (BusinessException e) {
 			LOG.error("Block[" + block + "] was identified as invalid: " + e.getMessage());
 			throw new NetworkException("Block[" + block + "] was identified as invalid: " + e.getMessage());
 		}

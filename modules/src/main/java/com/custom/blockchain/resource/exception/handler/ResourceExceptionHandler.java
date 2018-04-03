@@ -15,14 +15,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.custom.blockchain.block.exception.BlockException;
-import com.custom.blockchain.node.network.peer.exception.PeerException;
+import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.resource.dto.response.ResponseDTO;
 import com.custom.blockchain.resource.dto.response.ResponseDTO.ResponseDTOBuilder;
 import com.custom.blockchain.resource.dto.response.ResponseErrorsDTO;
 import com.custom.blockchain.resource.dto.response.ResponseFieldErrorsDTO;
-import com.custom.blockchain.transaction.exception.TransactionException;
-import com.custom.blockchain.wallet.exception.WalletException;
 
 /**
  * 
@@ -66,44 +63,8 @@ public class ResourceExceptionHandler {
 	 * @param e
 	 * @return
 	 */
-	@ExceptionHandler(BlockException.class)
-	public ResponseEntity<ResponseDTO> handleBlockException(BlockException e) {
-		LOG.debug(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
-		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON_UTF8).body(ResponseDTO.createBuilder()
-				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
-	}
-
-	/**
-	 * 
-	 * @param e
-	 * @return
-	 */
-	@ExceptionHandler(TransactionException.class)
-	public ResponseEntity<ResponseDTO> handleTransactionException(TransactionException e) {
-		LOG.debug(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
-		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON_UTF8).body(ResponseDTO.createBuilder()
-				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
-	}
-
-	/**
-	 * 
-	 * @param e
-	 * @return
-	 */
-	@ExceptionHandler(WalletException.class)
-	public ResponseEntity<ResponseDTO> handleWalletException(WalletException e) {
-		LOG.debug(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
-		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON_UTF8).body(ResponseDTO.createBuilder()
-				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
-	}
-
-	/**
-	 * 
-	 * @param e
-	 * @return
-	 */
-	@ExceptionHandler(PeerException.class)
-	public ResponseEntity<ResponseDTO> handlePeerException(PeerException e) {
+	@ExceptionHandler(BusinessException.class)
+	public ResponseEntity<ResponseDTO> handleTransactionException(BusinessException e) {
 		LOG.debug(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
 		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON_UTF8).body(ResponseDTO.createBuilder()
 				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());

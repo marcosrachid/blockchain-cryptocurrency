@@ -16,17 +16,16 @@ import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
-import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
+import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.node.component.DifficultyAdjustment;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionOutput;
-import com.custom.blockchain.transaction.exception.TransactionException;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
@@ -74,9 +73,9 @@ public class BlockService {
 	/**
 	 * 
 	 * @param block
-	 * @throws BlockException
+	 * @throws BusinessException
 	 */
-	public void mineBlock() throws BlockException {
+	public void mineBlock() throws BusinessException {
 		long currentTimeInMillis = System.currentTimeMillis();
 		Block block = blockStateManagement.getNextBlock();
 
@@ -96,7 +95,7 @@ public class BlockService {
 		try {
 			block.setMiner(WalletUtil.getPublicKeyFromString(blockchainProperties.getMiner()));
 		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
-			throw new BlockException("Invalid miner public key: " + blockchainProperties.getMiner());
+			throw new BusinessException("Invalid miner public key: " + blockchainProperties.getMiner());
 		}
 
 		// Miner reward
@@ -105,7 +104,7 @@ public class BlockService {
 		try {
 			reward.setTransactionId(calulateRewardHash(reward));
 		} catch (JsonProcessingException e) {
-			throw new BlockException(
+			throw new BusinessException(
 					"Could not generate a txId for reward transaction: " + blockchainProperties.getMiner());
 		}
 		reward.setOutput(new TransactionOutput(block.getMiner(), reward.getValue(), reward.getTransactionId()));
@@ -118,7 +117,7 @@ public class BlockService {
 				addTransaction(block, mempoolDB.next(iterator));
 			}
 		} catch (UnsupportedEncodingException | JsonProcessingException e) {
-			throw new BlockException("Could not validate if block is full of transactions: " + e.getMessage());
+			throw new BusinessException("Could not validate if block is full of transactions: " + e.getMessage());
 		}
 		LOG.trace("[Crypto] Transactions imported on block: " + block.getTransactions());
 
@@ -134,11 +133,11 @@ public class BlockService {
 	 * 
 	 * @param block
 	 * @param transaction
-	 * @throws TransactionException
+	 * @throws BusinessException
 	 */
-	private void addTransaction(final Block block, SimpleTransaction transaction) throws BlockException {
+	private void addTransaction(final Block block, SimpleTransaction transaction) throws BusinessException {
 		if (transaction == null)
-			throw new BlockException("Non existent transaction");
+			throw new BusinessException("Non existent transaction");
 		mempoolDB.delete(transaction.getTransactionId());
 		processTransaction(transaction);
 		block.getTransactions().add(transaction);
@@ -149,15 +148,15 @@ public class BlockService {
 	 * @param transaction
 	 * @param minimunTransaction
 	 * @return
-	 * @throws TransactionException
+	 * @throws BusinessException
 	 */
-	private void processTransaction(final SimpleTransaction transaction) throws BlockException {
+	private void processTransaction(final SimpleTransaction transaction) throws BusinessException {
 		if (signatureManager.verifySignature(transaction) == false) {
-			throw new BlockException("Transaction Signature failed to verify. Transaction Discarded");
+			throw new BusinessException("Transaction Signature failed to verify. Transaction Discarded");
 		}
 
 		if (transaction.getValue().compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
-			throw new BlockException("Transaction sent funds are too low. Transaction Discarded");
+			throw new BusinessException("Transaction sent funds are too low. Transaction Discarded");
 		}
 
 		// leftover
@@ -167,7 +166,7 @@ public class BlockService {
 		BigDecimal total = leftOutput.getValue().add(transaction.getOutputsValue());
 
 		if (transaction.getInputsValue().compareTo(total) != 0) {
-			throw new BlockException("Transaction Inputs total[" + transaction.getInputsValue().toPlainString()
+			throw new BusinessException("Transaction Inputs total[" + transaction.getInputsValue().toPlainString()
 					+ "] value differs from Transaction Outputs total[" + total.toPlainString()
 					+ "] value. Transaction Discarded");
 		}

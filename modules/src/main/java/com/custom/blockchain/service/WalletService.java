@@ -9,10 +9,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
+import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
-import com.custom.blockchain.wallet.exception.WalletException;
 
 /**
  * 
@@ -79,7 +79,7 @@ public class WalletService {
 	public Wallet getCurrentWallet() throws Exception {
 		Wallet wallet = CURRENT_WALLET;
 		if (wallet == null) {
-			throw new WalletException("No wallet selected yet.");
+			throw new BusinessException("No wallet selected yet.");
 		}
 		return wallet;
 	}

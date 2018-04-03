@@ -17,6 +17,7 @@ import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -134,6 +135,7 @@ public class Block implements Serializable {
 		this.transactions = transactions;
 	}
 
+	@JsonIgnore
 	public RewardTransaction getRewardTransaction() {
 		Optional<Transaction> transaction = getTransactions().stream().filter(t -> t instanceof RewardTransaction)
 				.findFirst();

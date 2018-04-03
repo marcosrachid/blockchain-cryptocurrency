@@ -12,12 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.block.exception.BlockException;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
+import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.node.component.DifficultyAdjustment;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.RewardTransaction;
@@ -69,13 +69,13 @@ public class BlockStateManagement {
 	/**
 	 * 
 	 * @param block
-	 * @throws BlockException
+	 * @throws BusinessException
 	 */
-	public void validateBlock(Block block) throws BlockException {
+	public void validateBlock(Block block) throws BusinessException {
 		LOG.info("[Crypto] Starting block validation...");
 		LOG.trace("[Crypto] Validating if block from peer was not from the expected height...");
 		if (!BLOCKS_QUEUE.peek().getHeight().equals(block.getHeight())) {
-			throw new BlockException("Block from peer was not from the expected height");
+			throw new BusinessException("Block from peer was not from the expected height");
 		}
 		LOG.trace("[Crypto] Validating if block is on a different difficulty from protocol...");
 		Block currentBlock = currentBlockDB.get();
@@ -84,33 +84,33 @@ public class BlockStateManagement {
 			difficulty = difficultyAdjustment.adjust();
 		}
 		if (!difficulty.equals(block.getRewardTransaction().getDifficulty())) {
-			throw new BlockException("Block is on a different difficulty from protocol");
+			throw new BusinessException("Block is on a different difficulty from protocol");
 		}
 		LOG.trace("[Crypto] Validating if block was procedurely mined...");
 		String target = StringUtil.getDificultyString(difficulty.intValue());
 		if (!block.getHash().startsWith(target)) {
-			throw new BlockException("Block was not procedurely mined");
+			throw new BusinessException("Block was not procedurely mined");
 		}
 		LOG.trace("[Crypto] Validating if block tree does not correspond to its merkle root...");
 		if (!TransactionUtil.getMerkleRoot(block.getTransactions()).equals(block.getMerkleRoot())) {
-			throw new BlockException("Block tree does not correspond to its merkle root");
+			throw new BusinessException("Block tree does not correspond to its merkle root");
 		}
 		LOG.trace("[Crypto] Validating if block has more then one reward transaction...");
 		List<RewardTransaction> rewardList = block.getTransactions().stream()
 				.filter(t -> t instanceof RewardTransaction).map(t -> (RewardTransaction) t)
 				.collect(Collectors.toList());
 		if (rewardList.size() != 1) {
-			throw new BlockException("Block has one reward transaction");
+			throw new BusinessException("Block has one reward transaction");
 		}
 		LOG.trace("[Crypto] Validating if block has an unexpected reward value...");
 		RewardTransaction reward = rewardList.get(0);
 		if (reward.getValue().compareTo(blockchainProperties.getReward()) != 0) {
-			throw new BlockException("Block has an unexpected reward value[" + reward.getValue() + "]");
+			throw new BusinessException("Block has an unexpected reward value[" + reward.getValue() + "]");
 		}
 		LOG.trace("[Crypto] Validating if block hash incompatible with current blockchain...");
 		if (!block.getHash().equals(DigestUtil.applySha256(
 				currentBlock.getHash() + block.getTimeStamp() + block.getNonce() + block.getMerkleRoot()))) {
-			throw new BlockException("Block hash incompatible with current blockchain");
+			throw new BusinessException("Block hash incompatible with current blockchain");
 		}
 
 		Set<Transaction> transactions = block.getTransactions().stream().filter(t -> t instanceof SimpleTransaction)
@@ -119,12 +119,12 @@ public class BlockStateManagement {
 			SimpleTransaction transaction = (SimpleTransaction) t;
 
 			if (transaction.getValue().compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
-				throw new BlockException(
+				throw new BusinessException(
 						"Identified transaction[" + transaction.getTransactionId() + "] with low sent funds");
 			}
 
 			if (transaction.getInputsValue().compareTo(transaction.getOutputsValue()) != 0) {
-				throw new BlockException("Identified transaction[" + transaction.getTransactionId()
+				throw new BusinessException("Identified transaction[" + transaction.getTransactionId()
 						+ "] with  Inputs total[" + transaction.getInputsValue().toPlainString()
 						+ "] value that differs from Transaction Outputs total["
 						+ transaction.getOutputsValue().toPlainString() + "] value");
@@ -133,18 +133,18 @@ public class BlockStateManagement {
 			Optional<TransactionOutput> leftOverTransaction = transaction.getOutputs().stream()
 					.filter(o -> o.getReciepient().equals(transaction.getSender())).findFirst();
 			if (!leftOverTransaction.isPresent()) {
-				throw new BlockException("Identified transaction[" + transaction.getTransactionId()
+				throw new BusinessException("Identified transaction[" + transaction.getTransactionId()
 						+ "] has no left over transaction from sender");
 			}
 
 			if (!leftOverTransaction.get().getValue()
 					.equals(transaction.getInputsValue().subtract(transaction.getOutputsValue()))) {
-				throw new BlockException("Identified transaction[" + transaction.getTransactionId()
+				throw new BusinessException("Identified transaction[" + transaction.getTransactionId()
 						+ "] has a unexpected leftOver output value[" + leftOverTransaction.get().getValue() + "]");
 			}
 
 			if (signatureManager.verifySignature(transaction) == false) {
-				throw new BlockException("Identified transaction[" + transaction.getTransactionId()
+				throw new BusinessException("Identified transaction[" + transaction.getTransactionId()
 						+ "] with Signature failed to verify");
 			}
 		}
@@ -153,7 +153,7 @@ public class BlockStateManagement {
 	/**
 	 * 
 	 * @param block
-	 * @throws BlockException
+	 * @throws BusinessException
 	 */
 	public void foundBlock(Block block) {
 		LOG.info("[Crypto] Found new block: " + block);

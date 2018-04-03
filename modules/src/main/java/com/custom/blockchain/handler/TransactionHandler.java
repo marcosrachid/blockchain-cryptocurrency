@@ -14,7 +14,6 @@ import com.custom.blockchain.resource.dto.response.ResponseTransactions;
 import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.service.WalletService;
 import com.custom.blockchain.transaction.SimpleTransaction;
-import com.custom.blockchain.util.TransactionUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 
@@ -42,7 +41,6 @@ public class TransactionHandler {
 	 * @throws Exception
 	 */
 	public ResponseTransaction sendFunds(RequestSendFundsDTO funds) throws Exception {
-		TransactionUtil.checkTransactionBlocked();
 		Wallet currentWallet = walletService.getCurrentWallet();
 		PublicKey receipientPublicKey = WalletUtil.getPublicKeyFromString(funds.getReciepientPublicKey());
 		BigDecimal currentBalance = walletService.getBalance(WalletUtil.getStringFromKey(currentWallet.getPublicKey()));
@@ -60,7 +58,6 @@ public class TransactionHandler {
 	 * @throws Exception
 	 */
 	public ResponseTransactions sendFunds(RequestSendFundsDTO.RequestSendFundsListDTO funds) throws Exception {
-		TransactionUtil.checkTransactionBlocked();
 		Wallet currentWallet = walletService.getCurrentWallet();
 		BigDecimal currentBalance = walletService.getBalance(WalletUtil.getStringFromKey(currentWallet.getPublicKey()));
 		final List<ResponseReciepientDTO> reciepientList = new ArrayList<>();

@@ -2,6 +2,7 @@ package com.custom.blockchain.service;
 
 import org.springframework.stereotype.Service;
 
+import com.custom.blockchain.block.Block;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 
 /**
@@ -17,9 +18,25 @@ public class NodeService {
 	public NodeService(final CurrentBlockDB currentBlockDB) {
 		this.currentBlockDB = currentBlockDB;
 	}
+	
+	public Block getCurrentBlock() {
+		return this.currentBlockDB.get();
+	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	public Integer getCurrentDifficulty() {
-		return this.currentBlockDB.get().getRewardTransaction().getDifficulty();
+		return getCurrentBlock().getRewardTransaction().getDifficulty();
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public Long getCurrentHeight() {
+		return getCurrentBlock().getHeight();
 	}
 
 }

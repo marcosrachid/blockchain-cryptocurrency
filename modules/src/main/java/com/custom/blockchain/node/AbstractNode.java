@@ -18,6 +18,7 @@ import com.custom.blockchain.node.network.peer.component.PeerListener;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.StringUtil;
+import com.custom.blockchain.util.TransactionUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -93,6 +94,7 @@ public abstract class AbstractNode {
 		genesisTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), genesisTransaction.getValue(),
 				genesisTransaction.getTransactionId()));
 		genesis.getTransactions().add(genesisTransaction);
+		genesis.setMerkleRoot(TransactionUtil.getMerkleRoot(genesis.getTransactions()));
 		LOG.info("Premined transaction: {}", genesis.getTransactions());
 	}
 

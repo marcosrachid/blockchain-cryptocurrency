@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.block.exception.BlockException;
+import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.service.BlockService;
 
 @Profile("miner")
@@ -36,7 +36,7 @@ public class BlockMining {
 			public void run() {
 				try {
 					blockService.mineBlock();
-				} catch (BlockException e) {
+				} catch (BusinessException e) {
 					LOG.error("[Crypto] Could not mine: " + e.getMessage());
 				}
 			}
