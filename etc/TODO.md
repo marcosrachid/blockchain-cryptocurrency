@@ -13,3 +13,5 @@
 * Use Wallet management
 
 * genesis block register protocol properties or create a properties block for consensus fork ?
+
+* Try using same socket for responding on ServiceDispatcher
