@@ -83,7 +83,7 @@ public class DifficultyAdjustment {
 			return;
 		timestamps.add(block.getTimeStamp());
 		adjustmentLoop--;
-		mapTimestamps(adjustmentLoop, blockDB.get(block.getPreviousHash()), timestamps);
+		mapTimestamps(adjustmentLoop, blockDB.get(block.getHeight() - 1), timestamps);
 	}
 
 }

@@ -8,6 +8,7 @@ public enum Service {
 	GET_STATE_RESPONSE("getStateResponse"), 
 	GET_BLOCK("getBlock"), 
 	GET_BLOCK_RESPONSE("getBlockResponse"), 
+	GET_INVALID_BLOCK("getInvalidBlock"),
 	GET_PEERS("getPeers"), 
 	GET_PEERS_RESPONSE("getPeersResponse"), 
 	GET_TRANSACTIONS("getTransactions"), 

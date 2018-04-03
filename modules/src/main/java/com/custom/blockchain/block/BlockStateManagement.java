@@ -17,12 +17,14 @@ import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
+import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.node.component.DifficultyAdjustment;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionOutput;
+import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
 
@@ -44,6 +46,8 @@ public class BlockStateManagement {
 
 	private UTXOChainstateDB utxoChainstateDb;
 
+	private MempoolDB mempoolDB;
+
 	private SignatureManager signatureManager;
 
 	private DifficultyAdjustment difficultyAdjustment;
@@ -51,12 +55,13 @@ public class BlockStateManagement {
 	private Block nextBlock;
 
 	public BlockStateManagement(final BlockchainProperties blockchainProperties, final BlockDB blockDB,
-			final CurrentBlockDB currentBlockDB, final UTXOChainstateDB utxoChainstateDb,
+			final CurrentBlockDB currentBlockDB, final UTXOChainstateDB utxoChainstateDb, final MempoolDB mempoolDB,
 			final SignatureManager signatureManager, final DifficultyAdjustment difficultyAdjustment) {
 		this.blockchainProperties = blockchainProperties;
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
 		this.utxoChainstateDb = utxoChainstateDb;
+		this.mempoolDB = mempoolDB;
 		this.signatureManager = signatureManager;
 		this.difficultyAdjustment = difficultyAdjustment;
 	}
@@ -73,7 +78,8 @@ public class BlockStateManagement {
 			throw new BlockException("Block from peer was not from the expected height");
 		}
 		LOG.trace("[Crypto] Validating if block is on a different difficulty from protocol...");
-		Integer difficulty = currentBlockDB.get().getRewardTransaction().getDifficulty();
+		Block currentBlock = currentBlockDB.get();
+		Integer difficulty = currentBlock.getRewardTransaction().getDifficulty();
 		if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
 			difficulty = difficultyAdjustment.adjust();
 		}
@@ -100,6 +106,11 @@ public class BlockStateManagement {
 		RewardTransaction reward = rewardList.get(0);
 		if (reward.getValue().compareTo(blockchainProperties.getReward()) != 0) {
 			throw new BlockException("Block has an unexpected reward value[" + reward.getValue() + "]");
+		}
+		LOG.trace("[Crypto] Validating if block hash incompatible with current blockchain...");
+		if (!block.getHash().equals(DigestUtil.applySha256(
+				currentBlock.getHash() + block.getTimeStamp() + block.getNonce() + block.getMerkleRoot()))) {
+			throw new BlockException("Block hash incompatible with current blockchain");
 		}
 
 		Set<Transaction> transactions = block.getTransactions().stream().filter(t -> t instanceof SimpleTransaction)
@@ -146,10 +157,18 @@ public class BlockStateManagement {
 	 */
 	public void foundBlock(Block block) {
 		LOG.info("[Crypto] Found new block: " + block);
-		blockDB.put(block.getHash(), block);
+		blockDB.put(block.getHeight(), block);
 		currentBlockDB.put(block);
 		utxo(block.getTransactions());
 		nextBlock = BlockFactory.getBlock(block);
+	}
+
+	/**
+	 * 
+	 * @param block
+	 */
+	public void removeBlock(Block block) {
+		LOG.info("[Crypto] Removing forked block: " + block);
 	}
 
 	/**
@@ -191,6 +210,8 @@ public class BlockStateManagement {
 				.filter(o -> !o.getReciepient().equals(transaction.getSender())).collect(Collectors.toList())) {
 			utxoChainstateDb.add(output.getReciepient(), output);
 		}
+
+		mempoolDB.delete(transaction.getTransactionId());
 	}
 
 	/**
