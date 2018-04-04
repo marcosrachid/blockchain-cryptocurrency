@@ -3,7 +3,6 @@ package com.custom.blockchain.node.network.component;
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
 import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
-import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.REMOVED_PEERS;
 
 import java.io.ObjectOutputStream;
@@ -104,7 +103,6 @@ public class ServiceDispatcher {
 			this.getClass().getDeclaredMethod(request.getService().getService(), ObjectOutputStream.class, Peer.class)
 					.invoke(this, sender, peer);
 		}
-		PEERS_STATUS.put(peer, LocalDateTime.now());
 	}
 
 	/**

@@ -14,7 +14,7 @@ import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.data.peers.PeersDB;
-import com.custom.blockchain.node.network.peer.component.PeerListener;
+import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.StringUtil;
@@ -43,7 +43,7 @@ public abstract class AbstractNode {
 
 	protected BlockStateManagement blockStateManagement;
 
-	protected PeerListener peerListener;
+	protected Server peerListener;
 
 	public abstract void startBlocks() throws Exception;
 

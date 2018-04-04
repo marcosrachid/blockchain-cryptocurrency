@@ -1,7 +1,6 @@
 package com.custom.blockchain.service;
 
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
-import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
 
 import java.time.LocalDateTime;
 
@@ -29,11 +28,8 @@ public class PeerService {
 	 */
 	public void addPeer(String ip, int serverPort) throws BusinessException {
 		Peer peer = new Peer(ip, serverPort);
-		if (PEERS.contains(peer) && PEERS_STATUS.containsKey(peer) && PEERS_STATUS.get(peer) != null) {
+		if (PEERS.contains(peer)) {
 			throw new BusinessException(String.format("Peer %s is already registered on peer's list", peer));
-		}
-		if (PEERS.contains(peer) && !PEERS_STATUS.containsKey(peer)) {
-			throw new BusinessException(String.format("Peer %s is on queue to try a connection", peer));
 		}
 		peer.setCreateDatetime(LocalDateTime.now());
 		PEERS.add(peer);
@@ -45,11 +41,8 @@ public class PeerService {
 	 * @throws BusinessException
 	 */
 	public void addPeer(Peer peer) throws BusinessException {
-		if (PEERS.contains(peer) && PEERS_STATUS.containsKey(peer) && PEERS_STATUS.get(peer) != null) {
+		if (PEERS.contains(peer)) {
 			throw new BusinessException(String.format("Peer %s is already registered on peer's list", peer));
-		}
-		if (PEERS.contains(peer) && !PEERS_STATUS.containsKey(peer)) {
-			throw new BusinessException(String.format("Peer %s is on queue to try a connection", peer));
 		}
 		peer.setCreateDatetime(LocalDateTime.now());
 		PEERS.add(peer);

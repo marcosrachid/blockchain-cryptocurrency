@@ -2,13 +2,10 @@ package com.custom.blockchain.node.network.component;
 
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
 import static com.custom.blockchain.node.NodeStateManagement.LISTENING_THREAD;
-import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
+import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.REMOVED_PEERS;
 
-import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +15,9 @@ import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.node.network.Service;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.node.network.peer.component.PeerFinder;
-import com.custom.blockchain.node.network.peer.component.PeerListener;
-import com.custom.blockchain.node.network.peer.component.PeerSender;
 import com.custom.blockchain.node.network.request.BlockchainRequest;
+import com.custom.blockchain.node.network.server.Server;
+import com.custom.blockchain.node.network.server.SocketThread;
 import com.custom.blockchain.util.ConnectionUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -39,14 +36,12 @@ public abstract class AbstractNetworkManager {
 
 	protected PeerFinder peerFinder;
 
-	protected PeerListener peerListener;
-
-	protected PeerSender peerSender;
+	protected Server peerListener;
 
 	/**
 	 * 
 	 */
-	@Scheduled(fixedRate = 300000)
+	@Scheduled(fixedRate = 60000)
 	public synchronized void searchPeers() {
 		LOG.debug("[Crypto] Executing search for new peers...");
 		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())) {
@@ -75,23 +70,9 @@ public abstract class AbstractNetworkManager {
 			return;
 		}
 		LOG.debug("[Crypto] Checking connections...");
-		Set<Peer> disconectedPeers = new HashSet<>(PEERS);
-		disconectedPeers.removeAll(ConnectionUtil.getConnectedPeers());
-		for (Peer p : disconectedPeers) {
-			if ((p.getLastConnected() == null && p.getCreateDatetime().isBefore(LocalDateTime.now().minusDays(1)))
-					|| (p.getLastConnected() != null
-							&& p.getLastConnected().isBefore(LocalDateTime.now().minusMonths(1)))) {
-				REMOVED_PEERS.add(p);
-				continue;
-			}
-			if (this.peerSender.connect(p)) {
-				this.peerSender.send(BlockchainRequest.createBuilder()
-						.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.PING).build());
-				this.peerSender.close();
-			}
-		}
-		for (Peer r : REMOVED_PEERS) {
-			PEERS.remove(r);
+		for (SocketThread socketThread : SOCKET_THREADS.values()) {
+			socketThread.send(BlockchainRequest.createBuilder()
+					.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.PING).build());
 		}
 	}
 
@@ -102,13 +83,8 @@ public abstract class AbstractNetworkManager {
 	public synchronized void getState() {
 		LOG.debug("[Crypto] Getting state from connected peers...");
 		LOG.debug("[Crypto] peers: " + ConnectionUtil.getConnectedPeers());
-		for (Peer p : ConnectionUtil.getConnectedPeers()) {
-			LOG.debug("[Crypto] Trying to send a service[" + Service.GET_STATE.getService() + "] request to peer[" + p
-					+ "]");
-			if (this.peerSender.connect(p)) {
-				this.peerSender.send(BlockchainRequest.createBuilder().withService(Service.GET_STATE).build());
-				this.peerSender.close();
-			}
+		for (SocketThread socketThread : SOCKET_THREADS.values()) {
+			socketThread.send(BlockchainRequest.createBuilder().withService(Service.GET_STATE).build());
 		}
 	}
 
@@ -122,11 +98,10 @@ public abstract class AbstractNetworkManager {
 			Peer p = peers.next();
 			LOG.debug("[Crypto] Trying to send a service[" + Service.GET_BLOCK.getService() + "] request to peer[" + p
 					+ "]");
-			if (this.peerSender.connect(p)) {
-				this.peerSender.send(
+			for (SocketThread socketThread : SOCKET_THREADS.values()) {
+				socketThread.send(
 						BlockchainRequest.createBuilder().withSignature(blockchainProperties.getNetworkSignature())
 								.withService(Service.GET_BLOCK).withArguments(BLOCKS_QUEUE.peek()).build());
-				this.peerSender.close();
 			}
 		}
 	}

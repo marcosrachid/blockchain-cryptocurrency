@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.slf4j.Logger;
@@ -30,10 +31,15 @@ public final class PeerUtil {
 	 * 
 	 * @param peer
 	 */
-	public Socket connect(Peer peer) {
+	public static Socket connect(Peer peer) {
+		long duration = System.currentTimeMillis();
 		try {
-			return new Socket(peer.getIp(), peer.getServerPort());
-		} catch (IOException e) {
+			Socket socket = new Socket();
+			socket.connect(new InetSocketAddress(peer.getIp(), peer.getServerPort()), 1000);
+			return socket;
+		} catch (Exception e) {
+			LOG.debug("[Crypto] Connect attempt duration measured in ms: " + (System.currentTimeMillis() - duration));
+			LOG.debug("[Crypto] Connect failed reason: " + e.getMessage());
 			return null;
 		}
 	}

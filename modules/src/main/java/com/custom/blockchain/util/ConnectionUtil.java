@@ -1,10 +1,8 @@
 package com.custom.blockchain.util;
 
-import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS_STATUS;
+import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
 
-import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +23,7 @@ public final class ConnectionUtil {
 	 * @return
 	 */
 	public static Set<Peer> getConnectedPeers() {
-		Set<Peer> peers = PEERS_STATUS.entrySet().stream()
-				.filter(entry -> entry.getValue().isAfter(LocalDateTime.now().minusMinutes(1))).map(e -> e.getKey())
-				.collect(Collectors.toSet());
+		Set<Peer> peers = SOCKET_THREADS.keySet();
 		LOG.debug("[Crypto] Peers connected: " + peers);
 		return peers;
 	}

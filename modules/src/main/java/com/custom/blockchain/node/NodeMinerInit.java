@@ -24,7 +24,7 @@ import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.data.peers.PeersDB;
 import com.custom.blockchain.node.network.Service;
-import com.custom.blockchain.node.network.peer.component.PeerListener;
+import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.util.OsUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +43,7 @@ public class NodeMinerInit extends AbstractNode {
 	public NodeMinerInit(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
 			final CurrentBlockDB currentBlockDB, final UTXOChainstateDB utxoChainstateDB, final PeersDB peersDB,
 			final MempoolDB mempoolDB, final BlockStateManagement blockStateManagement,
-			final PeerListener peerListener) {
+			final Server peerListener) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
 		this.currentBlockDB = currentBlockDB;
