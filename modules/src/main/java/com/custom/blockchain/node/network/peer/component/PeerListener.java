@@ -3,6 +3,7 @@ package com.custom.blockchain.node.network.peer.component;
 import static com.custom.blockchain.node.NodeStateManagement.LISTENING_THREAD;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.node.network.component.ServiceDispatcher;
+import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.node.network.request.BlockchainRequest;
 import com.custom.blockchain.util.PeerUtil;
@@ -28,7 +30,6 @@ public class PeerListener {
 
 	// Listener variables
 	private ServerSocket server;
-	private Socket client;
 	private boolean isRunning;
 
 	public PeerListener(final BlockchainProperties blockchainProperties, final ServiceDispatcher serviceDispatcher) {
@@ -46,9 +47,7 @@ public class PeerListener {
 			public void run() {
 				try {
 					start();
-				} catch (IOException | NoSuchMethodException | SecurityException | IllegalAccessException
-						| IllegalArgumentException | InvocationTargetException e) {
-					LOG.error("[Crypto] Could not start server: " + e.getMessage());
+				} catch (IOException e) {
 					isRunning = false;
 					if (!server.isClosed()) {
 						try {
@@ -56,6 +55,7 @@ public class PeerListener {
 						} catch (IOException e1) {
 						}
 					}
+					throw new NetworkException("[Crypto] Server error: " + e.getMessage());
 				}
 			}
 		});
@@ -73,32 +73,14 @@ public class PeerListener {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-	private void start() throws IOException, NoSuchMethodException, SecurityException, IllegalAccessException,
-			IllegalArgumentException, InvocationTargetException {
+	private void start() throws IOException {
 		LOG.info("[Crypto] Server Starting");
 		server = new ServerSocket(blockchainProperties.getNetworkPort());
 		LOG.info("[Crypto] Server Started port: " + blockchainProperties.getNetworkPort());
 
 		while (isRunning) {
-			client = server.accept();
-			LOG.trace("[Crypto] Connection Received from: " + client.toString());
-
-			BlockchainRequest request = PeerUtil.receive(client.getInputStream());
-			LOG.trace("[Crypto] Request: " + request);
-
-			Peer newPeer = new Peer(client.getInetAddress().getHostAddress(), request.getResponsePort());
-
-			if (!request.getSignature().equals(blockchainProperties.getNetworkSignature())) {
-				LOG.error("[Crypto] Received an invalid signature from peer [" + newPeer + "]");
-				client.getInputStream().close();
-				client.close();
-				continue;
-			}
-
-			serviceDispatcher.launch(client, newPeer, request);
-
-			client.getInputStream().close();
-			client.close();
+			Socket client = server.accept();
+			new ClientThread(client).start();
 		}
 	}
 
@@ -116,11 +98,42 @@ public class PeerListener {
 				LOG.error("[Crypto] Could not close server...");
 			}
 		}
-		try {
-			if (client != null)
+	}
+
+	class ClientThread extends Thread {
+
+		Socket client;
+
+		public ClientThread(Socket client) {
+			this.client = client;
+		}
+
+		@Override
+		public void run() {
+			LOG.trace("[Crypto] Connection Received from: " + client.toString());
+
+			try {
+				ObjectOutputStream sender = new ObjectOutputStream(client.getOutputStream());
+				BlockchainRequest request = PeerUtil.receive(client.getInputStream());
+				LOG.trace("[Crypto] Request: " + request);
+
+				Peer newPeer = new Peer(client.getInetAddress().getHostAddress(), request.getResponsePort());
+
+				if (!request.getSignature().equals(blockchainProperties.getNetworkSignature())) {
+					LOG.error("[Crypto] Received an invalid signature from peer [" + newPeer + "]");
+					client.getInputStream().close();
+					client.close();
+				}
+
+				serviceDispatcher.launch(sender, newPeer, request);
+
+				sender.close();
+				client.getInputStream().close();
 				client.close();
-		} catch (IOException e) {
-			LOG.error("[Crypto] Could not close client...");
+			} catch (IOException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+					| NoSuchMethodException | SecurityException e) {
+				throw new NetworkException("[Crypto] Client error: " + e.getMessage());
+			}
 		}
 	}
 

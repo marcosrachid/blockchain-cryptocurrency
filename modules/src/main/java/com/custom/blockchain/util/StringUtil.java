@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author marcosrachid
  *
  */
-public class StringUtil extends StringUtils {
+public final class StringUtil extends StringUtils {
 
 	/**
 	 * 

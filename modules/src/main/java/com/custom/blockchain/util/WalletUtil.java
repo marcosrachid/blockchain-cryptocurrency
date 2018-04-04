@@ -23,7 +23,7 @@ import org.bouncycastle.math.ec.ECPoint;
  * @author marcosrachid
  *
  */
-public class WalletUtil {
+public final class WalletUtil {
 
 	/**
 	 * 

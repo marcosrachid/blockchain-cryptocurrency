@@ -3,7 +3,7 @@ package com.custom.blockchain.util;
 import static com.custom.blockchain.costants.SystemConstants.COIN_ROOT_UNIX_DIRECTORY;
 import static com.custom.blockchain.costants.SystemConstants.COIN_ROOT_WINDOWS_DIRECTORY;
 
-public class OsUtil {
+public final class OsUtil {
 
 	private static String OS = System.getProperty("os.name").toLowerCase();
 

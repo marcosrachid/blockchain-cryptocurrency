@@ -16,7 +16,7 @@ import com.custom.blockchain.node.network.peer.Peer;
  * @author marcosrachid
  *
  */
-public class ConnectionUtil {
+public final class ConnectionUtil {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ConnectionUtil.class);
 

@@ -11,7 +11,7 @@ import com.custom.blockchain.transaction.Transaction;
  * @author marcosrachid
  *
  */
-public class TransactionUtil {
+public final class TransactionUtil {
 
 	/**
 	 * 

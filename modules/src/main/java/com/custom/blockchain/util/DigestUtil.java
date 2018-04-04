@@ -7,7 +7,7 @@ import java.security.MessageDigest;
  * @author marcosrachid
  *
  */
-public class DigestUtil {
+public final class DigestUtil {
 
 	/**
 	 * 

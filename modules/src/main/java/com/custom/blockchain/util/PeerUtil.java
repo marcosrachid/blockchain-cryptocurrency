@@ -7,6 +7,10 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.node.network.request.BlockchainRequest;
 
@@ -16,6 +20,8 @@ import com.custom.blockchain.node.network.request.BlockchainRequest;
  *
  */
 public final class PeerUtil {
+
+	private static final Logger LOG = LoggerFactory.getLogger(PeerUtil.class);
 
 	public PeerUtil() {
 	}
@@ -29,6 +35,25 @@ public final class PeerUtil {
 			return new Socket(peer.getIp(), peer.getServerPort());
 		} catch (IOException e) {
 			return null;
+		}
+	}
+
+	/**
+	 * 
+	 * @param blockchainProperties
+	 * @param sender
+	 * @param blockchainRequest
+	 */
+	public static void send(BlockchainProperties blockchainProperties, ObjectOutputStream sender,
+			BlockchainRequest blockchainRequest) {
+		LOG.trace("[Crypto] Sending request[" + blockchainRequest + "]");
+		blockchainRequest.setSignature(blockchainProperties.getNetworkSignature());
+		blockchainRequest.setResponsePort(blockchainProperties.getNetworkPort());
+		try {
+			sender.writeObject(blockchainRequest);
+			sender.flush();
+		} catch (IOException e) {
+			LOG.trace("[Crypto] Send failed reason: " + e.getMessage());
 		}
 	}
 
