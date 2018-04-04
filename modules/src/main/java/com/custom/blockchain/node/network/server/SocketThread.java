@@ -84,6 +84,8 @@ public class SocketThread extends Thread {
 	public void send(BlockchainRequest request) {
 		LOG.debug("[Crypto] Trying to send a service[" + request.getService().getService() + "] request with arguments["
 				+ request.getArguments() + "] to client[" + client.toString() + "]");
+		request.setResponsePort(blockchainProperties.getNetworkPort());
+		request.setSignature(blockchainProperties.getNetworkSignature());
 		try {
 			ObjectOutputStream sender = new ObjectOutputStream(client.getOutputStream());
 			sender.writeObject(request);
