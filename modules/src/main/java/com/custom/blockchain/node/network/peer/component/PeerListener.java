@@ -55,6 +55,7 @@ public class PeerListener {
 						} catch (IOException e1) {
 						}
 					}
+					LOG.error("[Crypto] Client error : {}", e);
 					throw new NetworkException("[Crypto] Server error: " + e.getMessage());
 				}
 			}
@@ -132,6 +133,7 @@ public class PeerListener {
 				client.close();
 			} catch (IOException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 					| NoSuchMethodException | SecurityException e) {
+				LOG.error("[Crypto] Client error : {}", e);
 				throw new NetworkException("[Crypto] Client error: " + e.getMessage());
 			}
 		}
