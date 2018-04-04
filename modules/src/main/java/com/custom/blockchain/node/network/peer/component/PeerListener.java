@@ -105,7 +105,7 @@ public class PeerListener {
 
 	class ClientThread extends Thread {
 
-		Socket client;
+		private Socket client;
 
 		public ClientThread(Socket client) {
 			this.client = client;
