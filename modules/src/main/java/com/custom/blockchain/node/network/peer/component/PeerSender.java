@@ -58,7 +58,7 @@ public class PeerSender {
 				OutputStream outputStream = socket.getOutputStream();
 				ObjectOutputStream oos = new ObjectOutputStream(outputStream);
 				oos.writeObject(blockchainRequest);
-				oos.flush();
+				oos.close();
 			} catch (IOException e) {
 				LOG.trace("[Crypto] Send failed reason: " + e.getMessage());
 			}

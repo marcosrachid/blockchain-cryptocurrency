@@ -49,14 +49,16 @@ public class PeerListener {
 					start();
 				} catch (IOException e) {
 					isRunning = false;
-					if (!server.isClosed()) {
-						try {
-							server.close();
-						} catch (IOException e1) {
-						}
-					}
 					LOG.error("[Crypto] Client error : {}", e);
 					throw new NetworkException("[Crypto] Server error: " + e.getMessage());
+				} finally {
+					try {
+						if (!server.isClosed())
+							server.close();
+					} catch (IOException e) {
+						LOG.error("[Crypto] Client error : {}", e);
+						throw new NetworkException("[Crypto] Server error: " + e.getMessage());
+					}
 				}
 			}
 		});
@@ -115,6 +117,7 @@ public class PeerListener {
 
 			try {
 				ObjectOutputStream sender = new ObjectOutputStream(client.getOutputStream());
+				sender.flush();
 				BlockchainRequest request = PeerUtil.receive(client.getInputStream());
 				LOG.trace("[Crypto] Request: " + request);
 
@@ -122,19 +125,21 @@ public class PeerListener {
 
 				if (!request.getSignature().equals(blockchainProperties.getNetworkSignature())) {
 					LOG.error("[Crypto] Received an invalid signature from peer [" + newPeer + "]");
-					client.getInputStream().close();
-					client.close();
+				} else {
+					serviceDispatcher.launch(sender, newPeer, request);
 				}
 
-				serviceDispatcher.launch(sender, newPeer, request);
-
 				sender.close();
-				client.getInputStream().close();
-				client.close();
-			} catch (IOException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-					| NoSuchMethodException | SecurityException e) {
-				LOG.error("[Crypto] Client error : {}", e);
-				throw new NetworkException("[Crypto] Client error: " + e.getMessage());
+			} catch (IOException | IllegalArgumentException | SecurityException | IllegalAccessException
+					| InvocationTargetException | NoSuchMethodException e) {
+			} finally {
+				try {
+					if (!client.isClosed())
+						client.close();
+				} catch (IOException e) {
+					LOG.error("[Crypto] Client error : {}", e);
+					throw new NetworkException("[Crypto] Client error: " + e.getMessage());
+				}
 			}
 		}
 	}
