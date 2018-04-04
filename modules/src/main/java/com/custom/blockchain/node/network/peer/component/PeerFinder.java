@@ -19,7 +19,6 @@ import com.custom.blockchain.node.network.exception.NetworkException;
 import com.custom.blockchain.node.network.peer.Peer;
 import com.custom.blockchain.node.network.request.BlockchainRequest;
 import com.custom.blockchain.util.ConnectionUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -37,16 +36,12 @@ public class PeerFinder {
 
 	private BlockchainProperties blockchainProperties;
 
-	public ObjectMapper objectMapper;
-
 	private PeerSender peerSender;
 
 	private PeersDB peersDB;
 
-	public PeerFinder(final BlockchainProperties blockchainProperties, final ObjectMapper objectMapper,
-			final PeerSender peerSender, PeersDB peersDB) {
+	public PeerFinder(final BlockchainProperties blockchainProperties, final PeerSender peerSender, PeersDB peersDB) {
 		this.blockchainProperties = blockchainProperties;
-		this.objectMapper = objectMapper;
 		this.peerSender = peerSender;
 		this.peersDB = peersDB;
 	}
@@ -104,12 +99,12 @@ public class PeerFinder {
 	 * 
 	 */
 	private void findMockedPeers() {
-		for (String p : blockchainProperties.getNetworkMockedPeers()) {
-			try {
-				addPeer(objectMapper.readValue(p, Peer.class));
-			} catch (IOException e) {
-				throw new NetworkException("Could not read peers data: " + e.getMessage());
+		try {
+			for (Peer p : blockchainProperties.getNetworkMockedPeersMapped()) {
+				addPeer(p);
 			}
+		} catch (IOException e) {
+			throw new NetworkException("Could not read peers data: " + e.getMessage());
 		}
 	}
 

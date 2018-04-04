@@ -90,12 +90,14 @@ public class PeerListener {
 
 			if (!request.getSignature().equals(blockchainProperties.getNetworkSignature())) {
 				LOG.error("[Crypto] Received an invalid signature from peer [" + newPeer + "]");
+				client.getInputStream().close();
 				client.close();
 				continue;
 			}
 
 			serviceDispatcher.launch(client, newPeer, request);
 
+			client.getInputStream().close();
 			client.close();
 		}
 	}
