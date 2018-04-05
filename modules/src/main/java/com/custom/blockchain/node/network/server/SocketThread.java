@@ -47,6 +47,8 @@ public class SocketThread extends Thread {
 				ObjectOutputStream sender = new ObjectOutputStream(client.getOutputStream());
 				BlockchainRequest request = PeerUtil.receive(client.getInputStream());
 				LOG.trace("[Crypto] Request: " + request);
+				if (request == null)
+					continue;
 
 				registerThread(request);
 
@@ -114,7 +116,7 @@ public class SocketThread extends Thread {
 	}
 
 	private void registerThread(BlockchainRequest request) {
-		if (peer == null && request != null) {
+		if (peer == null) {
 			peer = new Peer(client.getInetAddress().getHostAddress(), request.getResponsePort());
 			SOCKET_THREADS.put(peer, this);
 		}
