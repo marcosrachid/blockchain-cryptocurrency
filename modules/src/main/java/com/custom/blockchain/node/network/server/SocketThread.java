@@ -114,7 +114,7 @@ public class SocketThread extends Thread {
 	}
 
 	private void registerThread(BlockchainRequest request) {
-		if (peer == null) {
+		if (peer == null && request != null) {
 			peer = new Peer(client.getInetAddress().getHostAddress(), request.getResponsePort());
 			SOCKET_THREADS.put(peer, this);
 		}

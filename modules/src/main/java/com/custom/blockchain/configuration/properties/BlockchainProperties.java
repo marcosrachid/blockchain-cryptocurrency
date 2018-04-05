@@ -78,6 +78,8 @@ public class BlockchainProperties {
 
 	public BlockchainProperties(final ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
+		if (networkMockedPeers == null)
+			networkMockedPeers = new ArrayList<String>();
 	}
 
 	public String getCoinName() {

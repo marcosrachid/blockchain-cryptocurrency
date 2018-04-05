@@ -96,8 +96,6 @@ public class PeerFinder {
 	 */
 	private void findFromPeers() {
 		for (Peer p : ConnectionUtil.getConnectedPeers()) {
-			LOG.debug("[Crypto] Trying to send a service[" + Service.GET_PEERS.getService() + "] request to peer[" + p
-					+ "]");
 			if (!ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds()))
 				SOCKET_THREADS.get(p).send(BlockchainRequest.createBuilder().withService(Service.GET_PEERS).build());
 		}
