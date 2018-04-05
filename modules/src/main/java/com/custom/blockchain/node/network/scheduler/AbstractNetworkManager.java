@@ -1,9 +1,9 @@
-package com.custom.blockchain.node.network.component;
+package com.custom.blockchain.node.network.scheduler;
 
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
 import static com.custom.blockchain.node.NodeStateManagement.LISTENING_THREAD;
 import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
-import static com.custom.blockchain.node.network.peer.PeerStateManagement.REMOVED_PEERS;
+import static com.custom.blockchain.peer.PeerStateManagement.REMOVED_PEERS;
 
 import java.util.Iterator;
 
@@ -12,12 +12,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.node.network.Service;
-import com.custom.blockchain.node.network.peer.Peer;
-import com.custom.blockchain.node.network.peer.component.PeerFinder;
-import com.custom.blockchain.node.network.request.BlockchainRequest;
+import com.custom.blockchain.node.component.PeerFinder;
 import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.node.network.server.SocketThread;
+import com.custom.blockchain.node.network.server.dispatcher.Service;
+import com.custom.blockchain.node.network.server.request.BlockchainRequest;
+import com.custom.blockchain.peer.Peer;
 import com.custom.blockchain.util.ConnectionUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

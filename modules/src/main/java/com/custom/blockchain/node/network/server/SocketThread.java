@@ -1,5 +1,6 @@
 package com.custom.blockchain.node.network.server;
 
+import static com.custom.blockchain.node.NodeStateManagement.PEER_CONNECTION_PENDING_RETRY_WAIT;
 import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
 
 import java.io.IOException;
@@ -10,15 +11,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.node.network.component.ServiceDispatcher;
-import com.custom.blockchain.node.network.exception.NetworkException;
-import com.custom.blockchain.node.network.peer.Peer;
-import com.custom.blockchain.node.network.request.BlockchainRequest;
+import com.custom.blockchain.node.network.server.dispatcher.ServiceDispatcher;
+import com.custom.blockchain.node.network.server.request.BlockchainRequest;
+import com.custom.blockchain.peer.Peer;
 import com.custom.blockchain.util.PeerUtil;
 
+/**
+ * 
+ * @author marcosrachid
+ *
+ */
 public class SocketThread extends Thread {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SocketThread.class);
+
+	public static boolean ACTIVE = true;
 
 	private BlockchainProperties blockchainProperties;
 
@@ -29,6 +36,8 @@ public class SocketThread extends Thread {
 	private Peer peer;
 
 	private boolean isRunning;
+
+	private Long timeConnectionFailed = null;
 
 	public SocketThread(BlockchainProperties blockchainProperties, ServiceDispatcher serviceDispatcher, Socket client) {
 		this.blockchainProperties = blockchainProperties;
@@ -42,11 +51,21 @@ public class SocketThread extends Thread {
 		LOG.trace("[Crypto] Connection Received from: " + client.toString());
 
 		try {
-			while (isRunning) {
+			while (ACTIVE && isRunning) {
 				BlockchainRequest request = PeerUtil.receive(client.getInputStream());
 				LOG.trace("[Crypto] Request: " + request);
-				if (request == null)
+
+				if (timeConnectionFailed != null
+						&& (System.currentTimeMillis() - timeConnectionFailed) > PEER_CONNECTION_PENDING_RETRY_WAIT) {
+					close();
+				}
+
+				if (request == null) {
+					timeConnectionFailed = (timeConnectionFailed == null) ? System.currentTimeMillis()
+							: timeConnectionFailed;
 					continue;
+				}
+				timeConnectionFailed = null;
 
 				registerThread(request);
 
@@ -58,20 +77,13 @@ public class SocketThread extends Thread {
 			}
 		} catch (IOException | IllegalArgumentException | SecurityException | IllegalAccessException
 				| InvocationTargetException | NoSuchMethodException e) {
-			try {
-				if (!client.isClosed())
-					client.close();
-			} catch (IOException ex) {
-				LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
-				throw new NetworkException("[Crypto] Client error: " + e.getMessage());
-			}
+			LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
 		} finally {
 			try {
 				if (!client.isClosed())
 					client.close();
 			} catch (IOException e) {
 				LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
-				throw new NetworkException("[Crypto] Client error: " + e.getMessage());
 			}
 		}
 	}
@@ -87,31 +99,28 @@ public class SocketThread extends Thread {
 			PeerUtil.send(blockchainProperties, client.getOutputStream(), request);
 		} catch (IOException e) {
 			LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
-			throw new NetworkException("[Crypto] Client error: " + e.getMessage());
 		}
 	}
 
 	/**
 	 * 
+	 * @param request
 	 */
-	public void interrupt() {
-		LOG.info("[Crypto] Stoping socket thread...");
-		isRunning = false;
-		if (client != null && !client.isClosed()) {
-			try {
-				client.close();
-			} catch (IOException e1) {
-				LOG.error("[Crypto] Could not close thread...");
-			}
-		}
-		if (peer != null)
-			SOCKET_THREADS.remove(peer);
-	}
-
 	private void registerThread(BlockchainRequest request) {
 		if (peer == null) {
 			peer = new Peer(client.getInetAddress().getHostAddress(), request.getResponsePort());
 			SOCKET_THREADS.put(peer, this);
 		}
 	}
+
+	/**
+	 * 
+	 */
+	private void close() {
+		LOG.info("[Crypto] Stoping socket thread...");
+		isRunning = false;
+		if (peer != null)
+			SOCKET_THREADS.remove(peer);
+	}
+
 }

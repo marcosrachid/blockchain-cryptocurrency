@@ -1,4 +1,4 @@
-package com.custom.blockchain.node.network.component;
+package com.custom.blockchain.node.network.scheduler;
 
 import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
 
@@ -9,11 +9,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.node.network.Service;
-import com.custom.blockchain.node.network.peer.component.PeerFinder;
-import com.custom.blockchain.node.network.request.BlockchainRequest;
+import com.custom.blockchain.node.component.PeerFinder;
 import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.node.network.server.SocketThread;
+import com.custom.blockchain.node.network.server.dispatcher.Service;
+import com.custom.blockchain.node.network.server.request.BlockchainRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**

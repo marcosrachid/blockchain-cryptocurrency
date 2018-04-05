@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import com.custom.blockchain.node.network.Service;
-import com.custom.blockchain.node.network.peer.Peer;
-import com.custom.blockchain.node.network.request.arguments.BlockArguments;
 import com.custom.blockchain.node.network.server.SocketThread;
+import com.custom.blockchain.node.network.server.dispatcher.Service;
+import com.custom.blockchain.node.network.server.request.arguments.BlockArguments;
+import com.custom.blockchain.peer.Peer;
 
 /**
  * 
@@ -20,6 +20,8 @@ import com.custom.blockchain.node.network.server.SocketThread;
 public class NodeStateManagement {
 
 	public static final Integer DIFFICULTY_ADJUSTMENT_BLOCK = 1000;
+	
+	public static final Long PEER_CONNECTION_PENDING_RETRY_WAIT = 120000L;
 
 	public static final Set<Service> SERVICES = new HashSet<>();
 

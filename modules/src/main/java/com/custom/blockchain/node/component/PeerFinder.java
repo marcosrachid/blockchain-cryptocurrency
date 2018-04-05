@@ -1,7 +1,7 @@
-package com.custom.blockchain.node.network.peer.component;
+package com.custom.blockchain.node.component;
 
 import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
-import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
+import static com.custom.blockchain.peer.PeerStateManagement.PEERS;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -15,12 +15,11 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.peers.PeersDB;
-import com.custom.blockchain.node.network.Service;
-import com.custom.blockchain.node.network.component.ServiceDispatcher;
-import com.custom.blockchain.node.network.exception.NetworkException;
-import com.custom.blockchain.node.network.peer.Peer;
-import com.custom.blockchain.node.network.request.BlockchainRequest;
 import com.custom.blockchain.node.network.server.SocketThread;
+import com.custom.blockchain.node.network.server.dispatcher.Service;
+import com.custom.blockchain.node.network.server.dispatcher.ServiceDispatcher;
+import com.custom.blockchain.node.network.server.request.BlockchainRequest;
+import com.custom.blockchain.peer.Peer;
 import com.custom.blockchain.util.ConnectionUtil;
 import com.custom.blockchain.util.PeerUtil;
 
@@ -111,7 +110,7 @@ public class PeerFinder {
 				addPeer(p);
 			}
 		} catch (IOException e) {
-			throw new NetworkException("Could not read peers data: " + e.getMessage());
+			LOG.error("Could not read peers data: " + e.getMessage(), e);
 		}
 	}
 
@@ -146,7 +145,7 @@ public class PeerFinder {
 				PEERS.add(peer);
 			}
 		} catch (UnknownHostException e) {
-			throw new NetworkException("Could read peer " + peer.getIp() + " as an InetAddress");
+			LOG.error("Could read peer " + peer.getIp() + " as an InetAddress", e);
 		}
 	}
 

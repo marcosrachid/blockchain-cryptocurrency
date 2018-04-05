@@ -1,4 +1,4 @@
-package com.custom.blockchain.node.network.request.arguments;
+package com.custom.blockchain.node.network.server.request.arguments;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;

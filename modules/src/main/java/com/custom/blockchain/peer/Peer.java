@@ -1,4 +1,4 @@
-package com.custom.blockchain.node.network.peer;
+package com.custom.blockchain.peer;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.custom.blockchain.node.network.Service;
+import com.custom.blockchain.node.network.server.dispatcher.Service;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**

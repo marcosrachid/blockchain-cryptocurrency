@@ -1,13 +1,13 @@
 package com.custom.blockchain.service;
 
-import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
+import static com.custom.blockchain.peer.PeerStateManagement.PEERS;
 
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.exception.BusinessException;
-import com.custom.blockchain.node.network.peer.Peer;
+import com.custom.blockchain.peer.Peer;
 
 /**
  * 

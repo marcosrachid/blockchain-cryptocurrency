@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.data.AbstractLevelDB;
 import com.custom.blockchain.data.exception.DatabaseException;
-import com.custom.blockchain.node.network.peer.Peer;
+import com.custom.blockchain.peer.Peer;
 import com.custom.blockchain.util.StringUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

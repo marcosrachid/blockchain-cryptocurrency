@@ -1,4 +1,4 @@
-package com.custom.blockchain.node.network;
+package com.custom.blockchain.node.network.server.dispatcher;
 
 public enum Service {
 

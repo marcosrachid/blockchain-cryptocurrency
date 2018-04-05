@@ -12,8 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.node.network.peer.Peer;
-import com.custom.blockchain.node.network.request.BlockchainRequest;
+import com.custom.blockchain.node.network.server.request.BlockchainRequest;
+import com.custom.blockchain.peer.Peer;
 
 /**
  * 
@@ -74,7 +74,6 @@ public final class PeerUtil {
 			ObjectInputStream ois = new ObjectInputStream(inputStream);
 			return (BlockchainRequest) ois.readObject();
 		} catch (IOException | ClassNotFoundException e) {
-			LOG.debug("[Crypto] Receive failed reason: " + e.getMessage(), e);
 			return null;
 		}
 	}

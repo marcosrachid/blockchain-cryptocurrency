@@ -7,7 +7,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.custom.blockchain.node.network.peer.Peer;
+import com.custom.blockchain.peer.Peer;
 
 /**
  * 

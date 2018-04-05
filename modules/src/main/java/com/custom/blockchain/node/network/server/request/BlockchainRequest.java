@@ -1,4 +1,4 @@
-package com.custom.blockchain.node.network.request;
+package com.custom.blockchain.node.network.server.request;
 
 import java.io.Serializable;
 
@@ -6,8 +6,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.custom.blockchain.node.network.Service;
-import com.custom.blockchain.node.network.request.arguments.GenericArguments;
+import com.custom.blockchain.node.network.server.dispatcher.Service;
+import com.custom.blockchain.node.network.server.request.arguments.GenericArguments;
 
 public class BlockchainRequest implements Serializable {
 

@@ -1,20 +1,20 @@
-package com.custom.blockchain.node.network.request.arguments;
+package com.custom.blockchain.node.network.server.request.arguments;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class InvalidBlockArguments implements GenericArguments {
+public class BlockArguments implements GenericArguments {
 
 	private static final long serialVersionUID = 1L;
 
 	private Long height;
 
-	public InvalidBlockArguments() {
+	public BlockArguments() {
 		super();
 	}
 
-	public InvalidBlockArguments(Long height) {
+	public BlockArguments(Long height) {
 		super();
 		this.height = height;
 	}
@@ -40,7 +40,7 @@ public class InvalidBlockArguments implements GenericArguments {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		InvalidBlockArguments other = (InvalidBlockArguments) obj;
+		BlockArguments other = (BlockArguments) obj;
 		return new EqualsBuilder().append(height, other.height).isEquals();
 	}
 

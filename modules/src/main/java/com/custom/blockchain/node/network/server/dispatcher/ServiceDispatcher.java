@@ -1,9 +1,9 @@
-package com.custom.blockchain.node.network.component;
+package com.custom.blockchain.node.network.server.dispatcher;
 
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
 import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
-import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
-import static com.custom.blockchain.node.network.peer.PeerStateManagement.REMOVED_PEERS;
+import static com.custom.blockchain.peer.PeerStateManagement.PEERS;
+import static com.custom.blockchain.peer.PeerStateManagement.REMOVED_PEERS;
 
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -25,16 +25,14 @@ import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
-import com.custom.blockchain.node.network.Service;
-import com.custom.blockchain.node.network.exception.NetworkException;
-import com.custom.blockchain.node.network.peer.Peer;
-import com.custom.blockchain.node.network.request.BlockchainRequest;
-import com.custom.blockchain.node.network.request.arguments.BlockArguments;
-import com.custom.blockchain.node.network.request.arguments.BlockResponseArguments;
-import com.custom.blockchain.node.network.request.arguments.InvalidBlockArguments;
-import com.custom.blockchain.node.network.request.arguments.PeerResponseArguments;
-import com.custom.blockchain.node.network.request.arguments.StateResponseArguments;
-import com.custom.blockchain.node.network.request.arguments.TransactionsResponseArguments;
+import com.custom.blockchain.node.network.server.request.BlockchainRequest;
+import com.custom.blockchain.node.network.server.request.arguments.BlockArguments;
+import com.custom.blockchain.node.network.server.request.arguments.BlockResponseArguments;
+import com.custom.blockchain.node.network.server.request.arguments.InvalidBlockArguments;
+import com.custom.blockchain.node.network.server.request.arguments.PeerResponseArguments;
+import com.custom.blockchain.node.network.server.request.arguments.StateResponseArguments;
+import com.custom.blockchain.node.network.server.request.arguments.TransactionsResponseArguments;
+import com.custom.blockchain.peer.Peer;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.util.ConnectionUtil;
 import com.custom.blockchain.util.PeerUtil;
@@ -211,8 +209,7 @@ public class ServiceDispatcher {
 			blockStateManagement.foundBlock(block);
 			BLOCKS_QUEUE.poll();
 		} catch (BusinessException e) {
-			LOG.error("Block[" + block + "] was identified as invalid: " + e.getMessage());
-			throw new NetworkException("Block[" + block + "] was identified as invalid: " + e.getMessage());
+			LOG.error("Block[" + block + "] was identified as invalid: " + e.getMessage(), e);
 		}
 	}
 

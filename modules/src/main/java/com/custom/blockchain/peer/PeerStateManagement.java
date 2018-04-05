@@ -1,4 +1,4 @@
-package com.custom.blockchain.node.network.peer;
+package com.custom.blockchain.peer;
 
 import java.util.HashSet;
 import java.util.Set;

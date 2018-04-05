@@ -1,10 +1,10 @@
-package com.custom.blockchain.node.network.component;
+package com.custom.blockchain.node.network.scheduler;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.node.network.peer.component.PeerFinder;
+import com.custom.blockchain.node.component.PeerFinder;
 import com.custom.blockchain.node.network.server.Server;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

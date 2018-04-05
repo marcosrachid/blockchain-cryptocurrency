@@ -11,8 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.node.network.component.ServiceDispatcher;
-import com.custom.blockchain.node.network.exception.NetworkException;
+import com.custom.blockchain.node.network.server.dispatcher.ServiceDispatcher;
 
 @Component
 public class Server {
@@ -44,14 +43,12 @@ public class Server {
 				} catch (IOException e) {
 					isRunning = false;
 					LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
-					throw new NetworkException("[Crypto] Server error: " + e.getMessage());
 				} finally {
 					try {
 						if (!server.isClosed())
 							server.close();
 					} catch (IOException e) {
 						LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
-						throw new NetworkException("[Crypto] Server error: " + e.getMessage());
 					}
 				}
 			}
@@ -81,13 +78,6 @@ public class Server {
 	public void stop() {
 		LOG.info("[Crypto] Stoping listener...");
 		isRunning = false;
-		if (server != null && !server.isClosed()) {
-			try {
-				server.close();
-			} catch (IOException e1) {
-				LOG.error("[Crypto] Could not close server...");
-			}
-		}
 	}
 
 }
