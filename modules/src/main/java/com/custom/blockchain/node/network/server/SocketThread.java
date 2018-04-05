@@ -3,7 +3,6 @@ package com.custom.blockchain.node.network.server;
 import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 
@@ -44,9 +43,6 @@ public class SocketThread extends Thread {
 
 		try {
 			while (isRunning) {
-				ObjectOutputStream sender = new ObjectOutputStream(client.getOutputStream());
-				sender.flush();
-
 				BlockchainRequest request = PeerUtil.receive(client.getInputStream());
 				LOG.trace("[Crypto] Request: " + request);
 				if (request == null)
@@ -57,7 +53,7 @@ public class SocketThread extends Thread {
 				if (!request.getSignature().equals(blockchainProperties.getNetworkSignature())) {
 					LOG.error("[Crypto] Received an invalid signature from peer [" + peer + "]");
 				} else {
-					serviceDispatcher.launch(sender, peer, request);
+					serviceDispatcher.launch(client.getOutputStream(), peer, request);
 				}
 			}
 		} catch (IOException | IllegalArgumentException | SecurityException | IllegalAccessException

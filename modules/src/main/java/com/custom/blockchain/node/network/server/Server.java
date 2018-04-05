@@ -43,14 +43,14 @@ public class Server {
 					start();
 				} catch (IOException e) {
 					isRunning = false;
-					LOG.error("[Crypto] Client error : {}", e);
+					LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
 					throw new NetworkException("[Crypto] Server error: " + e.getMessage());
 				} finally {
 					try {
 						if (!server.isClosed())
 							server.close();
 					} catch (IOException e) {
-						LOG.error("[Crypto] Client error : {}", e);
+						LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
 						throw new NetworkException("[Crypto] Server error: " + e.getMessage());
 					}
 				}
