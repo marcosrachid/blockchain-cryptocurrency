@@ -24,7 +24,6 @@ import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionOutput;
-import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
 
@@ -108,10 +107,12 @@ public class BlockStateManagement {
 			throw new BusinessException("Block has an unexpected reward value[" + reward.getValue() + "]");
 		}
 		LOG.trace("[Crypto] Validating if block hash incompatible with current blockchain...");
-		if (!block.getHash().equals(DigestUtil.applySha256(
-				currentBlock.getHash() + block.getTimeStamp() + block.getNonce() + block.getMerkleRoot()))) {
-			throw new BusinessException("Block hash incompatible with current blockchain");
-		}
+		// if (!block.getHash().equals(DigestUtil.applySha256(
+		// currentBlock.getHash() + block.getTimeStamp() + block.getNonce() +
+		// block.getMerkleRoot()))) {
+		// throw new BusinessException("Block hash incompatible with current
+		// blockchain");
+		// }
 
 		Set<Transaction> transactions = block.getTransactions().stream().filter(t -> t instanceof SimpleTransaction)
 				.collect(Collectors.toSet());
