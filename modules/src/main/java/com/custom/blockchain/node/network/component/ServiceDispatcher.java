@@ -5,7 +5,7 @@ import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.PEERS;
 import static com.custom.blockchain.node.network.peer.PeerStateManagement.REMOVED_PEERS;
 
-import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -80,7 +80,7 @@ public class ServiceDispatcher {
 	 * @throws NoSuchMethodException
 	 * @throws SecurityException
 	 */
-	public void launch(ObjectOutputStream sender, Peer peer, BlockchainRequest request) throws IllegalAccessException,
+	public void launch(final OutputStream sender, Peer peer, BlockchainRequest request) throws IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		LOG.trace("[Crypto] Service: " + request.getService() + ", Arguments: " + request.getArguments());
 		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())
@@ -96,11 +96,11 @@ public class ServiceDispatcher {
 		if (request.hasArguments()) {
 			LOG.trace("[Crypto] Request with arguments: " + request.getService().getService() + " - "
 					+ request.getArguments());
-			this.getClass().getDeclaredMethod(request.getService().getService(), ObjectOutputStream.class, Peer.class,
+			this.getClass().getDeclaredMethod(request.getService().getService(), OutputStream.class, Peer.class,
 					request.getArguments().getClass()).invoke(this, sender, peer, request.getArguments());
 		} else {
 			LOG.trace("[Crypto] Request without arguments: " + request.getService().getService());
-			this.getClass().getDeclaredMethod(request.getService().getService(), ObjectOutputStream.class, Peer.class)
+			this.getClass().getDeclaredMethod(request.getService().getService(), OutputStream.class, Peer.class)
 					.invoke(this, sender, peer);
 		}
 	}
@@ -111,7 +111,7 @@ public class ServiceDispatcher {
 	 * @param peer
 	 */
 	@SuppressWarnings("unused")
-	private void ping(ObjectOutputStream sender, Peer peer) {
+	private void ping(OutputStream sender, Peer peer) {
 		LOG.trace("[Crypto] Found a " + Service.PING.getService() + " event from peer [" + peer + "]");
 		PeerUtil.send(blockchainProperties, sender,
 				BlockchainRequest.createBuilder().withService(Service.PONG).build());
@@ -133,7 +133,7 @@ public class ServiceDispatcher {
 	 * @param peer
 	 */
 	@SuppressWarnings("unused")
-	private void pong(ObjectOutputStream sender, Peer peer) {
+	private void pong(OutputStream sender, Peer peer) {
 		LOG.trace("[Crypto] Found a " + Service.PONG.getService() + " event from peer [" + peer + "]");
 		Optional<Peer> foundPeer = PEERS.stream().filter(p -> p.equals(peer)).findFirst();
 		if (foundPeer.isPresent()) {
@@ -153,7 +153,7 @@ public class ServiceDispatcher {
 	 * @param peer
 	 */
 	@SuppressWarnings("unused")
-	private void getState(ObjectOutputStream sender, Peer peer) {
+	private void getState(OutputStream sender, Peer peer) {
 		LOG.debug("[Crypto] Found a " + Service.GET_STATE.getService() + " event from peer [" + peer + "]");
 		PeerUtil.send(blockchainProperties, sender,
 				BlockchainRequest.createBuilder().withService(Service.GET_STATE_RESPONSE)
@@ -167,7 +167,7 @@ public class ServiceDispatcher {
 	 * @param args
 	 */
 	@SuppressWarnings("unused")
-	private void getStateResponse(ObjectOutputStream sender, Peer peer, StateResponseArguments args) {
+	private void getStateResponse(OutputStream sender, Peer peer, StateResponseArguments args) {
 		LOG.trace("[Crypto] Found a " + Service.GET_STATE_RESPONSE.getService() + " event from peer [" + peer + "]");
 		Long peerCurrentBlock = args.getCurrentBlock();
 		LOG.debug("[Crypto] peer [" + peer + "] current block [" + peerCurrentBlock + "]");
@@ -188,7 +188,7 @@ public class ServiceDispatcher {
 	 * @param args
 	 */
 	@SuppressWarnings("unused")
-	private void getBlock(ObjectOutputStream sender, Peer peer, BlockArguments args) {
+	private void getBlock(OutputStream sender, Peer peer, BlockArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event from peer [" + peer + "]");
 		Block block = blockDB.get(args.getHeight());
 		LOG.debug("[Crypto] Found block[" + block + "] to be sent");
@@ -203,7 +203,7 @@ public class ServiceDispatcher {
 	 * @param args
 	 */
 	@SuppressWarnings("unused")
-	private void getBlockResponse(ObjectOutputStream sender, Peer peer, BlockResponseArguments args) {
+	private void getBlockResponse(OutputStream sender, Peer peer, BlockResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event from peer [" + peer + "]");
 		Block block = args.getBlock();
 		try {
@@ -223,7 +223,7 @@ public class ServiceDispatcher {
 	 * @param args
 	 */
 	@SuppressWarnings("unused")
-	private void getInvalidBlock(ObjectOutputStream sender, Peer peer, InvalidBlockArguments args) {
+	private void getInvalidBlock(OutputStream sender, Peer peer, InvalidBlockArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_INVALID_BLOCK.getService() + " event from peer [" + peer + "]");
 		Block block = blockDB.get(args.getHeight());
 		blockStateManagement.removeBlock(block);
@@ -235,7 +235,7 @@ public class ServiceDispatcher {
 	 * @param peer
 	 */
 	@SuppressWarnings("unused")
-	private void getPeers(ObjectOutputStream sender, Peer peer) {
+	private void getPeers(OutputStream sender, Peer peer) {
 		LOG.debug("[Crypto] Found a " + Service.GET_PEERS.getService() + " event from peer [" + peer + "]");
 		PeerUtil.send(blockchainProperties, sender, BlockchainRequest.createBuilder()
 				.withService(Service.GET_PEERS_RESPONSE).withArguments(new PeerResponseArguments(ConnectionUtil
@@ -250,7 +250,7 @@ public class ServiceDispatcher {
 	 * @param args
 	 */
 	@SuppressWarnings("unused")
-	private void getPeersResponse(ObjectOutputStream sender, Peer peer, PeerResponseArguments args) {
+	private void getPeersResponse(OutputStream sender, Peer peer, PeerResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_PEERS_RESPONSE.getService() + " event from peer [" + peer + "]");
 		Set<Peer> requestPeers = args.getPeers();
 		requestPeers.removeAll(REMOVED_PEERS);
@@ -265,7 +265,7 @@ public class ServiceDispatcher {
 	 * @param peer
 	 */
 	@SuppressWarnings("unused")
-	private void getTransactions(ObjectOutputStream sender, Peer peer) {
+	private void getTransactions(OutputStream sender, Peer peer) {
 		LOG.debug("[Crypto] Found a " + Service.GET_TRANSACTIONS.getService() + " event from peer [" + peer + "]");
 		Set<SimpleTransaction> mempoolTransactions = new HashSet<>();
 		DBIterator iterator = mempoolDB.iterator();
@@ -285,7 +285,7 @@ public class ServiceDispatcher {
 	 * @param args
 	 */
 	@SuppressWarnings("unused")
-	private void getTransactionsResponse(ObjectOutputStream sender, Peer peer, TransactionsResponseArguments args) {
+	private void getTransactionsResponse(OutputStream sender, Peer peer, TransactionsResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_TRANSACTIONS_RESPONSE.getService() + " event from peer [" + peer
 				+ "]");
 		for (SimpleTransaction t : args.getTransactions()) {

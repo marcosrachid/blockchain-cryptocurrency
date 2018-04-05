@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -49,12 +50,13 @@ public final class PeerUtil {
 	 * @param sender
 	 * @param blockchainRequest
 	 */
-	public static void send(BlockchainProperties blockchainProperties, ObjectOutputStream sender,
+	public static void send(BlockchainProperties blockchainProperties, OutputStream outputStream,
 			BlockchainRequest blockchainRequest) {
-		LOG.trace("[Crypto] Sending request[" + blockchainRequest + "]");
 		blockchainRequest.setSignature(blockchainProperties.getNetworkSignature());
 		blockchainRequest.setResponsePort(blockchainProperties.getNetworkPort());
 		try {
+			ObjectOutputStream sender = new ObjectOutputStream(outputStream);
+			sender.flush();
 			sender.writeObject(blockchainRequest);
 			sender.flush();
 		} catch (IOException e) {
