@@ -20,8 +20,6 @@ import com.custom.blockchain.peer.Peer;
 public class NodeStateManagement {
 
 	public static final Integer DIFFICULTY_ADJUSTMENT_BLOCK = 1000;
-	
-	public static final Long PEER_CONNECTION_PENDING_RETRY_WAIT = 120000L;
 
 	public static final Set<Service> SERVICES = new HashSet<>();
 

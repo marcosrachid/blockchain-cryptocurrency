@@ -15,6 +15,7 @@ import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.data.peers.PeersDB;
 import com.custom.blockchain.node.network.server.Server;
+import com.custom.blockchain.node.network.server.SocketThread;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.StringUtil;
@@ -50,6 +51,7 @@ public abstract class AbstractNode {
 	@PreDestroy
 	public void closeConnections() {
 		LOG.info("[Crypto] closing connections...");
+		SocketThread.inactivate();
 		server.stop();
 		currentBlockDB.close();
 		utxoChainstateDB.close();

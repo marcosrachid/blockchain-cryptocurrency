@@ -1,6 +1,5 @@
 package com.custom.blockchain.node.network.server;
 
-import static com.custom.blockchain.node.NodeStateManagement.PEER_CONNECTION_PENDING_RETRY_WAIT;
 import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
 
 import java.io.IOException;
@@ -25,7 +24,7 @@ public class SocketThread extends Thread {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SocketThread.class);
 
-	public static boolean ACTIVE = true;
+	private static boolean ACTIVE = true;
 
 	private BlockchainProperties blockchainProperties;
 
@@ -36,8 +35,6 @@ public class SocketThread extends Thread {
 	private Peer peer;
 
 	private boolean isRunning;
-
-	private Long timeConnectionFailed = null;
 
 	public SocketThread(BlockchainProperties blockchainProperties, ServiceDispatcher serviceDispatcher, Socket client) {
 		this.blockchainProperties = blockchainProperties;
@@ -55,17 +52,10 @@ public class SocketThread extends Thread {
 				BlockchainRequest request = PeerUtil.receive(client.getInputStream());
 				LOG.trace("[Crypto] Request: " + request);
 
-				if (timeConnectionFailed != null
-						&& (System.currentTimeMillis() - timeConnectionFailed) > PEER_CONNECTION_PENDING_RETRY_WAIT) {
-					close();
-				}
-
 				if (request == null) {
-					timeConnectionFailed = (timeConnectionFailed == null) ? System.currentTimeMillis()
-							: timeConnectionFailed;
-					continue;
+					close();
+					break;
 				}
-				timeConnectionFailed = null;
 
 				registerThread(request);
 
@@ -100,6 +90,10 @@ public class SocketThread extends Thread {
 		} catch (IOException e) {
 			LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
 		}
+	}
+
+	public static void inactivate() {
+		ACTIVE = false;
 	}
 
 	/**
