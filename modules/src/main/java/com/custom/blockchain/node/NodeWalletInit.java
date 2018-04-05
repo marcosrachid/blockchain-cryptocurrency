@@ -51,7 +51,7 @@ public class NodeWalletInit extends AbstractNode {
 		this.peersDB = peersDB;
 		this.mempoolDB = mempoolDB;
 		this.blockStateManagement = blockStateManagement;
-		this.peerListener = peerListener;
+		this.server = peerListener;
 	}
 
 	/**

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -59,7 +58,7 @@ public final class PeerUtil {
 			sender.writeObject(blockchainRequest);
 			sender.flush();
 		} catch (IOException e) {
-			LOG.trace("[Crypto] Send failed reason: " + e.getMessage());
+			LOG.debug("[Crypto] Send failed reason: " + e.getMessage(), e);
 		}
 	}
 
@@ -73,24 +72,8 @@ public final class PeerUtil {
 			ObjectInputStream ois = new ObjectInputStream(inputStream);
 			return (BlockchainRequest) ois.readObject();
 		} catch (IOException | ClassNotFoundException e) {
+			LOG.debug("[Crypto] Receive failed reason: " + e.getMessage(), e);
 			return null;
-		}
-	}
-
-	/**
-	 * 
-	 * @param blockchainRequest
-	 * @param outputStream
-	 * @return
-	 */
-	public static boolean send(BlockchainRequest blockchainRequest, OutputStream outputStream) {
-		try {
-			ObjectOutputStream oos = new ObjectOutputStream(outputStream);
-			oos.writeObject(blockchainRequest);
-			oos.flush();
-			return true;
-		} catch (IOException e) {
-			return false;
 		}
 	}
 
@@ -104,6 +87,7 @@ public final class PeerUtil {
 			socket.close();
 			return true;
 		} catch (IOException e) {
+			LOG.debug("[Crypto] Close connection failed reason: " + e.getMessage(), e);
 			return false;
 		}
 	}

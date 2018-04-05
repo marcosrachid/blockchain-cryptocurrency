@@ -45,6 +45,7 @@ public class SocketThread extends Thread {
 		try {
 			while (isRunning) {
 				ObjectOutputStream sender = new ObjectOutputStream(client.getOutputStream());
+				sender.flush();
 				BlockchainRequest request = PeerUtil.receive(client.getInputStream());
 				LOG.trace("[Crypto] Request: " + request);
 				if (request == null)
@@ -57,7 +58,6 @@ public class SocketThread extends Thread {
 				} else {
 					serviceDispatcher.launch(sender, peer, request);
 				}
-				sender.close();
 			}
 		} catch (IOException | IllegalArgumentException | SecurityException | IllegalAccessException
 				| InvocationTargetException | NoSuchMethodException e) {
@@ -65,7 +65,7 @@ public class SocketThread extends Thread {
 				if (!client.isClosed())
 					client.close();
 			} catch (IOException ex) {
-				LOG.error("[Crypto] Client error : {}", e);
+				LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
 				throw new NetworkException("[Crypto] Client error: " + e.getMessage());
 			}
 		} finally {
@@ -73,7 +73,7 @@ public class SocketThread extends Thread {
 				if (!client.isClosed())
 					client.close();
 			} catch (IOException e) {
-				LOG.error("[Crypto] Client error : {}", e);
+				LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
 				throw new NetworkException("[Crypto] Client error: " + e.getMessage());
 			}
 		}
@@ -91,9 +91,9 @@ public class SocketThread extends Thread {
 		try {
 			ObjectOutputStream sender = new ObjectOutputStream(client.getOutputStream());
 			sender.writeObject(request);
-			sender.close();
+			sender.flush();
 		} catch (IOException e) {
-			LOG.error("[Crypto] Client error : {}", e);
+			LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
 			throw new NetworkException("[Crypto] Client error: " + e.getMessage());
 		}
 	}

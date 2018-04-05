@@ -43,14 +43,14 @@ public abstract class AbstractNode {
 
 	protected BlockStateManagement blockStateManagement;
 
-	protected Server peerListener;
+	protected Server server;
 
 	public abstract void startBlocks() throws Exception;
 
 	@PreDestroy
 	public void closeConnections() {
 		LOG.info("[Crypto] closing connections...");
-		peerListener.stop();
+		server.stop();
 		currentBlockDB.close();
 		utxoChainstateDB.close();
 		peersDB.close();
