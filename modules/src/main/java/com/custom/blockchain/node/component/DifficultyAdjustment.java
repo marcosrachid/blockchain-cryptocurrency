@@ -11,10 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.block.Block;
-import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.block.AbstractBlock;
+import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
+import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.util.BlockUtil;
 
 /**
  * 
@@ -32,17 +34,17 @@ public class DifficultyAdjustment {
 
 	private static final BigDecimal MARGIN_OF_ERROR = new BigDecimal(0.2);
 
-	private BlockchainProperties blockchainProperties;
-
 	private BlockDB blockDB;
 
 	private CurrentBlockDB currentBlockDB;
 
-	public DifficultyAdjustment(final BlockchainProperties blockchainProperties, final BlockDB blockDB,
-			final CurrentBlockDB currentBlockDB) {
-		this.blockchainProperties = blockchainProperties;
+	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+
+	public DifficultyAdjustment(final BlockDB blockDB, final CurrentBlockDB currentBlockDB,
+			final CurrentPropertiesBlockDB currentPropertiesBlockDB) {
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
+		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 	}
 
 	/**
@@ -51,19 +53,21 @@ public class DifficultyAdjustment {
 	 */
 	public Integer adjust() {
 		LOG.info("[Crypto] Difficulty adjustment every " + DIFFICULTY_ADJUSTMENT_BLOCK + " blocks starting...");
-		Block currentBlock = currentBlockDB.get();
-		Integer difficulty = currentBlock.getRewardTransaction().getDifficulty();
+		AbstractBlock currentBlock = currentBlockDB.get();
+		TransactionsBlock currentTransactionBlock = BlockUtil.getLastTransactionBlock(blockDB, currentBlock);
+		Integer difficulty = currentTransactionBlock.getRewardTransaction().getDifficulty();
 		List<Long> timestamps = new ArrayList<>();
 		List<Long> differences = new ArrayList<>();
-		mapTimestamps(DIFFICULTY_ADJUSTMENT_BLOCK - 1, currentBlockDB.get(), timestamps);
+		mapTimestamps(DIFFICULTY_ADJUSTMENT_BLOCK - 1, currentBlock, timestamps);
 		for (int i = 0; i < timestamps.size(); i++) {
 			if (i % 2 != 0)
 				differences.add(timestamps.get(i) - timestamps.get(i - 1));
 		}
 		BigDecimal average = new BigDecimal(differences.stream().mapToDouble(t -> t).average().getAsDouble(),
 				MathContext.DECIMAL64);
-		BigDecimal top = blockchainProperties.getMiningTimeRate().multiply(BigDecimal.ONE.add(MARGIN_OF_ERROR));
-		BigDecimal bottom = blockchainProperties.getMiningTimeRate().multiply(BigDecimal.ONE.subtract(MARGIN_OF_ERROR));
+		BigDecimal miningTimeRate = currentPropertiesBlockDB.get().getMiningTimeRate();
+		BigDecimal top = miningTimeRate.multiply(BigDecimal.ONE.add(MARGIN_OF_ERROR));
+		BigDecimal bottom = miningTimeRate.multiply(BigDecimal.ONE.subtract(MARGIN_OF_ERROR));
 		if (average.compareTo(top) > 0 && difficulty.compareTo(MIN_DIFFICULTY) > 0)
 			return (difficulty - 1);
 		if (average.compareTo(bottom) < 0 && difficulty.compareTo(MAX_DIFFICULTY) < 0)
@@ -78,7 +82,7 @@ public class DifficultyAdjustment {
 	 * @param block
 	 * @param timestamps
 	 */
-	private void mapTimestamps(Integer adjustmentLoop, Block block, final List<Long> timestamps) {
+	private void mapTimestamps(Integer adjustmentLoop, AbstractBlock block, final List<Long> timestamps) {
 		if (adjustmentLoop == 0)
 			return;
 		timestamps.add(block.getTimeStamp());

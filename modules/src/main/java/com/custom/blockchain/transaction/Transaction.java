@@ -19,8 +19,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
  *
  */
 @JsonTypeInfo(use = Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = RewardTransaction.class, name = "Reward"),
-		@Type(value = SimpleTransaction.class, name = "Transaction") })
+@JsonSubTypes({ @Type(value = RewardTransaction.class, name = "reward"),
+		@Type(value = SimpleTransaction.class, name = "transaction") })
 public abstract class Transaction implements Serializable {
 
 	private static final long serialVersionUID = 1L;

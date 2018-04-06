@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.block.Block;
+import com.custom.blockchain.block.AbstractBlock;
 import com.custom.blockchain.data.AbstractLevelDB;
 import com.custom.blockchain.data.exception.DatabaseException;
 import com.custom.blockchain.util.StringUtil;
@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 @Component
-public class BlockDB extends AbstractLevelDB<Long, Block> {
+public class BlockDB extends AbstractLevelDB<Long, AbstractBlock> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BlockDB.class);
 
@@ -41,18 +41,18 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 	}
 
 	@Override
-	public Block get(Long key) {
+	public AbstractBlock get(Long key) {
 		try {
 			LOG.trace("[Crypto] BlockDB Get - Key: " + KEY_BINDER + key);
 			return objectMapper.readValue(StringUtil.decompress(blockDb.get(StringUtil.compress(KEY_BINDER + key))),
-					Block.class);
+					AbstractBlock.class);
 		} catch (DBException | IOException e) {
 			return null;
 		}
 	}
 
 	@Override
-	public void put(Long key, Block value) {
+	public void put(Long key, AbstractBlock value) {
 		try {
 			String v = objectMapper.writeValueAsString(value);
 			LOG.trace("[Crypto] BlockDB Add Object - Key: " + KEY_BINDER + key + ", Value: " + v);
@@ -81,7 +81,7 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 	}
 
 	@Override
-	public Block next(DBIterator iterator) {
+	public AbstractBlock next(DBIterator iterator) {
 		try {
 			Entry<byte[], byte[]> entry = iterator.next();
 			String key = StringUtil.decompress(entry.getKey());
@@ -89,7 +89,7 @@ public class BlockDB extends AbstractLevelDB<Long, Block> {
 				return next(iterator);
 			String value = StringUtil.decompress(entry.getValue());
 			LOG.trace("[Crypto] BlockDB Current Iterator - Key: " + key + ", Value: " + value);
-			return objectMapper.readValue(value, Block.class);
+			return objectMapper.readValue(value, AbstractBlock.class);
 		} catch (Exception e) {
 			throw new DatabaseException("Could not get data from iterator: " + e.getMessage());
 		}

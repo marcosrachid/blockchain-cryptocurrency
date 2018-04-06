@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.peers.PeersDB;
 import com.custom.blockchain.node.network.server.SocketThread;
 import com.custom.blockchain.node.network.server.dispatcher.Service;
@@ -39,12 +40,16 @@ public class PeerFinder {
 
 	private BlockchainProperties blockchainProperties;
 
+	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+
 	private ServiceDispatcher serviceDispatcher;
 
 	private PeersDB peersDB;
 
-	public PeerFinder(final BlockchainProperties blockchainProperties, final ServiceDispatcher serviceDispatcher,
+	public PeerFinder(final BlockchainProperties blockchainProperties,
+			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final ServiceDispatcher serviceDispatcher,
 			PeersDB peersDB) {
+		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.blockchainProperties = blockchainProperties;
 		this.serviceDispatcher = serviceDispatcher;
 		this.peersDB = peersDB;
@@ -54,7 +59,6 @@ public class PeerFinder {
 	 * 
 	 */
 	public void findPeers() {
-		removeDisconnected();
 		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds()))
 			return;
 		findFromFile();
@@ -65,10 +69,6 @@ public class PeerFinder {
 		for (Peer p : PEERS) {
 			peersDB.put(p.getIp(), p);
 		}
-	}
-
-	private void removeDisconnected() {
-		// TODO: implement
 	}
 
 	/**
@@ -125,7 +125,8 @@ public class PeerFinder {
 			client = PeerUtil.connect(peer);
 		}
 		if (client != null) {
-			SocketThread socketThread = new SocketThread(blockchainProperties, serviceDispatcher, client);
+			SocketThread socketThread = new SocketThread(blockchainProperties, currentPropertiesBlockDB,
+					serviceDispatcher, client);
 			socketThread.start();
 			SOCKET_THREADS.put(peer, socketThread);
 		}

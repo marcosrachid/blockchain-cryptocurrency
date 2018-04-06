@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.exception.BusinessException;
+import com.custom.blockchain.handler.NodeHandler;
 import com.custom.blockchain.resource.dto.response.ResponseDTO;
-import com.custom.blockchain.resource.dto.response.ResponsePropertiesDTO;
 import com.custom.blockchain.service.NodeService;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -27,26 +27,27 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 @RequestMapping(value = "/node")
 public class NodeResource {
 
-	private BlockchainProperties blockchainProperties;
+	private NodeHandler nodeHandler;
 
 	private NodeService nodeService;
 
-	public NodeResource(final BlockchainProperties blockchainProperties, final NodeService nodeService) {
-		this.blockchainProperties = blockchainProperties;
+	public NodeResource(final NodeHandler nodeHandler, final NodeService nodeService) {
+		this.nodeHandler = nodeHandler;
 		this.nodeService = nodeService;
 	}
 
 	/**
 	 * 
 	 * @return
-	 * @throws IOException 
-	 * @throws JsonMappingException 
-	 * @throws JsonParseException 
+	 * @throws IOException
+	 * @throws JsonMappingException
+	 * @throws JsonParseException
+	 * @throws BusinessException
 	 */
 	@RequestMapping(value = "/properties", method = RequestMethod.GET, produces = APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<ResponseDTO> getProperties() throws JsonParseException, JsonMappingException, IOException {
+	public ResponseEntity<ResponseDTO> getProperties() throws BusinessException {
 		return ResponseEntity.status(HttpStatus.OK).contentType(APPLICATION_JSON_UTF8)
-				.body(new ResponseDTO(new ResponsePropertiesDTO(blockchainProperties)));
+				.body(new ResponseDTO(nodeHandler.getProperties()));
 	}
 
 	/**

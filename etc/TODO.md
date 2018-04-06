@@ -12,6 +12,6 @@
 
 * Use Wallet management
 
-* genesis block register protocol properties or create a properties block for consensus fork ?
+* Fork treatment for new PropertiesBlock
 
 * getBlockResponse send list of blocks up to 2mb size

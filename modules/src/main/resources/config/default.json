@@ -1,0 +1,11 @@
+{
+	"type": "properties",
+	"minimunTransaction": 0.00000001,
+	"coinLimit": 1000000,
+	"miningTimeRate": 6311385,
+	"reward": 11,
+	"blockSize": 123,
+	"coinbase": "Lorem ipsum dolor sit amet",
+	"premined": 25000,
+	"startingDifficulty": 5
+}

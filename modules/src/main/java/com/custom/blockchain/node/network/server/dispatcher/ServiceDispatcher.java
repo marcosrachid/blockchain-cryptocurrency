@@ -18,11 +18,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.block.Block;
+import com.custom.blockchain.block.AbstractBlock;
 import com.custom.blockchain.block.BlockStateManagement;
+import com.custom.blockchain.block.PropertiesBlock;
+import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
+import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.node.network.server.request.BlockchainRequest;
@@ -53,16 +56,19 @@ public class ServiceDispatcher {
 
 	private CurrentBlockDB currentBlockDB;
 
+	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+
 	private MempoolDB mempoolDB;
 
 	private BlockStateManagement blockStateManagement;
 
 	public ServiceDispatcher(final BlockchainProperties blockchainProperties, final BlockDB blockDB,
-			final CurrentBlockDB currentBlockDB, final MempoolDB mempoolDB,
-			final BlockStateManagement blockStateManagement) {
+			final CurrentBlockDB currentBlockDB, final CurrentPropertiesBlockDB currentPropertiesBlockDB,
+			final MempoolDB mempoolDB, final BlockStateManagement blockStateManagement) {
 		this.blockchainProperties = blockchainProperties;
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
+		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.mempoolDB = mempoolDB;
 		this.blockStateManagement = blockStateManagement;
 	}
@@ -111,8 +117,8 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void ping(OutputStream sender, Peer peer) {
 		LOG.trace("[Crypto] Found a " + Service.PING.getService() + " event from peer [" + peer + "]");
-		PeerUtil.send(blockchainProperties, sender,
-				BlockchainRequest.createBuilder().withService(Service.PONG).build());
+		PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
+				sender, BlockchainRequest.createBuilder().withService(Service.PONG).build());
 		Optional<Peer> foundPeer = PEERS.stream().filter(p -> p.equals(peer)).findFirst();
 		if (foundPeer.isPresent()) {
 			Peer p = foundPeer.get();
@@ -153,8 +159,8 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getState(OutputStream sender, Peer peer) {
 		LOG.debug("[Crypto] Found a " + Service.GET_STATE.getService() + " event from peer [" + peer + "]");
-		PeerUtil.send(blockchainProperties, sender,
-				BlockchainRequest.createBuilder().withService(Service.GET_STATE_RESPONSE)
+		PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
+				sender, BlockchainRequest.createBuilder().withService(Service.GET_STATE_RESPONSE)
 						.withArguments(new StateResponseArguments(currentBlockDB.get().getHeight())).build());
 	}
 
@@ -188,10 +194,11 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getBlock(OutputStream sender, Peer peer, BlockArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event from peer [" + peer + "]");
-		Block block = blockDB.get(args.getHeight());
+		AbstractBlock block = blockDB.get(args.getHeight());
 		LOG.debug("[Crypto] Found block[" + block + "] to be sent");
-		PeerUtil.send(blockchainProperties, sender, BlockchainRequest.createBuilder()
-				.withService(Service.GET_BLOCK_RESPONSE).withArguments(new BlockResponseArguments(block)).build());
+		PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
+				sender, BlockchainRequest.createBuilder().withService(Service.GET_BLOCK_RESPONSE)
+						.withArguments(new BlockResponseArguments(block)).build());
 	}
 
 	/**
@@ -203,10 +210,12 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getBlockResponse(OutputStream sender, Peer peer, BlockResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event from peer [" + peer + "]");
-		Block block = args.getBlock();
+		AbstractBlock block = args.getBlock();
 		try {
-			blockStateManagement.validateBlock(block);
-			blockStateManagement.foundBlock(block);
+			if (block instanceof PropertiesBlock)
+				return;
+			blockStateManagement.validateBlock((TransactionsBlock) block);
+			blockStateManagement.foundBlock((TransactionsBlock) block);
 			BLOCKS_QUEUE.poll();
 		} catch (BusinessException e) {
 			LOG.error("Block[" + block + "] was identified as invalid: " + e.getMessage(), e);
@@ -222,7 +231,7 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getInvalidBlock(OutputStream sender, Peer peer, InvalidBlockArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_INVALID_BLOCK.getService() + " event from peer [" + peer + "]");
-		Block block = blockDB.get(args.getHeight());
+		AbstractBlock block = blockDB.get(args.getHeight());
 		blockStateManagement.removeBlock(block);
 	}
 
@@ -234,10 +243,12 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getPeers(OutputStream sender, Peer peer) {
 		LOG.debug("[Crypto] Found a " + Service.GET_PEERS.getService() + " event from peer [" + peer + "]");
-		PeerUtil.send(blockchainProperties, sender, BlockchainRequest.createBuilder()
-				.withService(Service.GET_PEERS_RESPONSE).withArguments(new PeerResponseArguments(ConnectionUtil
-						.getConnectedPeers().stream().filter(p -> !p.equals(peer)).collect(Collectors.toSet())))
-				.build());
+		PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
+				sender,
+				BlockchainRequest.createBuilder().withService(Service.GET_PEERS_RESPONSE)
+						.withArguments(new PeerResponseArguments(ConnectionUtil.getConnectedPeers().stream()
+								.filter(p -> !p.equals(peer)).collect(Collectors.toSet())))
+						.build());
 	}
 
 	/**
@@ -269,8 +280,8 @@ public class ServiceDispatcher {
 		while (iterator.hasNext()) {
 			mempoolTransactions.add(mempoolDB.next(iterator));
 		}
-		PeerUtil.send(blockchainProperties, sender,
-				BlockchainRequest.createBuilder().withService(Service.GET_TRANSACTIONS_RESPONSE)
+		PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
+				sender, BlockchainRequest.createBuilder().withService(Service.GET_TRANSACTIONS_RESPONSE)
 						.withArguments(new TransactionsResponseArguments(mempoolTransactions)).build());
 
 	}

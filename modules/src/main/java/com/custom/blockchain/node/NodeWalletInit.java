@@ -12,14 +12,17 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.block.Block;
-import com.custom.blockchain.block.BlockFactory;
+import com.custom.blockchain.block.AbstractBlock;
 import com.custom.blockchain.block.BlockStateManagement;
+import com.custom.blockchain.block.PropertiesBlock;
+import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.CurrentBlockDB;
+import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.data.peers.PeersDB;
@@ -41,17 +44,23 @@ public class NodeWalletInit extends AbstractNode {
 	private static final Logger LOG = LoggerFactory.getLogger(NodeWalletInit.class);
 
 	public NodeWalletInit(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final CurrentBlockDB currentBlockDB, final UTXOChainstateDB utxoChainstateDB, final PeersDB peersDB,
-			final MempoolDB mempoolDB, final BlockStateManagement blockStateManagement,
-			final Server peerListener) {
+			final CurrentBlockDB currentBlockDB, final CurrentPropertiesBlockDB currentPropertiesBlockDB,
+			final UTXOChainstateDB utxoChainstateDB, final PeersDB peersDB, final MempoolDB mempoolDB,
+			final BlockStateManagement blockStateManagement, final Server peerListener,
+			final @Qualifier("StartingProperties") PropertiesBlock propertiesBlock) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
 		this.currentBlockDB = currentBlockDB;
+		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.utxoChainstateDB = utxoChainstateDB;
 		this.peersDB = peersDB;
 		this.mempoolDB = mempoolDB;
 		this.blockStateManagement = blockStateManagement;
 		this.server = peerListener;
+		this.propertiesBlock = currentPropertiesBlockDB.get();
+		if (this.propertiesBlock == null) {
+			this.propertiesBlock = propertiesBlock;
+		}
 	}
 
 	/**
@@ -65,33 +74,29 @@ public class NodeWalletInit extends AbstractNode {
 		Security.setProperty("crypto.policy", "unlimited");
 
 		// creating data storage path if not exists
-		File blocks = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_BLOCKS_DIRECTORY,
-				blockchainProperties.getCoinName()));
+		File blocks = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_BLOCKS_DIRECTORY, coinName));
 		blocks.mkdirs();
-		File chainstate = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY,
-				blockchainProperties.getCoinName()));
+		File chainstate = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_CHAINSTATE_DIRECTORY, coinName));
 		chainstate.mkdirs();
-		File peers = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_PEERS_DIRECTORY,
-				blockchainProperties.getCoinName()));
+		File peers = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_PEERS_DIRECTORY, coinName));
 		peers.mkdirs();
-		File mempool = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_MEMPOOL_DIRECTORY,
-				blockchainProperties.getCoinName()));
+		File mempool = new File(String.format(OsUtil.getRootDirectory() + LEVEL_DB_MEMPOOL_DIRECTORY, coinName));
 		mempool.mkdirs();
 
 		// load node services for a simple wallet
 		loadServices();
 
-		Block currentBlock = currentBlockDB.get();
+		AbstractBlock currentBlock = currentBlockDB.get();
 		LOG.info("[Crypto] Current block state: " + currentBlock);
 		if (currentBlock == null) {
 			LOG.info("[Crypto] Starting first block on Blockchain");
 			Wallet owner = new Wallet();
-			Block genesis = BlockFactory.getGenesisBlock();
-			genesis.setMiner(owner.getPublicKey());
 
 			logKeys(owner);
-			premined(genesis, owner);
-			setGenesis(genesis);
+			setGenesis(propertiesBlock);
+			TransactionsBlock premined = blockStateManagement.getNextBlock();
+			premined.setMiner(owner.getPublicKey());
+			premined(premined, owner);
 		} else {
 			LOG.info("[Crypto] Blockchain already");
 			blockStateManagement.getNextBlock();

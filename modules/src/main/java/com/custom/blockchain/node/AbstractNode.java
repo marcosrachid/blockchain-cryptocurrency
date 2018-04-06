@@ -6,11 +6,14 @@ import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
-import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
+import com.custom.blockchain.block.PropertiesBlock;
+import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.CurrentBlockDB;
+import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.data.peers.PeersDB;
@@ -30,11 +33,16 @@ public abstract class AbstractNode {
 
 	protected static final String GENESIS_TX_ID = "0";
 
+	@Value("${application.blockchain.coinName}")
+	protected String coinName;
+
 	protected ObjectMapper objectMapper;
 
 	protected BlockchainProperties blockchainProperties;
 
 	protected CurrentBlockDB currentBlockDB;
+
+	protected CurrentPropertiesBlockDB currentPropertiesBlockDB;
 
 	protected UTXOChainstateDB utxoChainstateDB;
 
@@ -45,6 +53,8 @@ public abstract class AbstractNode {
 	protected BlockStateManagement blockStateManagement;
 
 	protected Server server;
+
+	protected PropertiesBlock propertiesBlock;
 
 	public abstract void startBlocks() throws Exception;
 
@@ -86,25 +96,25 @@ public abstract class AbstractNode {
 	 * 
 	 * @param owner
 	 */
-	protected void premined(final Block genesis, Wallet owner) {
-		if (blockchainProperties.getPremined() == null
-				|| blockchainProperties.getPremined().compareTo(BigDecimal.ZERO) == 0)
+	protected void premined(final TransactionsBlock premined, Wallet owner) {
+		if (propertiesBlock.getPremined() == null || propertiesBlock.getPremined().compareTo(BigDecimal.ZERO) == 0)
 			return;
-		RewardTransaction genesisTransaction = new RewardTransaction(blockchainProperties.getCoinbase(),
-				blockchainProperties.getPremined(), blockchainProperties.getStartingDifficulty());
-		genesisTransaction.setTransactionId(GENESIS_TX_ID);
-		genesisTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), genesisTransaction.getValue(),
-				genesisTransaction.getTransactionId()));
-		genesis.getTransactions().add(genesisTransaction);
-		genesis.setMerkleRoot(TransactionUtil.getMerkleRoot(genesis.getTransactions()));
-		LOG.info("Premined transaction: {}", genesis.getTransactions());
+		RewardTransaction preminedTransaction = new RewardTransaction(propertiesBlock.getCoinbase(),
+				propertiesBlock.getPremined(), propertiesBlock.getStartingDifficulty());
+		preminedTransaction.setTransactionId(GENESIS_TX_ID);
+		preminedTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), preminedTransaction.getValue(),
+				preminedTransaction.getTransactionId()));
+		premined.getTransactions().add(preminedTransaction);
+		premined.setMerkleRoot(TransactionUtil.getMerkleRoot(premined.getTransactions()));
+		blockStateManagement.foundBlock(premined);
+		LOG.info("Premined transaction: {}", premined.getTransactions());
 	}
 
 	/**
 	 * 
 	 * @param genesis
 	 */
-	protected void setGenesis(Block genesis) {
+	protected void setGenesis(PropertiesBlock genesis) {
 		blockStateManagement.foundBlock(genesis);
 	}
 

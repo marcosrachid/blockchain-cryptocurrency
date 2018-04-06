@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.node.network.server.dispatcher.ServiceDispatcher;
 import com.custom.blockchain.node.network.server.request.BlockchainRequest;
 import com.custom.blockchain.peer.Peer;
@@ -28,6 +29,8 @@ public class SocketThread extends Thread {
 
 	private BlockchainProperties blockchainProperties;
 
+	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+
 	private ServiceDispatcher serviceDispatcher;
 
 	private Socket client;
@@ -36,8 +39,10 @@ public class SocketThread extends Thread {
 
 	private boolean isRunning;
 
-	public SocketThread(BlockchainProperties blockchainProperties, ServiceDispatcher serviceDispatcher, Socket client) {
+	public SocketThread(BlockchainProperties blockchainProperties, CurrentPropertiesBlockDB currentPropertiesBlockDB,
+			ServiceDispatcher serviceDispatcher, Socket client) {
 		this.blockchainProperties = blockchainProperties;
+		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.serviceDispatcher = serviceDispatcher;
 		this.client = client;
 		isRunning = true;
@@ -59,7 +64,7 @@ public class SocketThread extends Thread {
 
 				registerThread(request);
 
-				if (!request.getSignature().equals(blockchainProperties.getNetworkSignature())) {
+				if (!request.getSignature().equals(currentPropertiesBlockDB.get().getNetworkSignature())) {
 					LOG.error("[Crypto] Received an invalid signature from peer [" + peer + "]");
 				} else {
 					serviceDispatcher.launch(client.getOutputStream(), peer, request);
@@ -86,7 +91,8 @@ public class SocketThread extends Thread {
 		LOG.debug("[Crypto] Trying to send a service[" + request.getService().getService() + "] request with arguments["
 				+ request.getArguments() + "] to client[" + client.toString() + "]");
 		try {
-			PeerUtil.send(blockchainProperties, client.getOutputStream(), request);
+			PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
+					client.getOutputStream(), request);
 		} catch (IOException e) {
 			LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
 		}

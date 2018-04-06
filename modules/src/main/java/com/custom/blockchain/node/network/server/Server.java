@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.node.network.server.dispatcher.ServiceDispatcher;
 
 @Component
@@ -20,14 +21,18 @@ public class Server {
 
 	private BlockchainProperties blockchainProperties;
 
+	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+
 	private ServiceDispatcher serviceDispatcher;
 
 	private ServerSocket server;
 
 	private boolean isRunning;
 
-	public Server(final BlockchainProperties blockchainProperties, final ServiceDispatcher serviceDispatcher) {
+	public Server(final BlockchainProperties blockchainProperties,
+			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final ServiceDispatcher serviceDispatcher) {
 		this.blockchainProperties = blockchainProperties;
+		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.serviceDispatcher = serviceDispatcher;
 	}
 
@@ -68,7 +73,7 @@ public class Server {
 
 		while (isRunning) {
 			Socket client = server.accept();
-			new SocketThread(blockchainProperties, serviceDispatcher, client).start();
+			new SocketThread(blockchainProperties, currentPropertiesBlockDB, serviceDispatcher, client).start();
 		}
 	}
 

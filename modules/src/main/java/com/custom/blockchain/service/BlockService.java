@@ -14,10 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.custom.blockchain.block.Block;
 import com.custom.blockchain.block.BlockStateManagement;
+import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
+import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.node.component.DifficultyAdjustment;
@@ -26,6 +28,7 @@ import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionOutput;
+import com.custom.blockchain.util.BlockUtil;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
@@ -47,7 +50,11 @@ public class BlockService {
 
 	private BlockchainProperties blockchainProperties;
 
+	private BlockDB blockDB;
+
 	private CurrentBlockDB currentBlockDB;
+
+	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
 
 	private MempoolDB mempoolDB;
 
@@ -58,12 +65,15 @@ public class BlockService {
 	private DifficultyAdjustment difficultyAdjustment;
 
 	public BlockService(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final CurrentBlockDB currentBlockDB, final MempoolDB mempoolDB,
+			final BlockDB blockDB, final CurrentBlockDB currentBlockDB,
+			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final MempoolDB mempoolDB,
 			final BlockStateManagement blockStateManagement, final SignatureManager signatureManager,
 			final DifficultyAdjustment difficultyAdjustment) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
+		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
+		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.mempoolDB = mempoolDB;
 		this.blockStateManagement = blockStateManagement;
 		this.signatureManager = signatureManager;
@@ -77,13 +87,14 @@ public class BlockService {
 	 */
 	public void mineBlock() throws BusinessException {
 		long currentTimeInMillis = System.currentTimeMillis();
-		Block block = blockStateManagement.getNextBlock();
+		TransactionsBlock block = blockStateManagement.getNextBlock();
 
 		Integer difficulty = null;
 		if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
 			difficulty = difficultyAdjustment.adjust();
 		} else {
-			difficulty = currentBlockDB.get().getRewardTransaction().getDifficulty();
+			difficulty = BlockUtil.getLastTransactionBlock(blockDB, currentBlockDB.get()).getRewardTransaction()
+					.getDifficulty();
 		}
 
 		String target = StringUtil.getDificultyString(difficulty.intValue());
@@ -99,8 +110,8 @@ public class BlockService {
 		}
 
 		// Miner reward
-		RewardTransaction reward = new RewardTransaction(blockchainProperties.getCoinbase(),
-				blockchainProperties.getReward(), difficulty);
+		RewardTransaction reward = new RewardTransaction(currentPropertiesBlockDB.get().getCoinbase(),
+				currentPropertiesBlockDB.get().getReward(), difficulty);
 		try {
 			reward.setTransactionId(calulateRewardHash(reward));
 		} catch (JsonProcessingException e) {
@@ -135,7 +146,7 @@ public class BlockService {
 	 * @param transaction
 	 * @throws BusinessException
 	 */
-	private void addTransaction(final Block block, SimpleTransaction transaction) throws BusinessException {
+	private void addTransaction(final TransactionsBlock block, SimpleTransaction transaction) throws BusinessException {
 		if (transaction == null)
 			throw new BusinessException("Non existent transaction");
 		mempoolDB.delete(transaction.getTransactionId());
@@ -155,7 +166,7 @@ public class BlockService {
 			throw new BusinessException("Transaction Signature failed to verify. Transaction Discarded");
 		}
 
-		if (transaction.getValue().compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
+		if (transaction.getValue().compareTo(currentPropertiesBlockDB.get().getMinimunTransaction()) < 0) {
 			throw new BusinessException("Transaction sent funds are too low. Transaction Discarded");
 		}
 
@@ -195,7 +206,8 @@ public class BlockService {
 	 */
 	private boolean isBlockFull(final Set<Transaction> transactions)
 			throws UnsupportedEncodingException, JsonProcessingException {
-		return StringUtil.sizeof(objectMapper.writeValueAsString(transactions)) > blockchainProperties.getBlockSize();
+		return StringUtil.sizeof(objectMapper.writeValueAsString(transactions)) > currentPropertiesBlockDB.get()
+				.getBlockSize();
 	}
 
 }

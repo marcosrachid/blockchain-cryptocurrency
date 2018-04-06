@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.node.component.PeerFinder;
 import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.node.network.server.SocketThread;
@@ -33,6 +34,8 @@ public abstract class AbstractNetworkManager {
 	protected ObjectMapper objectMapper;
 
 	protected BlockchainProperties blockchainProperties;
+
+	protected CurrentPropertiesBlockDB currentPropertiesBlockDB;
 
 	protected PeerFinder peerFinder;
 
@@ -72,7 +75,8 @@ public abstract class AbstractNetworkManager {
 		LOG.debug("[Crypto] Checking connections...");
 		for (SocketThread socketThread : SOCKET_THREADS.values()) {
 			socketThread.send(BlockchainRequest.createBuilder()
-					.withSignature(blockchainProperties.getNetworkSignature()).withService(Service.PING).build());
+					.withSignature(currentPropertiesBlockDB.get().getNetworkSignature()).withService(Service.PING)
+					.build());
 		}
 	}
 
@@ -99,9 +103,9 @@ public abstract class AbstractNetworkManager {
 			LOG.debug("[Crypto] Trying to send a service[" + Service.GET_BLOCK.getService() + "] request to peer[" + p
 					+ "]");
 			for (SocketThread socketThread : SOCKET_THREADS.values()) {
-				socketThread.send(
-						BlockchainRequest.createBuilder().withSignature(blockchainProperties.getNetworkSignature())
-								.withService(Service.GET_BLOCK).withArguments(BLOCKS_QUEUE.peek()).build());
+				socketThread.send(BlockchainRequest.createBuilder()
+						.withSignature(currentPropertiesBlockDB.get().getNetworkSignature())
+						.withService(Service.GET_BLOCK).withArguments(BLOCKS_QUEUE.peek()).build());
 			}
 		}
 	}

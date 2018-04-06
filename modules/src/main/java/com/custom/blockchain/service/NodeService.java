@@ -2,8 +2,10 @@ package com.custom.blockchain.service;
 
 import org.springframework.stereotype.Service;
 
-import com.custom.blockchain.block.Block;
+import com.custom.blockchain.block.AbstractBlock;
+import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
+import com.custom.blockchain.util.BlockUtil;
 
 /**
  * 
@@ -13,13 +15,16 @@ import com.custom.blockchain.data.block.CurrentBlockDB;
 @Service
 public class NodeService {
 
+	private BlockDB blockDB;
+
 	private CurrentBlockDB currentBlockDB;
 
-	public NodeService(final CurrentBlockDB currentBlockDB) {
+	public NodeService(final BlockDB blockDB, final CurrentBlockDB currentBlockDB) {
+		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
 	}
-	
-	public Block getCurrentBlock() {
+
+	public AbstractBlock getCurrentBlock() {
 		return this.currentBlockDB.get();
 	}
 
@@ -28,7 +33,7 @@ public class NodeService {
 	 * @return
 	 */
 	public Integer getCurrentDifficulty() {
-		return getCurrentBlock().getRewardTransaction().getDifficulty();
+		return BlockUtil.getLastTransactionBlock(blockDB, getCurrentBlock()).getRewardTransaction().getDifficulty();
 	}
 
 	/**

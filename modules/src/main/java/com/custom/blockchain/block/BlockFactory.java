@@ -1,5 +1,7 @@
 package com.custom.blockchain.block;
 
+import java.math.BigDecimal;
+
 /**
  * 
  * @author marcosrachid
@@ -9,11 +11,11 @@ public class BlockFactory {
 
 	/**
 	 * 
-	 * @param coinName
 	 * @return
 	 */
-	public static Block getGenesisBlock() {
-		return new Block();
+	public static PropertiesBlock getStartPropertiesBlock(BigDecimal minimunTransaction, BigDecimal coinLimit,
+			BigDecimal miningTimeRate, BigDecimal reward, Long blockSize, String coinbase) {
+		return new PropertiesBlock(minimunTransaction, coinLimit, miningTimeRate, reward, blockSize, coinbase);
 	}
 
 	/**
@@ -21,8 +23,20 @@ public class BlockFactory {
 	 * @param previousBlock
 	 * @return
 	 */
-	public static Block getBlock(Block previousBlock) {
-		return new Block(previousBlock);
+	public static PropertiesBlock getPropertiesBlock(BigDecimal minimunTransaction, BigDecimal coinLimit,
+			BigDecimal miningTimeRate, BigDecimal reward, Long blockSize, String coinbase,
+			AbstractBlock previousBlock) {
+		return new PropertiesBlock(minimunTransaction, coinLimit, miningTimeRate, reward, blockSize, coinbase,
+				previousBlock);
+	}
+
+	/**
+	 * 
+	 * @param previousBlock
+	 * @return
+	 */
+	public static TransactionsBlock getBlock(AbstractBlock previousBlock, PropertiesBlock propertiesBlock) {
+		return new TransactionsBlock(previousBlock, propertiesBlock);
 	}
 
 }

@@ -12,9 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
+import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
@@ -24,6 +24,7 @@ import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionOutput;
+import com.custom.blockchain.util.BlockUtil;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
 
@@ -37,11 +38,11 @@ public class BlockStateManagement {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BlockStateManagement.class);
 
-	private BlockchainProperties blockchainProperties;
-
 	private BlockDB blockDB;
 
 	private CurrentBlockDB currentBlockDB;
+
+	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
 
 	private UTXOChainstateDB utxoChainstateDb;
 
@@ -51,14 +52,15 @@ public class BlockStateManagement {
 
 	private DifficultyAdjustment difficultyAdjustment;
 
-	private Block nextBlock;
+	private TransactionsBlock nextBlock;
 
-	public BlockStateManagement(final BlockchainProperties blockchainProperties, final BlockDB blockDB,
-			final CurrentBlockDB currentBlockDB, final UTXOChainstateDB utxoChainstateDb, final MempoolDB mempoolDB,
-			final SignatureManager signatureManager, final DifficultyAdjustment difficultyAdjustment) {
-		this.blockchainProperties = blockchainProperties;
+	public BlockStateManagement(final BlockDB blockDB, final CurrentBlockDB currentBlockDB,
+			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final UTXOChainstateDB utxoChainstateDb,
+			final MempoolDB mempoolDB, final SignatureManager signatureManager,
+			final DifficultyAdjustment difficultyAdjustment) {
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
+		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.utxoChainstateDb = utxoChainstateDb;
 		this.mempoolDB = mempoolDB;
 		this.signatureManager = signatureManager;
@@ -70,14 +72,14 @@ public class BlockStateManagement {
 	 * @param block
 	 * @throws BusinessException
 	 */
-	public void validateBlock(Block block) throws BusinessException {
+	public void validateBlock(TransactionsBlock block) throws BusinessException {
 		LOG.info("[Crypto] Starting block validation...");
 		LOG.trace("[Crypto] Validating if block from peer was not from the expected height...");
 		if (!BLOCKS_QUEUE.peek().getHeight().equals(block.getHeight())) {
 			throw new BusinessException("Block from peer was not from the expected height");
 		}
 		LOG.trace("[Crypto] Validating if block is on a different difficulty from protocol...");
-		Block currentBlock = currentBlockDB.get();
+		TransactionsBlock currentBlock = BlockUtil.getLastTransactionBlock(blockDB, currentBlockDB.get());
 		Integer difficulty = currentBlock.getRewardTransaction().getDifficulty();
 		if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
 			difficulty = difficultyAdjustment.adjust();
@@ -103,7 +105,7 @@ public class BlockStateManagement {
 		}
 		LOG.trace("[Crypto] Validating if block has an unexpected reward value...");
 		RewardTransaction reward = rewardList.get(0);
-		if (reward.getValue().compareTo(blockchainProperties.getReward()) != 0) {
+		if (reward.getValue().compareTo(currentPropertiesBlockDB.get().getReward()) != 0) {
 			throw new BusinessException("Block has an unexpected reward value[" + reward.getValue() + "]");
 		}
 		LOG.trace("[Crypto] Validating if block hash incompatible with current blockchain...");
@@ -119,7 +121,7 @@ public class BlockStateManagement {
 		for (Transaction t : transactions) {
 			SimpleTransaction transaction = (SimpleTransaction) t;
 
-			if (transaction.getValue().compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
+			if (transaction.getValue().compareTo(currentPropertiesBlockDB.get().getMinimunTransaction()) < 0) {
 				throw new BusinessException(
 						"Identified transaction[" + transaction.getTransactionId() + "] with low sent funds");
 			}
@@ -156,19 +158,32 @@ public class BlockStateManagement {
 	 * @param block
 	 * @throws BusinessException
 	 */
-	public void foundBlock(Block block) {
+	public void foundBlock(PropertiesBlock block) {
+		LOG.info("[Crypto] Found new block: " + block);
+		blockDB.put(block.getHeight(), block);
+		currentBlockDB.put(block);
+		currentPropertiesBlockDB.put(block);
+		nextBlock = BlockFactory.getBlock(block, currentPropertiesBlockDB.get());
+	}
+
+	/**
+	 * 
+	 * @param block
+	 * @throws BusinessException
+	 */
+	public void foundBlock(TransactionsBlock block) {
 		LOG.info("[Crypto] Found new block: " + block);
 		blockDB.put(block.getHeight(), block);
 		currentBlockDB.put(block);
 		utxo(block.getTransactions());
-		nextBlock = BlockFactory.getBlock(block);
+		nextBlock = BlockFactory.getBlock(block, currentPropertiesBlockDB.get());
 	}
 
 	/**
 	 * 
 	 * @param block
 	 */
-	public void removeBlock(Block block) {
+	public void removeBlock(AbstractBlock block) {
 		LOG.info("[Crypto] Removing forked block: " + block);
 	}
 
@@ -176,11 +191,11 @@ public class BlockStateManagement {
 	 * 
 	 * @return
 	 */
-	public Block getNextBlock() {
-		Block currentBlock = currentBlockDB.get();
+	public TransactionsBlock getNextBlock() {
+		AbstractBlock currentBlock = currentBlockDB.get();
 		LOG.trace("[Crypto] Retrieving current Block: " + currentBlock);
 		if (nextBlock == null) {
-			nextBlock = BlockFactory.getBlock(currentBlock);
+			nextBlock = BlockFactory.getBlock(currentBlock, currentPropertiesBlockDB.get());
 		}
 		return nextBlock;
 	}

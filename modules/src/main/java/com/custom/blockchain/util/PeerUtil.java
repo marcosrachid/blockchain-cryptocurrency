@@ -11,7 +11,6 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.node.network.server.request.BlockchainRequest;
 import com.custom.blockchain.peer.Peer;
 
@@ -50,10 +49,10 @@ public final class PeerUtil {
 	 * @param sender
 	 * @param blockchainRequest
 	 */
-	public static void send(BlockchainProperties blockchainProperties, OutputStream outputStream,
+	public static void send(String networkSignature, Integer networkPort, OutputStream outputStream,
 			BlockchainRequest blockchainRequest) {
-		blockchainRequest.setSignature(blockchainProperties.getNetworkSignature());
-		blockchainRequest.setResponsePort(blockchainProperties.getNetworkPort());
+		blockchainRequest.setSignature(networkSignature);
+		blockchainRequest.setResponsePort(networkPort);
 		try {
 			ObjectOutputStream sender = new ObjectOutputStream(outputStream);
 			sender.flush();

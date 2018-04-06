@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import com.custom.blockchain.block.AbstractBlock;
+import com.custom.blockchain.block.PropertiesBlock;
 import com.custom.blockchain.data.PropertyAbstractLevelDB;
 import com.custom.blockchain.data.exception.DatabaseException;
 import com.custom.blockchain.util.StringUtil;
@@ -21,27 +21,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 @Component
-public class CurrentBlockDB extends PropertyAbstractLevelDB<AbstractBlock> {
+public class CurrentPropertiesBlockDB extends PropertyAbstractLevelDB<PropertiesBlock> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(CurrentBlockDB.class);
+	private static final Logger LOG = LoggerFactory.getLogger(CurrentPropertiesBlockDB.class);
 
-	private static final String KEY_BINDER = "B";
+	private static final String KEY_BINDER = "P";
 
 	private DB blockDb;
 
 	private ObjectMapper objectMapper;
 
-	public CurrentBlockDB(final ObjectMapper objectMapper, final @Qualifier("BlockDB") DB blockDb) {
+	public CurrentPropertiesBlockDB(final ObjectMapper objectMapper, final @Qualifier("BlockDB") DB blockDb) {
 		this.objectMapper = objectMapper;
 		this.blockDb = blockDb;
 	}
 
 	@Override
-	public AbstractBlock get() {
+	public PropertiesBlock get() {
 		LOG.trace("[Crypto] BlockDB Get - Key: " + KEY_BINDER);
 		try {
 			return objectMapper.readValue(StringUtil.decompress(blockDb.get(KEY_BINDER.getBytes())),
-					AbstractBlock.class);
+					PropertiesBlock.class);
 		} catch (DBException | IOException e) {
 			LOG.debug("[Crypto] BlockDB Error from key [" + KEY_BINDER + "]: " + e.getMessage());
 			return null;
@@ -49,7 +49,7 @@ public class CurrentBlockDB extends PropertyAbstractLevelDB<AbstractBlock> {
 	}
 
 	@Override
-	public void put(AbstractBlock value) {
+	public void put(PropertiesBlock value) {
 		try {
 			String v = objectMapper.writeValueAsString(value);
 			LOG.trace("[Crypto] BlockDB Add Object - Key: " + KEY_BINDER + ", Value: " + v);

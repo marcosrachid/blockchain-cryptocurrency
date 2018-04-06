@@ -9,7 +9,9 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import com.custom.blockchain.block.PropertiesBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.peer.Peer;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -48,15 +50,17 @@ public class ResponsePropertiesDTO implements Serializable {
 	public ResponsePropertiesDTO() {
 	}
 
-	public ResponsePropertiesDTO(BlockchainProperties blockchainProperties)
+	public ResponsePropertiesDTO(String coinName, String version, BlockchainProperties blockchainProperties,
+			CurrentPropertiesBlockDB currentPropertiesBlockDB)
 			throws JsonParseException, JsonMappingException, IOException {
-		this.coinName = blockchainProperties.getCoinName();
-		this.version = blockchainProperties.getVersion();
-		this.minimunTransaction = blockchainProperties.getMinimunTransaction();
-		this.coinLimit = blockchainProperties.getCoinLimit();
-		this.miningTimeRate = blockchainProperties.getMiningTimeRate();
-		this.reward = blockchainProperties.getReward();
-		this.blockSize = blockchainProperties.getBlockSize();
+		PropertiesBlock properties = currentPropertiesBlockDB.get();
+		this.coinName = coinName;
+		this.version = version;
+		this.minimunTransaction = properties.getMinimunTransaction();
+		this.coinLimit = properties.getCoinLimit();
+		this.miningTimeRate = properties.getMiningTimeRate();
+		this.reward = properties.getReward();
+		this.blockSize = properties.getBlockSize();
 		this.networkPort = blockchainProperties.getNetworkPort();
 		this.networkMaximumSeeds = blockchainProperties.getNetworkMaximumSeeds();
 		this.networkMockedPeers = blockchainProperties.getNetworkMockedPeersMapped();

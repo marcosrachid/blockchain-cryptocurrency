@@ -11,7 +11,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.BlockStateManagement;
-import com.custom.blockchain.configuration.properties.BlockchainProperties;
+import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
@@ -34,7 +34,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 @Service
 public class TransactionService {
 
-	private BlockchainProperties blockchainProperties;
+	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
 
 	private UTXOChainstateDB utxoChainstateDb;
 
@@ -42,10 +42,10 @@ public class TransactionService {
 
 	private SignatureManager signatureManager;
 
-	public TransactionService(final BlockchainProperties blockchainProperties, final UTXOChainstateDB utxoChainstateDb,
-			final MempoolDB mempoolDB, final BlockStateManagement blockStateManagement,
-			final SignatureManager signatureManager) {
-		this.blockchainProperties = blockchainProperties;
+	public TransactionService(final CurrentPropertiesBlockDB currentPropertiesBlockDB,
+			final UTXOChainstateDB utxoChainstateDb, final MempoolDB mempoolDB,
+			final BlockStateManagement blockStateManagement, final SignatureManager signatureManager) {
+		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.utxoChainstateDb = utxoChainstateDb;
 		this.mempoolDB = mempoolDB;
 		this.signatureManager = signatureManager;
@@ -60,7 +60,7 @@ public class TransactionService {
 	 */
 	public SimpleTransaction sendFunds(Wallet from, PublicKey to, BigDecimal fromBalance, BigDecimal value)
 			throws Exception {
-		if (value.compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
+		if (value.compareTo(currentPropertiesBlockDB.get().getMinimunTransaction()) < 0) {
 			throw new BusinessException("Transaction sent funds are too low. Transaction Discarded");
 		}
 		if (fromBalance.compareTo(value) < 0) {
@@ -93,7 +93,7 @@ public class TransactionService {
 	 */
 	public SimpleTransaction sendFunds(Wallet from, BigDecimal fromBalance, BigDecimal totalSentFunds,
 			RequestSendFundsDTO.RequestSendFundsListDTO funds) throws Exception {
-		if (totalSentFunds.compareTo(blockchainProperties.getMinimunTransaction()) < 0) {
+		if (totalSentFunds.compareTo(currentPropertiesBlockDB.get().getMinimunTransaction()) < 0) {
 			throw new BusinessException("Transaction sent funds are too low. Transaction Discarded");
 		}
 		if (fromBalance.compareTo(totalSentFunds) < 0) {

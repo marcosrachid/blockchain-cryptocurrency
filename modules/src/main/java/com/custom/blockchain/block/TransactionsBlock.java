@@ -1,6 +1,5 @@
 package com.custom.blockchain.block;
 
-import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.Date;
 import java.util.HashSet;
@@ -26,73 +25,30 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @author marcosrachid
  *
  */
-public class Block implements Serializable {
+public class TransactionsBlock extends AbstractBlock {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String GENESIS_PREVIOUS_HASH = "0";
-
-	private Boolean genesis = false;
-	private Long height;
-	private String hash;
-	private String previousHash;
 	private String merkleRoot;
 	@JsonSerialize(using = PublicKeySerializer.class)
 	@JsonDeserialize(using = PublicKeyDeserializer.class)
 	private PublicKey miner;
-	private Long timeStamp;
 	private Integer nonce;
+	private String propertiesHash;
 
 	private Set<Transaction> transactions = new HashSet<>();
 
-	public Block() {
-		super();
-		this.genesis = true;
-		this.height = 1L;
-		this.timeStamp = new Date().getTime();
-		this.nonce = 0;
-		calculateHash();
+	public TransactionsBlock() {
 	}
 
-	public Block(Block previousBlock) {
+	public TransactionsBlock(AbstractBlock previousBlock, PropertiesBlock propertiesBlock) {
 		super();
 		this.height = previousBlock.getHeight() + 1;
 		this.previousHash = previousBlock.getHash();
+		this.propertiesHash = propertiesBlock.getHash();
 		this.timeStamp = new Date().getTime();
 		this.nonce = 0;
 		calculateHash();
-	}
-
-	public Boolean isGenesis() {
-		return genesis;
-	}
-
-	public void setGenesis(Boolean genesis) {
-		this.genesis = genesis;
-	}
-
-	public Long getHeight() {
-		return height;
-	}
-
-	public void setHeight(Long height) {
-		this.height = height;
-	}
-
-	public String getHash() {
-		return hash;
-	}
-
-	public void setHash(String hash) {
-		this.hash = hash;
-	}
-
-	public void setPreviousHash(String previousHash) {
-		this.previousHash = previousHash;
-	}
-
-	public String getPreviousHash() {
-		return (previousHash != null) ? previousHash : GENESIS_PREVIOUS_HASH;
 	}
 
 	public String getMerkleRoot() {
@@ -111,20 +67,20 @@ public class Block implements Serializable {
 		this.miner = miner;
 	}
 
-	public Long getTimeStamp() {
-		return timeStamp;
-	}
-
-	public void setTimeStamp(Long timeStamp) {
-		this.timeStamp = timeStamp;
-	}
-
 	public Integer getNonce() {
 		return nonce;
 	}
 
 	public void setNonce(Integer nonce) {
 		this.nonce = nonce;
+	}
+
+	public String getPropertiesHash() {
+		return propertiesHash;
+	}
+
+	public void setPropertiesHash(String propertiesHash) {
+		this.propertiesHash = propertiesHash;
 	}
 
 	public Set<Transaction> getTransactions() {
@@ -147,14 +103,15 @@ public class Block implements Serializable {
 	/**
 	 * 
 	 */
+	@Override
 	public void calculateHash() {
-		hash = DigestUtil.applySha256(getPreviousHash() + timeStamp + nonce + merkleRoot);
+		hash = DigestUtil.applySha256(previousHash + propertiesHash + timeStamp + nonce + merkleRoot);
 	}
 
 	@Override
 	public int hashCode() {
 		return new HashCodeBuilder().append(height).append(hash).append(merkleRoot).append(miner).append(nonce)
-				.append(getPreviousHash()).append(timeStamp).append(transactions).hashCode();
+				.append(previousHash).append(timeStamp).append(transactions).hashCode();
 	}
 
 	@Override
@@ -165,7 +122,7 @@ public class Block implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Block other = (Block) obj;
+		TransactionsBlock other = (TransactionsBlock) obj;
 		return new EqualsBuilder().append(hash, other.hash).isEquals();
 	}
 
@@ -173,7 +130,7 @@ public class Block implements Serializable {
 	public String toString() {
 		return new ToStringBuilder(this).append("height", height).append("hash", hash).append("merkleRoot", merkleRoot)
 				.append("miner", WalletUtil.getStringFromKey(miner)).append("nonce", nonce)
-				.append("previousHash", getPreviousHash()).append("timeStamp", timeStamp)
+				.append("previousHash", previousHash).append("timeStamp", timeStamp)
 				.append("transactions", transactions).build();
 	}
 

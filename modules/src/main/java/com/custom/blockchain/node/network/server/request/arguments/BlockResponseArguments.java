@@ -4,28 +4,29 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.custom.blockchain.block.Block;
+import com.custom.blockchain.block.AbstractBlock;
+import com.custom.blockchain.block.TransactionsBlock;
 
 public class BlockResponseArguments implements GenericArguments {
 
 	private static final long serialVersionUID = 1L;
 
-	private Block block;
+	private AbstractBlock block;
 
 	public BlockResponseArguments() {
 		super();
 	}
 
-	public BlockResponseArguments(Block block) {
+	public BlockResponseArguments(AbstractBlock block) {
 		super();
 		this.block = block;
 	}
 
-	public Block getBlock() {
+	public AbstractBlock getBlock() {
 		return block;
 	}
 
-	public void setBlock(Block block) {
+	public void setBlock(TransactionsBlock block) {
 		this.block = block;
 	}
 
