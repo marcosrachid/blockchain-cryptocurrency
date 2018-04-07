@@ -1,10 +1,12 @@
 package com.custom.blockchain.node.network.server;
 
 import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
+import static com.custom.blockchain.peer.PeerStateManagement.PEERS;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
+import java.time.LocalDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +69,8 @@ public class SocketThread extends Thread {
 				if (!request.getSignature().equals(currentPropertiesBlockDB.get().getNetworkSignature())) {
 					LOG.error("[Crypto] Received an invalid signature from peer [" + peer + "]");
 				} else {
+					peer.setLastConnected(LocalDateTime.now());
+					PEERS.add(peer);
 					serviceDispatcher.launch(client.getOutputStream(), peer, request);
 				}
 			}

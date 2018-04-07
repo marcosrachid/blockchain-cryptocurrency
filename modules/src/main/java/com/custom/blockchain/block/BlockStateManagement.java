@@ -19,6 +19,7 @@ import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.node.component.DifficultyAdjustment;
+import com.custom.blockchain.node.network.server.SocketThread;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
@@ -164,6 +165,7 @@ public class BlockStateManagement {
 		currentBlockDB.put(block);
 		currentPropertiesBlockDB.put(block);
 		nextBlock = BlockFactory.getBlock(block, currentPropertiesBlockDB.get());
+		SocketThread.inactivate();
 	}
 
 	/**

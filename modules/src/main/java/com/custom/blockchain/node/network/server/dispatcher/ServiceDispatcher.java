@@ -3,13 +3,10 @@ package com.custom.blockchain.node.network.server.dispatcher;
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
 import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
 import static com.custom.blockchain.peer.PeerStateManagement.PEERS;
-import static com.custom.blockchain.peer.PeerStateManagement.REMOVED_PEERS;
 
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,6 +25,8 @@ import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
+import com.custom.blockchain.node.component.BlockMining;
+import com.custom.blockchain.node.component.NodeFork;
 import com.custom.blockchain.node.network.server.request.BlockchainRequest;
 import com.custom.blockchain.node.network.server.request.arguments.BlockArguments;
 import com.custom.blockchain.node.network.server.request.arguments.BlockResponseArguments;
@@ -62,15 +61,18 @@ public class ServiceDispatcher {
 
 	private BlockStateManagement blockStateManagement;
 
+	private NodeFork nodeFork;
+
 	public ServiceDispatcher(final BlockchainProperties blockchainProperties, final BlockDB blockDB,
 			final CurrentBlockDB currentBlockDB, final CurrentPropertiesBlockDB currentPropertiesBlockDB,
-			final MempoolDB mempoolDB, final BlockStateManagement blockStateManagement) {
+			final MempoolDB mempoolDB, final BlockStateManagement blockStateManagement, final NodeFork nodeFork) {
 		this.blockchainProperties = blockchainProperties;
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.mempoolDB = mempoolDB;
 		this.blockStateManagement = blockStateManagement;
+		this.nodeFork = nodeFork;
 	}
 
 	/**
@@ -115,48 +117,6 @@ public class ServiceDispatcher {
 	 * @param peer
 	 */
 	@SuppressWarnings("unused")
-	private void ping(OutputStream sender, Peer peer) {
-		LOG.trace("[Crypto] Found a " + Service.PING.getService() + " event from peer [" + peer + "]");
-		PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
-				sender, BlockchainRequest.createBuilder().withService(Service.PONG).build());
-		Optional<Peer> foundPeer = PEERS.stream().filter(p -> p.equals(peer)).findFirst();
-		if (foundPeer.isPresent()) {
-			Peer p = foundPeer.get();
-			p.setLastConnected(LocalDateTime.now());
-			PEERS.add(p);
-		} else {
-			peer.setCreateDatetime(LocalDateTime.now());
-			peer.setLastConnected(LocalDateTime.now());
-			PEERS.add(peer);
-		}
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param peer
-	 */
-	@SuppressWarnings("unused")
-	private void pong(OutputStream sender, Peer peer) {
-		LOG.trace("[Crypto] Found a " + Service.PONG.getService() + " event from peer [" + peer + "]");
-		Optional<Peer> foundPeer = PEERS.stream().filter(p -> p.equals(peer)).findFirst();
-		if (foundPeer.isPresent()) {
-			Peer p = foundPeer.get();
-			p.setLastConnected(LocalDateTime.now());
-			PEERS.add(p);
-		} else {
-			peer.setCreateDatetime(LocalDateTime.now());
-			peer.setLastConnected(LocalDateTime.now());
-			PEERS.add(peer);
-		}
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param peer
-	 */
-	@SuppressWarnings("unused")
 	private void getState(OutputStream sender, Peer peer) {
 		LOG.debug("[Crypto] Found a " + Service.GET_STATE.getService() + " event from peer [" + peer + "]");
 		PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
@@ -178,6 +138,7 @@ public class ServiceDispatcher {
 		Long currentMappedHeight = (currentBlockDB.get().getHeight() + BLOCKS_QUEUE.size());
 		if (peerCurrentBlock > currentMappedHeight) {
 			LOG.info("[Crypto] Found new block from peer [" + peer + "], requesting block...");
+			BlockMining.pause();
 			long blockNumber = peerCurrentBlock - currentBlockDB.get().getHeight();
 			for (long i = (currentMappedHeight + 1); i <= peerCurrentBlock; i++) {
 				BLOCKS_QUEUE.add(new BlockArguments(i));
@@ -217,6 +178,12 @@ public class ServiceDispatcher {
 			blockStateManagement.validateBlock((TransactionsBlock) block);
 			blockStateManagement.foundBlock((TransactionsBlock) block);
 			BLOCKS_QUEUE.poll();
+			if (nodeFork.checkFork(block.getHeight())) {
+				blockStateManagement.foundBlock(nodeFork.pollFork());
+			}
+			if (BLOCKS_QUEUE.isEmpty()) {
+				BlockMining.resume();
+			}
 		} catch (BusinessException e) {
 			LOG.error("Block[" + block + "] was identified as invalid: " + e.getMessage(), e);
 		}
@@ -261,9 +228,7 @@ public class ServiceDispatcher {
 	private void getPeersResponse(OutputStream sender, Peer peer, PeerResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_PEERS_RESPONSE.getService() + " event from peer [" + peer + "]");
 		Set<Peer> requestPeers = args.getPeers();
-		requestPeers.removeAll(REMOVED_PEERS);
 		requestPeers.removeAll(PEERS);
-		requestPeers.forEach(p -> p.setCreateDatetime(LocalDateTime.now()));
 		PEERS.addAll(requestPeers);
 	}
 

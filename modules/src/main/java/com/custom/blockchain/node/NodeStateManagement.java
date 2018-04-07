@@ -25,7 +25,7 @@ public class NodeStateManagement {
 
 	public static final Queue<BlockArguments> BLOCKS_QUEUE = new LinkedList<>();
 
-	public static Thread LISTENING_THREAD = null;
+	public static Thread SERVER_THREAD = null;
 
 	public static Thread MINING_THREAD = null;
 

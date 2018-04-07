@@ -2,15 +2,10 @@ package com.custom.blockchain.peer;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-
-import com.custom.blockchain.node.network.server.dispatcher.Service;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * 
@@ -26,17 +21,12 @@ public class Peer implements Serializable {
 	private LocalDateTime createDatetime;
 	private LocalDateTime lastConnected;
 
-	@JsonIgnore
-	private List<Service> services;
-
 	public Peer() {
-		this.services = new ArrayList<>();
 	}
 
 	public Peer(String ip, int serverPort) {
 		this.ip = ip;
 		this.serverPort = serverPort;
-		this.services = new ArrayList<>();
 	}
 
 	public String getIp() {
@@ -71,14 +61,6 @@ public class Peer implements Serializable {
 		this.lastConnected = lastConnected;
 	}
 
-	public void addService(Service service) {
-		this.services.add(service);
-	}
-
-	public void removeService(Service service) {
-		this.services.remove(service);
-	}
-
 	@Override
 	public int hashCode() {
 		return new HashCodeBuilder().append(ip).append(serverPort).hashCode();
@@ -93,7 +75,7 @@ public class Peer implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Peer other = (Peer) obj;
-		return new EqualsBuilder().append(ip, other.ip).append(serverPort, other.serverPort).isEquals();
+		return new EqualsBuilder().append(ip, other.ip).isEquals();
 	}
 
 	@Override

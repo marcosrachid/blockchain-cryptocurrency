@@ -2,8 +2,6 @@ package com.custom.blockchain.node.network.server.dispatcher;
 
 public enum Service {
 
-	PING("ping"), 
-	PONG("pong"), 
 	GET_STATE("getState"), 
 	GET_STATE_RESPONSE("getStateResponse"), 
 	GET_BLOCK("getBlock"), 

@@ -1,6 +1,6 @@
 package com.custom.blockchain.node.network.server;
 
-import static com.custom.blockchain.node.NodeStateManagement.LISTENING_THREAD;
+import static com.custom.blockchain.node.NodeStateManagement.SERVER_THREAD;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.node.network.server.dispatcher.ServiceDispatcher;
+import com.custom.blockchain.util.ConnectionUtil;
 
 @Component
 public class Server {
@@ -41,7 +42,7 @@ public class Server {
 	 */
 	public void listen() {
 		isRunning = true;
-		LISTENING_THREAD = new Thread(new Runnable() {
+		SERVER_THREAD = new Thread(new Runnable() {
 			public void run() {
 				try {
 					start();
@@ -59,7 +60,7 @@ public class Server {
 			}
 		});
 
-		LISTENING_THREAD.start();
+		SERVER_THREAD.start();
 	}
 
 	/**
@@ -71,7 +72,7 @@ public class Server {
 		server = new ServerSocket(blockchainProperties.getNetworkPort());
 		LOG.info("[Crypto] Server Started port: " + blockchainProperties.getNetworkPort());
 
-		while (isRunning) {
+		while (!ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds()) && isRunning) {
 			Socket client = server.accept();
 			new SocketThread(blockchainProperties, currentPropertiesBlockDB, serviceDispatcher, client).start();
 		}

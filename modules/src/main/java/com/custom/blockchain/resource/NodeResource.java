@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
  * 
- * @author marcos
+ * @author marcosrachid
  *
  */
 @RestController

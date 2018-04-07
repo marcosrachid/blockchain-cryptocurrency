@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.iq80.leveldb.DBIterator;
 import org.slf4j.Logger;
@@ -46,9 +49,11 @@ public class PeerFinder {
 
 	private PeersDB peersDB;
 
+	private List<Peer> hasPeer = new ArrayList<>();
+
 	public PeerFinder(final BlockchainProperties blockchainProperties,
 			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final ServiceDispatcher serviceDispatcher,
-			PeersDB peersDB) {
+			final PeersDB peersDB) {
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.blockchainProperties = blockchainProperties;
 		this.serviceDispatcher = serviceDispatcher;
@@ -59,14 +64,14 @@ public class PeerFinder {
 	 * 
 	 */
 	public void findPeers() {
-		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds()))
-			return;
 		findFromFile();
 		findFromDNS();
 		findFromPeers();
 		findMockedPeers();
 		LOG.debug("[Crypto] Peers found: " + PEERS);
 		for (Peer p : PEERS) {
+			if (!hasPeer.contains(p))
+				p.setCreateDatetime(LocalDateTime.now());
 			peersDB.put(p.getIp(), p);
 		}
 	}
@@ -75,9 +80,13 @@ public class PeerFinder {
 	 * 
 	 */
 	private void findFromFile() {
+		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds()))
+			return;
+		hasPeer.clear();
 		DBIterator iterator = peersDB.iterator();
 		while (iterator.hasNext()) {
 			Peer peer = peersDB.next(iterator);
+			hasPeer.add(peer);
 			connect(peer);
 			addPeer(peer);
 		}
@@ -87,6 +96,8 @@ public class PeerFinder {
 	 * 
 	 */
 	private void findFromDNS() {
+		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds()))
+			return;
 		// TODO: MAYBE
 	}
 
@@ -94,6 +105,8 @@ public class PeerFinder {
 	 * 
 	 */
 	private void findFromPeers() {
+		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds()))
+			return;
 		for (Peer p : ConnectionUtil.getConnectedPeers()) {
 			if (!ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds()))
 				SOCKET_THREADS.get(p).send(BlockchainRequest.createBuilder().withService(Service.GET_PEERS).build());
@@ -104,6 +117,8 @@ public class PeerFinder {
 	 * 
 	 */
 	private void findMockedPeers() {
+		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds()))
+			return;
 		try {
 			for (Peer p : blockchainProperties.getNetworkMockedPeersMapped()) {
 				connect(p);

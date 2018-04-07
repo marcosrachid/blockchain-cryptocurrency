@@ -1,9 +1,8 @@
 package com.custom.blockchain.node.network.scheduler;
 
 import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
-import static com.custom.blockchain.node.NodeStateManagement.LISTENING_THREAD;
+import static com.custom.blockchain.node.NodeStateManagement.SERVER_THREAD;
 import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
-import static com.custom.blockchain.peer.PeerStateManagement.REMOVED_PEERS;
 
 import java.util.Iterator;
 
@@ -58,7 +57,8 @@ public abstract class AbstractNetworkManager {
 	 */
 	@Scheduled(fixedRate = 5000)
 	public synchronized void startServer() {
-		if (LISTENING_THREAD == null || !LISTENING_THREAD.isAlive()) {
+		if (!ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())
+				&& (SERVER_THREAD == null || !SERVER_THREAD.isAlive())) {
 			LOG.debug("[Crypto] Starting socket listener...");
 			this.peerListener.listen();
 		}
@@ -67,23 +67,7 @@ public abstract class AbstractNetworkManager {
 	/**
 	 * 
 	 */
-	@Scheduled(fixedRate = 5000)
-	public synchronized void checkPeersConnection() {
-		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())) {
-			return;
-		}
-		LOG.debug("[Crypto] Checking connections...");
-		for (SocketThread socketThread : SOCKET_THREADS.values()) {
-			socketThread.send(BlockchainRequest.createBuilder()
-					.withSignature(currentPropertiesBlockDB.get().getNetworkSignature()).withService(Service.PING)
-					.build());
-		}
-	}
-
-	/**
-	 * 
-	 */
-	@Scheduled(fixedRate = 60000)
+	@Scheduled(fixedRate = 10000)
 	public synchronized void getState() {
 		LOG.debug("[Crypto] Getting state from connected peers...");
 		LOG.debug("[Crypto] peers: " + ConnectionUtil.getConnectedPeers());
@@ -108,14 +92,6 @@ public abstract class AbstractNetworkManager {
 						.withService(Service.GET_BLOCK).withArguments(BLOCKS_QUEUE.peek()).build());
 			}
 		}
-	}
-
-	/**
-	 * 
-	 */
-	@Scheduled(cron = "0 0 * * * *")
-	public synchronized void emptyRemovedPeers() {
-		REMOVED_PEERS.clear();
 	}
 
 }

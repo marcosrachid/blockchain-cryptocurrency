@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 
+import com.custom.blockchain.data.peers.PeersDB;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.peer.Peer;
 
@@ -17,7 +18,10 @@ import com.custom.blockchain.peer.Peer;
 @Service
 public class PeerService {
 
-	public PeerService() {
+	private PeersDB peersDB;
+
+	public PeerService(final PeersDB peersDB) {
+		this.peersDB = peersDB;
 	}
 
 	/**
@@ -33,6 +37,7 @@ public class PeerService {
 		}
 		peer.setCreateDatetime(LocalDateTime.now());
 		PEERS.add(peer);
+		peersDB.put(peer.getIp(), peer);
 	}
 
 	/**
@@ -46,6 +51,7 @@ public class PeerService {
 		}
 		peer.setCreateDatetime(LocalDateTime.now());
 		PEERS.add(peer);
+		peersDB.put(peer.getIp(), peer);
 	}
 
 }

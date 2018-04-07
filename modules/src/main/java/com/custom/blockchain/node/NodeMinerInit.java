@@ -105,8 +105,6 @@ public class NodeMinerInit extends AbstractNode {
 
 	@Override
 	protected void loadServices() {
-		NodeStateManagement.SERVICES.add(Service.PING);
-		NodeStateManagement.SERVICES.add(Service.PONG);
 		NodeStateManagement.SERVICES.add(Service.GET_STATE);
 		NodeStateManagement.SERVICES.add(Service.GET_STATE_RESPONSE);
 		NodeStateManagement.SERVICES.add(Service.GET_BLOCK);
