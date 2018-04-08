@@ -25,8 +25,9 @@ import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
+import com.custom.blockchain.exception.ForkException;
 import com.custom.blockchain.node.component.BlockMining;
-import com.custom.blockchain.node.component.NodeFork;
+import com.custom.blockchain.node.component.ForcedNodeFork;
 import com.custom.blockchain.node.network.server.request.BlockchainRequest;
 import com.custom.blockchain.node.network.server.request.arguments.BlockArguments;
 import com.custom.blockchain.node.network.server.request.arguments.BlockResponseArguments;
@@ -61,11 +62,11 @@ public class ServiceDispatcher {
 
 	private BlockStateManagement blockStateManagement;
 
-	private NodeFork nodeFork;
+	private ForcedNodeFork nodeFork;
 
 	public ServiceDispatcher(final BlockchainProperties blockchainProperties, final BlockDB blockDB,
 			final CurrentBlockDB currentBlockDB, final CurrentPropertiesBlockDB currentPropertiesBlockDB,
-			final MempoolDB mempoolDB, final BlockStateManagement blockStateManagement, final NodeFork nodeFork) {
+			final MempoolDB mempoolDB, final BlockStateManagement blockStateManagement, final ForcedNodeFork nodeFork) {
 		this.blockchainProperties = blockchainProperties;
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
@@ -181,11 +182,25 @@ public class ServiceDispatcher {
 			if (nodeFork.checkFork(block.getHeight())) {
 				blockStateManagement.foundBlock(nodeFork.pollFork());
 			}
-			if (BLOCKS_QUEUE.isEmpty()) {
-				BlockMining.resume();
+		} catch (ForkException e) {
+			LOG.info("Fork identified on Block[" + block + "]");
+			switch (e.getMyBlockDiscarded()) {
+			case -1:
+				PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(),
+						blockchainProperties.getNetworkPort(), sender,
+						BlockchainRequest.createBuilder().withService(Service.GET_INVALID_BLOCK)
+								.withArguments(new InvalidBlockArguments(e.getHeightBranchToRemove())).build());
+			case 0:
+			case 1:
+				blockStateManagement.removeBlockBranch(e.getHeightBranchToRemove());
+				break;
 			}
 		} catch (BusinessException e) {
 			LOG.error("Block[" + block + "] was identified as invalid: " + e.getMessage(), e);
+			LOG.info("Discarded block[" + block + "]");
+		}
+		if (BLOCKS_QUEUE.isEmpty()) {
+			BlockMining.resume();
 		}
 	}
 
@@ -198,8 +213,7 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getInvalidBlock(OutputStream sender, Peer peer, InvalidBlockArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_INVALID_BLOCK.getService() + " event from peer [" + peer + "]");
-		AbstractBlock block = blockDB.get(args.getHeight());
-		blockStateManagement.removeBlock(block);
+		blockStateManagement.removeBlockBranch(args.getHeight());
 	}
 
 	/**

@@ -105,7 +105,7 @@ public class TransactionsBlock extends AbstractBlock {
 	 */
 	@Override
 	public void calculateHash() {
-		hash = DigestUtil.applySha256(previousHash + propertiesHash + timeStamp + nonce + merkleRoot);
+		hash = DigestUtil.applySha256(DigestUtil.applySha256(previousHash + propertiesHash + timeStamp + nonce + merkleRoot));
 	}
 
 	@Override

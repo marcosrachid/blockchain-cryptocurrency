@@ -15,3 +15,5 @@
 * Fork treatment for new PropertiesBlock
 
 * getBlockResponse send list of blocks up to 2mb size
+
+* mutable application.properties

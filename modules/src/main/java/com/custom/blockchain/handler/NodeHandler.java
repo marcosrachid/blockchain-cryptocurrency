@@ -11,7 +11,7 @@ import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.exception.BusinessException;
-import com.custom.blockchain.node.component.NodeFork;
+import com.custom.blockchain.node.component.ForcedNodeFork;
 import com.custom.blockchain.resource.dto.request.RequestForkDTO;
 import com.custom.blockchain.resource.dto.request.RequestPropertiesBlockDTO;
 import com.custom.blockchain.resource.dto.response.ResponsePropertiesDTO;
@@ -36,10 +36,10 @@ public class NodeHandler {
 
 	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
 
-	private NodeFork nodeFork;
+	private ForcedNodeFork nodeFork;
 
 	public NodeHandler(final BlockchainProperties blockchainProperties, final CurrentBlockDB currentBlockDB,
-			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final NodeFork nodeFork) {
+			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final ForcedNodeFork nodeFork) {
 		this.blockchainProperties = blockchainProperties;
 		this.currentBlockDB = currentBlockDB;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;

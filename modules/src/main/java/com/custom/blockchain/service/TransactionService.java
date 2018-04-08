@@ -6,6 +6,7 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -17,11 +18,13 @@ import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.resource.dto.request.RequestSendFundsDTO;
 import com.custom.blockchain.signature.SignatureManager;
+import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.DigestUtil;
+import com.custom.blockchain.util.TransactionUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -132,10 +135,28 @@ public class TransactionService {
 	 * @return
 	 * @throws JsonProcessingException
 	 */
-	private String calulateHash(SimpleTransaction transaction) throws JsonProcessingException {
+	public String calulateHash(RewardTransaction transaction) throws JsonProcessingException {
 		Transaction.sequence++;
-		return DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender())
-				+ transaction.getValue().setScale(8).toString() + transaction.getTimeStamp() + Transaction.sequence);
+		return DigestUtil.applySha256(
+				DigestUtil.applySha256(transaction.getCoinbase() + transaction.getValue().setScale(8).toString()
+						+ transaction.getDifficulty() + transaction.getTimeStamp()
+						+ TransactionUtil.getOutputsMerkleRoot(
+								Arrays.asList(new TransactionOutput[] { transaction.getOutput() }))
+						+ Transaction.sequence));
+	}
+
+	/**
+	 * 
+	 * @param transaction
+	 * @return
+	 * @throws JsonProcessingException
+	 */
+	public String calulateHash(SimpleTransaction transaction) throws JsonProcessingException {
+		Transaction.sequence++;
+		return DigestUtil.applySha256(DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender())
+				+ transaction.getSignature() + TransactionUtil.getInputsMerkleRoot(transaction.getInputs())
+				+ TransactionUtil.getOutputsMerkleRoot(transaction.getOutputs())
+				+ transaction.getValue().setScale(8).toString() + transaction.getTimeStamp() + Transaction.sequence));
 	}
 
 }

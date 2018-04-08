@@ -139,8 +139,8 @@ public class PropertiesBlock extends AbstractBlock {
 
 	@Override
 	public void calculateHash() {
-		hash = DigestUtil.applySha256(previousHash + minimunTransaction.toPlainString() + coinLimit.toPlainString()
-				+ miningTimeRate + reward.toPlainString() + blockSize + coinbase);
+		hash = DigestUtil.applySha256(DigestUtil.applySha256(previousHash + minimunTransaction.toPlainString()
+				+ coinLimit.toPlainString() + miningTimeRate + reward.toPlainString() + blockSize + coinbase));
 	}
 
 	@Override

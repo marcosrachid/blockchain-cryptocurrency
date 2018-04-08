@@ -10,7 +10,7 @@ import com.custom.blockchain.block.PropertiesBlock;
  *
  */
 @Component
-public class NodeFork {
+public class ForcedNodeFork {
 
 	private Long height = null;
 

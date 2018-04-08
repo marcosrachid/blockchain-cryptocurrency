@@ -3,12 +3,12 @@ package com.custom.blockchain.node.component;
 import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY_ADJUSTMENT_BLOCK;
 import static com.custom.blockchain.node.NodeStateManagement.MINING_THREAD;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Set;
 
 import org.iq80.leveldb.DBIterator;
 import org.slf4j.Logger;
@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.custom.blockchain.block.AbstractBlock;
 import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
@@ -25,13 +26,12 @@ import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
+import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
-import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.BlockUtil;
-import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
 import com.custom.blockchain.util.WalletUtil;
@@ -56,6 +56,8 @@ public class BlockMining {
 
 	private MempoolDB mempoolDB;
 
+	private TransactionService transactionService;
+
 	private BlockStateManagement blockStateManagement;
 
 	private SignatureManager signatureManager;
@@ -65,14 +67,15 @@ public class BlockMining {
 	public BlockMining(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
 			final BlockDB blockDB, final CurrentBlockDB currentBlockDB,
 			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final MempoolDB mempoolDB,
-			final BlockStateManagement blockStateManagement, final SignatureManager signatureManager,
-			final DifficultyAdjustment difficultyAdjustment) {
+			final TransactionService transactionService, final BlockStateManagement blockStateManagement,
+			final SignatureManager signatureManager, final DifficultyAdjustment difficultyAdjustment) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.mempoolDB = mempoolDB;
+		this.transactionService = transactionService;
 		this.blockStateManagement = blockStateManagement;
 		this.signatureManager = signatureManager;
 		this.difficultyAdjustment = difficultyAdjustment;
@@ -117,7 +120,7 @@ public class BlockMining {
 		RewardTransaction reward = new RewardTransaction(currentPropertiesBlockDB.get().getCoinbase(),
 				currentPropertiesBlockDB.get().getReward(), difficulty);
 		try {
-			reward.setTransactionId(calulateRewardHash(reward));
+			reward.setTransactionId(transactionService.calulateHash(reward));
 		} catch (JsonProcessingException e) {
 			throw new BusinessException(
 					"Could not generate a txId for reward transaction: " + blockchainProperties.getMiner());
@@ -128,10 +131,10 @@ public class BlockMining {
 		// Transactions from pool
 		DBIterator iterator = mempoolDB.iterator();
 		try {
-			while (iterator.hasNext() && !isBlockFull(block.getTransactions())) {
+			do {
 				addTransaction(block, mempoolDB.next(iterator));
-			}
-		} catch (UnsupportedEncodingException | JsonProcessingException e) {
+			} while (iterator.hasNext() && !isBlockFull(block));
+		} catch (IOException e) {
 			throw new BusinessException("Could not validate if block is full of transactions: " + e.getMessage());
 		}
 		LOG.trace("[Crypto] Transactions imported on block: " + block.getTransactions());
@@ -228,27 +231,15 @@ public class BlockMining {
 
 	/**
 	 * 
-	 * @param transaction
-	 * @return
-	 * @throws JsonProcessingException
-	 */
-	private String calulateRewardHash(RewardTransaction transaction) throws JsonProcessingException {
-		Transaction.sequence++;
-		return DigestUtil.applySha256(transaction.getCoinbase() + transaction.getValue().setScale(8).toString()
-				+ transaction.getTimeStamp() + Transaction.sequence);
-	}
-
-	/**
-	 * 
 	 * @param transactions
 	 * @return
+	 * @throws IOException
 	 * @throws UnsupportedEncodingException
 	 * @throws JsonProcessingException
 	 */
-	private boolean isBlockFull(final Set<Transaction> transactions)
-			throws UnsupportedEncodingException, JsonProcessingException {
-		return StringUtil.sizeof(objectMapper.writeValueAsString(transactions)) > currentPropertiesBlockDB.get()
-				.getBlockSize();
+	private boolean isBlockFull(final AbstractBlock block) throws IOException {
+		return StringUtil.sizeof(StringUtil.compress(objectMapper.writeValueAsString(block))) > currentPropertiesBlockDB
+				.get().getBlockSize();
 	}
 
 }

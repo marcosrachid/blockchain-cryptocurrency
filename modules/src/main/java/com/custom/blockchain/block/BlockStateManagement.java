@@ -18,14 +18,17 @@ import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
+import com.custom.blockchain.exception.ForkException;
 import com.custom.blockchain.node.component.DifficultyAdjustment;
 import com.custom.blockchain.node.network.server.SocketThread;
+import com.custom.blockchain.node.network.server.request.arguments.BlockArguments;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.BlockUtil;
+import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
 
@@ -72,8 +75,9 @@ public class BlockStateManagement {
 	 * 
 	 * @param block
 	 * @throws BusinessException
+	 * @throws ForkException
 	 */
-	public void validateBlock(TransactionsBlock block) throws BusinessException {
+	public void validateBlock(TransactionsBlock block) throws BusinessException, ForkException {
 		LOG.info("[Crypto] Starting block validation...");
 		LOG.trace("[Crypto] Validating if block from peer was not from the expected height...");
 		if (!BLOCKS_QUEUE.peek().getHeight().equals(block.getHeight())) {
@@ -106,23 +110,17 @@ public class BlockStateManagement {
 		}
 		LOG.trace("[Crypto] Validating if block has an unexpected reward value...");
 		RewardTransaction reward = rewardList.get(0);
-		if (reward.getValue().compareTo(currentPropertiesBlockDB.get().getReward()) != 0) {
+		PropertiesBlock propertiesBlock = currentPropertiesBlockDB.get();
+		if (reward.getValue().compareTo(propertiesBlock.getReward()) != 0) {
 			throw new BusinessException("Block has an unexpected reward value[" + reward.getValue() + "]");
 		}
-		LOG.trace("[Crypto] Validating if block hash incompatible with current blockchain...");
-		// if (!block.getHash().equals(DigestUtil.applySha256(
-		// currentBlock.getHash() + block.getTimeStamp() + block.getNonce() +
-		// block.getMerkleRoot()))) {
-		// throw new BusinessException("Block hash incompatible with current
-		// blockchain");
-		// }
 
 		Set<Transaction> transactions = block.getTransactions().stream().filter(t -> t instanceof SimpleTransaction)
 				.collect(Collectors.toSet());
 		for (Transaction t : transactions) {
 			SimpleTransaction transaction = (SimpleTransaction) t;
 
-			if (transaction.getValue().compareTo(currentPropertiesBlockDB.get().getMinimunTransaction()) < 0) {
+			if (transaction.getValue().compareTo(propertiesBlock.getMinimunTransaction()) < 0) {
 				throw new BusinessException(
 						"Identified transaction[" + transaction.getTransactionId() + "] with low sent funds");
 			}
@@ -151,6 +149,13 @@ public class BlockStateManagement {
 				throw new BusinessException("Identified transaction[" + transaction.getTransactionId()
 						+ "] with Signature failed to verify");
 			}
+		}
+
+		LOG.trace("[Crypto] Validating if block hash incompatible with current blockchain...");
+		if (!block.getHash().equals(DigestUtil.applySha256(DigestUtil.applySha256(currentBlock.getHash()
+				+ propertiesBlock.getHash() + block.getTimeStamp() + block.getNonce() + block.getMerkleRoot())))) {
+			throw new ForkException(currentBlock.getTimeStamp().compareTo(block.getTimeStamp()),
+					currentBlock.getHeight(), "Block hash incompatible with current blockchain");
 		}
 	}
 
@@ -185,8 +190,15 @@ public class BlockStateManagement {
 	 * 
 	 * @param block
 	 */
-	public void removeBlock(AbstractBlock block) {
-		LOG.info("[Crypto] Removing forked block: " + block);
+	public void removeBlockBranch(Long height) {
+		LOG.info("[Crypto] Removing forked blockchain branch from height: " + height);
+		AbstractBlock currentBlock = currentBlockDB.get();
+		BLOCKS_QUEUE.clear();
+		for (long i = height; i <= currentBlock.getHeight(); i++) {
+			blockDB.delete(i);
+			BLOCKS_QUEUE.add(new BlockArguments(i));
+		}
+		currentBlockDB.put(blockDB.get(height - 1));
 	}
 
 	/**

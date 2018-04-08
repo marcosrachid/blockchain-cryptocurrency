@@ -68,6 +68,16 @@ public final class StringUtil extends StringUtils {
 		byte[] b = string.getBytes("UTF-8");
 		return b.length;
 	}
+	
+	/**
+	 * 
+	 * @param b
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 */
+	public static int sizeof(byte[] b) throws UnsupportedEncodingException {
+		return b.length;
+	}
 
 	/**
 	 * 
