@@ -195,6 +195,7 @@ public class BlockStateManagement {
 		AbstractBlock currentBlock = currentBlockDB.get();
 		BLOCKS_QUEUE.clear();
 		for (long i = height; i <= currentBlock.getHeight(); i++) {
+			AbstractBlock block = blockDB.get(i);
 			blockDB.delete(i);
 			BLOCKS_QUEUE.add(new BlockArguments(i));
 		}
