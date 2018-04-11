@@ -26,7 +26,7 @@ public abstract class AbstractBlock implements Serializable {
 	protected static final String GENESIS_PREVIOUS_HASH = "0";
 
 	protected Long height;
-	protected String hash;
+	protected String hash = "0";
 	protected String previousHash;
 	protected Long timeStamp;
 
@@ -61,11 +61,6 @@ public abstract class AbstractBlock implements Serializable {
 	public void setTimeStamp(Long timeStamp) {
 		this.timeStamp = timeStamp;
 	}
-
-	/**
-	 * 
-	 */
-	public abstract void calculateHash();
 
 	@Override
 	public int hashCode() {

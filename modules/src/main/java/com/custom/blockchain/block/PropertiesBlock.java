@@ -46,7 +46,6 @@ public class PropertiesBlock extends AbstractBlock {
 		this.previousHash = "0";
 		this.height = 1L;
 		this.timeStamp = System.currentTimeMillis();
-		calculateHash();
 	}
 
 	public PropertiesBlock(BigDecimal minimunTransaction, BigDecimal coinLimit, BigDecimal miningTimeRate,
@@ -60,7 +59,6 @@ public class PropertiesBlock extends AbstractBlock {
 		this.previousHash = previousBlock.getHash();
 		this.height = previousBlock.getHeight() + 1;
 		this.timeStamp = System.currentTimeMillis();
-		calculateHash();
 	}
 
 	public BigDecimal getMinimunTransaction() {
@@ -134,12 +132,6 @@ public class PropertiesBlock extends AbstractBlock {
 	@JsonIgnore
 	public String getNetworkSignature() {
 		return DigestUtil.applySha256(DigestUtil.applySha256(minimunTransaction.toPlainString()
-				+ coinLimit.toPlainString() + miningTimeRate + reward.toPlainString() + blockSize + coinbase));
-	}
-
-	@Override
-	public void calculateHash() {
-		hash = DigestUtil.applySha256(DigestUtil.applySha256(previousHash + minimunTransaction.toPlainString()
 				+ coinLimit.toPlainString() + miningTimeRate + reward.toPlainString() + blockSize + coinbase));
 	}
 

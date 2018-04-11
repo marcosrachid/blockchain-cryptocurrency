@@ -122,6 +122,17 @@ public class UTXOChainstateDB extends AbstractLevelDB<PublicKey, List<Transactio
 		put(key, transactionOutputs);
 	}
 
+	/**
+	 * 
+	 * @param key
+	 * @param transactionOutput
+	 */
+	public void remove(PublicKey key, TransactionOutput transactionOutput) {
+		List<TransactionOutput> transactionOutputs = get(key);
+		transactionOutputs.remove(transactionOutput);
+		put(key, transactionOutputs);
+	}
+
 	@Override
 	public void close() {
 		LOG.info("[Crypto] closing ChainstateDb");

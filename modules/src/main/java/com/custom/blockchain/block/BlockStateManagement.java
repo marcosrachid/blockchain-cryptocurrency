@@ -15,20 +15,19 @@ import org.springframework.stereotype.Component;
 import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
-import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
-import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.exception.ForkException;
 import com.custom.blockchain.node.component.DifficultyAdjustment;
 import com.custom.blockchain.node.network.server.SocketThread;
 import com.custom.blockchain.node.network.server.request.arguments.BlockArguments;
+import com.custom.blockchain.service.BlockService;
+import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.BlockUtil;
-import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
 
@@ -48,9 +47,9 @@ public class BlockStateManagement {
 
 	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
 
-	private UTXOChainstateDB utxoChainstateDb;
+	private BlockService blockService;
 
-	private MempoolDB mempoolDB;
+	private TransactionService transactionService;
 
 	private SignatureManager signatureManager;
 
@@ -59,14 +58,14 @@ public class BlockStateManagement {
 	private TransactionsBlock nextBlock;
 
 	public BlockStateManagement(final BlockDB blockDB, final CurrentBlockDB currentBlockDB,
-			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final UTXOChainstateDB utxoChainstateDb,
-			final MempoolDB mempoolDB, final SignatureManager signatureManager,
+			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final BlockService blockService,
+			final TransactionService transactionService, final SignatureManager signatureManager,
 			final DifficultyAdjustment difficultyAdjustment) {
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
-		this.utxoChainstateDb = utxoChainstateDb;
-		this.mempoolDB = mempoolDB;
+		this.blockService = blockService;
+		this.transactionService = transactionService;
 		this.signatureManager = signatureManager;
 		this.difficultyAdjustment = difficultyAdjustment;
 	}
@@ -152,8 +151,7 @@ public class BlockStateManagement {
 		}
 
 		LOG.trace("[Crypto] Validating if block hash incompatible with current blockchain...");
-		if (!block.getHash().equals(DigestUtil.applySha256(DigestUtil.applySha256(currentBlock.getHash()
-				+ propertiesBlock.getHash() + block.getTimeStamp() + block.getNonce() + block.getMerkleRoot())))) {
+		if (!blockService.isBlockCompatible(block)) {
 			throw new ForkException(currentBlock.getTimeStamp().compareTo(block.getTimeStamp()),
 					currentBlock.getHeight(), "Block hash incompatible with current blockchain");
 		}
@@ -182,7 +180,7 @@ public class BlockStateManagement {
 		LOG.info("[Crypto] Found new block: " + block);
 		blockDB.put(block.getHeight(), block);
 		currentBlockDB.put(block);
-		utxo(block.getTransactions());
+		transactionService.addTransactionsUtxo(block.getTransactions());
 		nextBlock = BlockFactory.getBlock(block, currentPropertiesBlockDB.get());
 	}
 
@@ -194,8 +192,13 @@ public class BlockStateManagement {
 		LOG.info("[Crypto] Removing forked blockchain branch from height: " + height);
 		AbstractBlock currentBlock = currentBlockDB.get();
 		BLOCKS_QUEUE.clear();
+		for (long i = currentBlock.getHeight(); i >= height; i--) {
+			AbstractBlock block = blockDB.get(i);
+			transactionService.removeTransactionsUtxo(((TransactionsBlock) block).getTransactions());
+		}
 		for (long i = height; i <= currentBlock.getHeight(); i++) {
 			AbstractBlock block = blockDB.get(i);
+			transactionService.mempoolChargeback(((TransactionsBlock) block).getTransactions());
 			blockDB.delete(i);
 			BLOCKS_QUEUE.add(new BlockArguments(i));
 		}
@@ -211,47 +214,9 @@ public class BlockStateManagement {
 		LOG.trace("[Crypto] Retrieving current Block: " + currentBlock);
 		if (nextBlock == null) {
 			nextBlock = BlockFactory.getBlock(currentBlock, currentPropertiesBlockDB.get());
+			nextBlock.setHash(blockService.calculateHash(nextBlock));
 		}
 		return nextBlock;
-	}
-
-	/**
-	 * 
-	 * @param transactions
-	 */
-	private void utxo(Set<Transaction> transactions) {
-		for (Transaction transaction : transactions) {
-			if (transaction instanceof SimpleTransaction)
-				addToUtxo((SimpleTransaction) transaction);
-			if (transaction instanceof RewardTransaction)
-				addToUtxo((RewardTransaction) transaction);
-		}
-	}
-
-	/**
-	 * 
-	 * @param transaction
-	 */
-	private void addToUtxo(SimpleTransaction transaction) {
-		TransactionOutput leftOverTransaction = transaction.getOutputs().stream()
-				.filter(o -> o.getReciepient().equals(transaction.getSender())).findFirst().get();
-		utxoChainstateDb.leftOver(leftOverTransaction.getReciepient(), leftOverTransaction);
-
-		for (TransactionOutput output : transaction.getOutputs().stream()
-				.filter(o -> !o.getReciepient().equals(transaction.getSender())).collect(Collectors.toList())) {
-			utxoChainstateDb.add(output.getReciepient(), output);
-		}
-
-		mempoolDB.delete(transaction.getTransactionId());
-	}
-
-	/**
-	 * 
-	 * @param transaction
-	 */
-	private void addToUtxo(RewardTransaction transaction) {
-		TransactionOutput output = transaction.getOutput();
-		utxoChainstateDb.add(output.getReciepient(), output);
 	}
 
 }

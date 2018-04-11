@@ -6,12 +6,12 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
@@ -24,7 +24,6 @@ import com.custom.blockchain.transaction.Transaction;
 import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.DigestUtil;
-import com.custom.blockchain.util.TransactionUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -47,7 +46,7 @@ public class TransactionService {
 
 	public TransactionService(final CurrentPropertiesBlockDB currentPropertiesBlockDB,
 			final UTXOChainstateDB utxoChainstateDb, final MempoolDB mempoolDB,
-			final BlockStateManagement blockStateManagement, final SignatureManager signatureManager) {
+			final SignatureManager signatureManager) {
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.utxoChainstateDb = utxoChainstateDb;
 		this.mempoolDB = mempoolDB;
@@ -90,8 +89,10 @@ public class TransactionService {
 	/**
 	 * 
 	 * @param from
-	 * @param to
-	 * @param value
+	 * @param fromBalance
+	 * @param totalSentFunds
+	 * @param funds
+	 * @return
 	 * @throws Exception
 	 */
 	public SimpleTransaction sendFunds(Wallet from, BigDecimal fromBalance, BigDecimal totalSentFunds,
@@ -133,16 +134,12 @@ public class TransactionService {
 	 * 
 	 * @param transaction
 	 * @return
-	 * @throws JsonProcessingException
 	 */
-	public String calulateHash(RewardTransaction transaction) throws JsonProcessingException {
+	public String calulateHash(RewardTransaction transaction) {
 		Transaction.sequence++;
 		return DigestUtil.applySha256(
 				DigestUtil.applySha256(transaction.getCoinbase() + transaction.getValue().setScale(8).toString()
-						+ transaction.getDifficulty() + transaction.getTimeStamp()
-						+ TransactionUtil.getOutputsMerkleRoot(
-								Arrays.asList(new TransactionOutput[] { transaction.getOutput() }))
-						+ Transaction.sequence));
+						+ transaction.getDifficulty() + transaction.getTimeStamp() + Transaction.sequence));
 	}
 
 	/**
@@ -151,12 +148,91 @@ public class TransactionService {
 	 * @return
 	 * @throws JsonProcessingException
 	 */
-	public String calulateHash(SimpleTransaction transaction) throws JsonProcessingException {
+	public String calulateHash(SimpleTransaction transaction) {
 		Transaction.sequence++;
 		return DigestUtil.applySha256(DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender())
-				+ transaction.getSignature() + TransactionUtil.getInputsMerkleRoot(transaction.getInputs())
-				+ TransactionUtil.getOutputsMerkleRoot(transaction.getOutputs())
-				+ transaction.getValue().setScale(8).toString() + transaction.getTimeStamp() + Transaction.sequence));
+				+ transaction.getSignature() + transaction.getValue().setScale(8).toString()
+				+ transaction.getTimeStamp() + Transaction.sequence));
+	}
+
+	/**
+	 * 
+	 * @param transactions
+	 */
+	public void addTransactionsUtxo(Set<Transaction> transactions) {
+		for (Transaction transaction : transactions) {
+			if (transaction instanceof SimpleTransaction)
+				addToUtxo((SimpleTransaction) transaction);
+			if (transaction instanceof RewardTransaction)
+				addToUtxo((RewardTransaction) transaction);
+		}
+	}
+
+	/**
+	 * 
+	 * @param transactions
+	 */
+	public void removeTransactionsUtxo(Set<Transaction> transactions) {
+		for (Transaction transaction : transactions) {
+			if (transaction instanceof SimpleTransaction)
+				removeUtxo((SimpleTransaction) transaction);
+			if (transaction instanceof RewardTransaction)
+				removeUtxo((RewardTransaction) transaction);
+		}
+	}
+
+	/**
+	 * 
+	 * @param transactions
+	 */
+	public void mempoolChargeback(Set<Transaction> transactions) {
+		for (SimpleTransaction transaction : transactions.stream().filter(t -> t instanceof SimpleTransaction)
+				.map(t -> (SimpleTransaction) t).collect(Collectors.toSet())) {
+			mempoolDB.put(transaction.getTransactionId(), (SimpleTransaction) transaction);
+			transaction.getOutputs();
+		}
+	}
+
+	/**
+	 * 
+	 * @param transaction
+	 */
+	private void addToUtxo(SimpleTransaction transaction) {
+		TransactionOutput leftOverTransaction = transaction.getOutputs().stream()
+				.filter(o -> o.getReciepient().equals(transaction.getSender())).findFirst().get();
+		utxoChainstateDb.leftOver(leftOverTransaction.getReciepient(), leftOverTransaction);
+
+		for (TransactionOutput output : transaction.getOutputs().stream()
+				.filter(o -> !o.getReciepient().equals(transaction.getSender())).collect(Collectors.toList())) {
+			utxoChainstateDb.add(output.getReciepient(), output);
+		}
+
+		mempoolDB.delete(transaction.getTransactionId());
+	}
+
+	/**
+	 * 
+	 * @param transaction
+	 */
+	private void addToUtxo(RewardTransaction transaction) {
+		TransactionOutput output = transaction.getOutput();
+		utxoChainstateDb.add(output.getReciepient(), output);
+	}
+
+	/**
+	 * 
+	 * @param transaction
+	 */
+	private void removeUtxo(SimpleTransaction transaction) {
+
+	}
+
+	/**
+	 * 
+	 * @param transaction
+	 */
+	private void removeUtxo(RewardTransaction transaction) {
+
 	}
 
 }

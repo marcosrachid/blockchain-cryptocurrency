@@ -19,6 +19,7 @@ import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.data.peers.PeersDB;
 import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.node.network.server.SocketThread;
+import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.StringUtil;
@@ -49,6 +50,8 @@ public abstract class AbstractNode {
 	protected PeersDB peersDB;
 
 	protected MempoolDB mempoolDB;
+
+	protected TransactionService transactionService;
 
 	protected BlockStateManagement blockStateManagement;
 
@@ -101,7 +104,7 @@ public abstract class AbstractNode {
 			return;
 		RewardTransaction preminedTransaction = new RewardTransaction(propertiesBlock.getCoinbase(),
 				propertiesBlock.getPremined(), propertiesBlock.getStartingDifficulty());
-		preminedTransaction.setTransactionId(GENESIS_TX_ID);
+		preminedTransaction.setTransactionId(transactionService.calulateHash(preminedTransaction));
 		preminedTransaction.setOutput(new TransactionOutput(owner.getPublicKey(), preminedTransaction.getValue(),
 				preminedTransaction.getTransactionId()));
 		premined.getTransactions().add(preminedTransaction);

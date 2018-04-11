@@ -14,7 +14,6 @@ import com.custom.blockchain.serializers.PublicKeyDeserializer;
 import com.custom.blockchain.serializers.PublicKeySerializer;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.Transaction;
-import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -48,7 +47,6 @@ public class TransactionsBlock extends AbstractBlock {
 		this.propertiesHash = propertiesBlock.getHash();
 		this.timeStamp = new Date().getTime();
 		this.nonce = 0;
-		calculateHash();
 	}
 
 	public String getMerkleRoot() {
@@ -98,14 +96,6 @@ public class TransactionsBlock extends AbstractBlock {
 		if (transaction.isPresent())
 			return (RewardTransaction) transaction.get();
 		return null;
-	}
-
-	/**
-	 * 
-	 */
-	@Override
-	public void calculateHash() {
-		hash = DigestUtil.applySha256(DigestUtil.applySha256(previousHash + propertiesHash + timeStamp + nonce + merkleRoot));
 	}
 
 	@Override

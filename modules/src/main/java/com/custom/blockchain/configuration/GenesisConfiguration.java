@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
 import com.custom.blockchain.block.PropertiesBlock;
+import com.custom.blockchain.service.BlockService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
@@ -22,7 +23,8 @@ public class GenesisConfiguration {
 	private String genesis;
 
 	@Bean("StartingProperties")
-	public PropertiesBlock getGenesis(final ObjectMapper objectMapper) throws Exception {
+	public PropertiesBlock getGenesis(final ObjectMapper objectMapper, final BlockService blockService)
+			throws Exception {
 		PropertiesBlock propertiesBlock = null;
 		try {
 			if (genesis == null) {
@@ -31,7 +33,7 @@ public class GenesisConfiguration {
 			} else {
 				propertiesBlock = objectMapper.readValue(genesis.getBytes(), PropertiesBlock.class);
 			}
-			propertiesBlock.calculateHash();
+			propertiesBlock.setHash(blockService.calculateHash(propertiesBlock));
 			return propertiesBlock;
 		} catch (IOException e) {
 			LOG.debug("[Crypto] Error getting json properties: {}", e.getMessage(), e);

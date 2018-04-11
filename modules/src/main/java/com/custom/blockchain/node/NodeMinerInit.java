@@ -25,9 +25,9 @@ import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
-import com.custom.blockchain.data.peers.PeersDB;
 import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.node.network.server.dispatcher.Service;
+import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.util.OsUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,16 +45,16 @@ public class NodeMinerInit extends AbstractNode {
 
 	public NodeMinerInit(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
 			final CurrentBlockDB currentBlockDB, final CurrentPropertiesBlockDB currentPropertiesBlockDB,
-			final UTXOChainstateDB utxoChainstateDB, final PeersDB peersDB, final MempoolDB mempoolDB,
-			final BlockStateManagement blockStateManagement, final Server server,
-			final @Qualifier("StartingProperties") PropertiesBlock propertiesBlock) {
+			final UTXOChainstateDB utxoChainstateDB, final MempoolDB mempoolDB,
+			final TransactionService transactionService, final BlockStateManagement blockStateManagement,
+			final Server server, final @Qualifier("StartingProperties") PropertiesBlock propertiesBlock) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;
 		this.currentBlockDB = currentBlockDB;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.utxoChainstateDB = utxoChainstateDB;
-		this.peersDB = peersDB;
 		this.mempoolDB = mempoolDB;
+		this.transactionService = transactionService;
 		this.blockStateManagement = blockStateManagement;
 		this.server = server;
 		this.propertiesBlock = currentPropertiesBlockDB.get();
