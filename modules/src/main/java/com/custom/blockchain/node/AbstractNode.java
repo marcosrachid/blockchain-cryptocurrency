@@ -19,6 +19,7 @@ import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.data.peers.PeersDB;
 import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.node.network.server.SocketThread;
+import com.custom.blockchain.service.BlockService;
 import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
@@ -31,8 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public abstract class AbstractNode {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractNode.class);
-
-	protected static final String GENESIS_TX_ID = "0";
 
 	@Value("${application.blockchain.coinName}")
 	protected String coinName;
@@ -50,6 +49,8 @@ public abstract class AbstractNode {
 	protected PeersDB peersDB;
 
 	protected MempoolDB mempoolDB;
+	
+	protected BlockService blockService;
 
 	protected TransactionService transactionService;
 

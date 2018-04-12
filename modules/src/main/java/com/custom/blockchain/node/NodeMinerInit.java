@@ -27,8 +27,10 @@ import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.node.network.server.dispatcher.Service;
+import com.custom.blockchain.service.BlockService;
 import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.util.OsUtil;
+import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -45,7 +47,7 @@ public class NodeMinerInit extends AbstractNode {
 
 	public NodeMinerInit(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
 			final CurrentBlockDB currentBlockDB, final CurrentPropertiesBlockDB currentPropertiesBlockDB,
-			final UTXOChainstateDB utxoChainstateDB, final MempoolDB mempoolDB,
+			final UTXOChainstateDB utxoChainstateDB, final MempoolDB mempoolDB, final BlockService blockService,
 			final TransactionService transactionService, final BlockStateManagement blockStateManagement,
 			final Server server, final @Qualifier("StartingProperties") PropertiesBlock propertiesBlock) {
 		this.objectMapper = objectMapper;
@@ -54,6 +56,7 @@ public class NodeMinerInit extends AbstractNode {
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.utxoChainstateDB = utxoChainstateDB;
 		this.mempoolDB = mempoolDB;
+		this.blockService = blockService;
 		this.transactionService = transactionService;
 		this.blockStateManagement = blockStateManagement;
 		this.server = server;
@@ -96,6 +99,12 @@ public class NodeMinerInit extends AbstractNode {
 			setGenesis(propertiesBlock);
 			TransactionsBlock premined = blockStateManagement.getNextBlock();
 			premined.setMiner(owner.getPublicKey());
+			String target = StringUtil.getDificultyString(propertiesBlock.getStartingDifficulty());
+			premined.setHash(blockService.calculateHash(premined));
+			while (!premined.getHash().substring(0, propertiesBlock.getStartingDifficulty()).equals(target)) {
+				premined.setNonce(premined.getNonce() + 1);
+				premined.setHash(blockService.calculateHash(premined));
+			}
 			premined(premined, owner);
 		} else {
 			LOG.info("[Crypto] Blockchain already");

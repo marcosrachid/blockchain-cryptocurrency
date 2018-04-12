@@ -57,6 +57,7 @@ public abstract class AbstractNetworkManager {
 	 */
 	@Scheduled(fixedRate = 5000)
 	public synchronized void startServer() {
+		SocketThread.activate();
 		if (!ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())
 				&& (SERVER_THREAD == null || !SERVER_THREAD.isAlive())) {
 			LOG.debug("[Crypto] Starting socket listener...");

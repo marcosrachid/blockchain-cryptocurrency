@@ -107,6 +107,10 @@ public class SocketThread extends Thread {
 	public static void inactivate() {
 		ACTIVE = false;
 	}
+	
+	public static void activate() {
+		ACTIVE = true;
+	}
 
 	/**
 	 * 
