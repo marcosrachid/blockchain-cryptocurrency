@@ -49,7 +49,7 @@ public abstract class AbstractNode {
 	protected PeersDB peersDB;
 
 	protected MempoolDB mempoolDB;
-	
+
 	protected BlockService blockService;
 
 	protected TransactionService transactionService;
@@ -103,6 +103,13 @@ public abstract class AbstractNode {
 	protected void premined(final TransactionsBlock premined, Wallet owner) {
 		if (propertiesBlock.getPremined() == null || propertiesBlock.getPremined().compareTo(BigDecimal.ZERO) == 0)
 			return;
+		LOG.info("[Crypto] Mining the premined block...");
+		String target = StringUtil.getDificultyString(propertiesBlock.getStartingDifficulty());
+		premined.setHash(blockService.calculateHash(premined));
+		while (!premined.getHash().substring(0, propertiesBlock.getStartingDifficulty()).equals(target)) {
+			premined.setNonce(premined.getNonce() + 1);
+			premined.setHash(blockService.calculateHash(premined));
+		}
 		RewardTransaction preminedTransaction = new RewardTransaction(propertiesBlock.getCoinbase(),
 				propertiesBlock.getPremined(), propertiesBlock.getStartingDifficulty());
 		preminedTransaction.setTransactionId(transactionService.calulateHash(preminedTransaction));

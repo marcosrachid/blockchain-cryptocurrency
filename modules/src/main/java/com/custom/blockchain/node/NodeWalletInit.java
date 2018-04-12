@@ -30,7 +30,6 @@ import com.custom.blockchain.node.network.server.dispatcher.Service;
 import com.custom.blockchain.service.BlockService;
 import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.util.OsUtil;
-import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -99,12 +98,6 @@ public class NodeWalletInit extends AbstractNode {
 			setGenesis(propertiesBlock);
 			TransactionsBlock premined = blockStateManagement.getNextBlock();
 			premined.setMiner(owner.getPublicKey());
-			String target = StringUtil.getDificultyString(propertiesBlock.getStartingDifficulty());
-			premined.setHash(blockService.calculateHash(premined));
-			while (!premined.getHash().substring(0, propertiesBlock.getStartingDifficulty()).equals(target)) {
-				premined.setNonce(premined.getNonce() + 1);
-				premined.setHash(blockService.calculateHash(premined));
-			}
 			premined(premined, owner);
 		} else {
 			LOG.info("[Crypto] Blockchain already");
