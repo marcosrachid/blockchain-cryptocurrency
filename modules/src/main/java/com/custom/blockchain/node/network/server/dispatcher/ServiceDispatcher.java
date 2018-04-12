@@ -174,8 +174,10 @@ public class ServiceDispatcher {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event from peer [" + peer + "]");
 		AbstractBlock block = args.getBlock();
 		try {
-			if (block instanceof PropertiesBlock)
+			if (block instanceof PropertiesBlock) {
+				blockStateManagement.foundBlock((PropertiesBlock) block);
 				return;
+			}
 			blockStateManagement.validateBlock((TransactionsBlock) block);
 			blockStateManagement.foundBlock((TransactionsBlock) block);
 			BLOCKS_QUEUE.poll();

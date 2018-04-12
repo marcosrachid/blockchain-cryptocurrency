@@ -115,13 +115,6 @@ public class BlockMining {
 						.getDifficulty();
 			}
 
-			String target = StringUtil.getDificultyString(difficulty.intValue());
-			block.setHash(blockService.calculateHash(block));
-			while (!block.getHash().substring(0, difficulty.intValue()).equals(target)) {
-				block.setNonce(block.getNonce() + 1);
-				block.setHash(blockService.calculateHash(block));
-			}
-
 			try {
 				block.setMiner(WalletUtil.getPublicKeyFromString(blockchainProperties.getMiner()));
 			} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
@@ -149,6 +142,13 @@ public class BlockMining {
 			LOG.trace("[Crypto] Transactions imported on block: " + block.getTransactions());
 
 			block.setMerkleRoot(TransactionUtil.getMerkleRoot(block.getTransactions()));
+
+			String target = StringUtil.getDificultyString(difficulty.intValue());
+			block.setHash(blockService.calculateHash(block));
+			while (!block.getHash().substring(0, difficulty.intValue()).equals(target)) {
+				block.setNonce(block.getNonce() + 1);
+				block.setHash(blockService.calculateHash(block));
+			}
 
 			blockStateManagement.foundBlock(block);
 			LOG.info("[Crypto] Block Mined in " + (System.currentTimeMillis() - currentTimeInMillis) + " milliseconds: "

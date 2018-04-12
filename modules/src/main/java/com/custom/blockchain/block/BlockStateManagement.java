@@ -78,14 +78,20 @@ public class BlockStateManagement {
 	 */
 	public void validateBlock(TransactionsBlock block) throws BusinessException, ForkException {
 		LOG.info("[Crypto] Starting block[" + block + "] validation...");
-		LOG.trace("[Crypto] Validating if block from peer was not from the expected height...");
+
+		LOG.debug("[Crypto] Validating if block from peer was not from the expected height...");
+		AbstractBlock currentBlock = currentBlockDB.get();
+		if (!currentBlock.getHeight().equals(block.getHeight() - 1)) {
+			throw new BusinessException("Block from peer was not from the expected height");
+		}
 		if (!BLOCKS_QUEUE.peek().getHeight().equals(block.getHeight())) {
 			throw new BusinessException("Block from peer was not from the expected height");
 		}
-		LOG.trace("[Crypto] Validating if block is on a different difficulty from protocol...");
-		TransactionsBlock currentBlock = BlockUtil.getLastTransactionBlock(blockDB, currentBlockDB.get());
+		LOG.debug("[Crypto] Validating if block is on a different difficulty from protocol...");
+		TransactionsBlock currentTransactionBlock = BlockUtil.getLastTransactionBlock(blockDB, currentBlock);
 		PropertiesBlock propertiesBlock = currentPropertiesBlockDB.get();
-		Integer difficulty = (currentBlock != null) ? currentBlock.getRewardTransaction().getDifficulty()
+		Integer difficulty = (currentTransactionBlock != null)
+				? currentTransactionBlock.getRewardTransaction().getDifficulty()
 				: propertiesBlock.getStartingDifficulty();
 		if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
 			difficulty = difficultyAdjustment.adjust();
@@ -93,25 +99,25 @@ public class BlockStateManagement {
 		if (!difficulty.equals(block.getRewardTransaction().getDifficulty())) {
 			throw new BusinessException("Block is on a different difficulty from protocol");
 		}
-		LOG.trace("[Crypto] Validating if block was procedurely mined...");
+		LOG.debug("[Crypto] Validating if block was procedurely mined...");
 		String target = StringUtil.getDificultyString(difficulty.intValue());
 		if (!block.getHash().startsWith(target)) {
 			throw new BusinessException("Block was not procedurely mined");
 		}
-		LOG.trace("[Crypto] Validating if block tree does not correspond to its merkle root...");
+		LOG.debug("[Crypto] Validating if block tree does not correspond to its merkle root...");
 		if (!TransactionUtil.getMerkleRoot(block.getTransactions()).equals(block.getMerkleRoot())) {
 			throw new BusinessException("Block tree does not correspond to its merkle root");
 		}
-		LOG.trace("[Crypto] Validating if block has more then one reward transaction...");
+		LOG.debug("[Crypto] Validating if block has more then one reward transaction...");
 		List<RewardTransaction> rewardList = block.getTransactions().stream()
 				.filter(t -> t instanceof RewardTransaction).map(t -> (RewardTransaction) t)
 				.collect(Collectors.toList());
 		if (rewardList.size() != 1) {
 			throw new BusinessException("Block has one reward transaction");
 		}
-		LOG.trace("[Crypto] Validating if block has an unexpected reward value...");
+		LOG.debug("[Crypto] Validating if block has an unexpected reward value...");
 		RewardTransaction reward = rewardList.get(0);
-		if (reward.getValue().compareTo(propertiesBlock.getReward()) != 0) {
+		if (block.getHeight() > 2 && reward.getValue().compareTo(propertiesBlock.getReward()) != 0) {
 			throw new BusinessException("Block has an unexpected reward value[" + reward.getValue() + "]");
 		}
 
@@ -151,10 +157,10 @@ public class BlockStateManagement {
 			}
 		}
 
-		LOG.trace("[Crypto] Validating if block hash incompatible with current blockchain...");
+		LOG.debug("[Crypto] Validating if block hash incompatible with current blockchain...");
 		if (!blockService.isBlockCompatible(block)) {
-			throw new ForkException(currentBlock.getTimeStamp().compareTo(block.getTimeStamp()),
-					currentBlock.getHeight(), "Block hash incompatible with current blockchain");
+			throw new ForkException(currentTransactionBlock.getTimeStamp().compareTo(block.getTimeStamp()),
+					currentTransactionBlock.getHeight(), "Block hash incompatible with current blockchain");
 		}
 	}
 

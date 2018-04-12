@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.AbstractBlock;
@@ -23,6 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class BlockService {
+
+	private static final Logger LOG = LoggerFactory.getLogger(BlockService.class);
 
 	private ObjectMapper objectMapper;
 
@@ -72,6 +76,17 @@ public class BlockService {
 	public boolean isBlockCompatible(TransactionsBlock transactionsBlock) {
 		AbstractBlock currentBlock = currentBlockDB.get();
 		PropertiesBlock propertiesBlock = currentPropertiesBlockDB.get();
+		LOG.trace(
+				"Coming Transaction parameters: previousHash[{}], propertiesHash[{}], timestamp[{}], nonce[{}], merkleroot[{}]",
+				transactionsBlock.getPreviousHash(), transactionsBlock.getPropertiesHash(),
+				transactionsBlock.getTimeStamp(), transactionsBlock.getNonce(), transactionsBlock.getMerkleRoot());
+		LOG.trace("Testing parameters: previousHash[{}], propertiesHash[{}], timestamp[{}], nonce[{}], merkleroot[{}]",
+				currentBlock.getHash(), propertiesBlock.getHash(), transactionsBlock.getTimeStamp(),
+				transactionsBlock.getNonce(), transactionsBlock.getMerkleRoot());
+		LOG.debug("Coming Transaction hash: {}, Test hash: {}", transactionsBlock.getHash(),
+				DigestUtil.applySha256(DigestUtil.applySha256(
+						currentBlock.getHash() + propertiesBlock.getHash() + transactionsBlock.getTimeStamp()
+								+ transactionsBlock.getNonce() + transactionsBlock.getMerkleRoot())));
 		return transactionsBlock.getHash()
 				.equals(DigestUtil.applySha256(DigestUtil.applySha256(
 						currentBlock.getHash() + propertiesBlock.getHash() + transactionsBlock.getTimeStamp()
