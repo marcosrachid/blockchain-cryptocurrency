@@ -31,7 +31,7 @@ public class ForcedNodeFork {
 	 * @return
 	 */
 	public boolean checkFork(Long height) {
-		if (height == null)
+		if (this.height == null)
 			return false;
 		return this.height.equals(height);
 	}
