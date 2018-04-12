@@ -79,6 +79,8 @@ public class SocketThread extends Thread {
 			LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
 		} finally {
 			try {
+				if (peer != null)
+					SOCKET_THREADS.remove(peer);
 				if (!client.isClosed())
 					client.close();
 			} catch (IOException e) {
