@@ -38,6 +38,8 @@ public class BlockMining {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BlockMining.class);
 
+	private static boolean PAUSE = false;
+
 	private BlockchainProperties blockchainProperties;
 
 	private BlockDB blockDB;
@@ -103,76 +105,68 @@ public class BlockMining {
 	 * @throws BusinessException
 	 */
 	public void mineBlock() throws BusinessException {
-		while (!Thread.interrupted()) {
-			long currentTimeInMillis = System.currentTimeMillis();
-			TransactionsBlock block = blockStateManagement.getNextBlock();
+		if (PAUSE)
+			mineBlock();
+		long currentTimeInMillis = System.currentTimeMillis();
+		TransactionsBlock block = blockStateManagement.getNextBlock();
 
-			Integer difficulty = null;
-			if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
-				difficulty = difficultyAdjustment.adjust();
-			} else {
-				difficulty = BlockUtil.getLastTransactionBlock(blockDB, currentBlockDB.get()).getRewardTransaction()
-						.getDifficulty();
-			}
-
-			try {
-				block.setMiner(WalletUtil.getPublicKeyFromString(blockchainProperties.getMiner()));
-			} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
-				throw new BusinessException("Invalid miner public key: " + blockchainProperties.getMiner());
-			}
-
-			// Miner reward
-			RewardTransaction reward = new RewardTransaction(currentPropertiesBlockDB.get().getCoinbase(),
-					currentPropertiesBlockDB.get().getReward(), difficulty);
-			reward.setTransactionId(transactionService.calulateHash(reward));
-			reward.setOutput(new TransactionOutput(block.getMiner(), reward.getValue(), reward.getTransactionId()));
-			block.getTransactions().add(reward);
-
-			// Transactions from pool
-			DBIterator iterator = mempoolDB.iterator();
-			try {
-				if (iterator.hasNext()) {
-					do {
-						blockService.addTransaction(block, mempoolDB.next(iterator));
-					} while (iterator.hasNext() && !blockService.isBlockFull(block));
-				}
-			} catch (IOException e) {
-				throw new BusinessException("Could not validate if block is full of transactions: " + e.getMessage());
-			}
-			LOG.trace("[Crypto] Transactions imported on block: " + block.getTransactions());
-
-			block.setMerkleRoot(TransactionUtil.getMerkleRoot(block.getTransactions()));
-
-			String target = StringUtil.getDificultyString(difficulty.intValue());
-			block.setHash(blockService.calculateHash(block));
-			while (!block.getHash().substring(0, difficulty.intValue()).equals(target)) {
-				block.setNonce(block.getNonce() + 1);
-				block.setHash(blockService.calculateHash(block));
-			}
-
-			blockStateManagement.foundBlock(block);
-			LOG.info("[Crypto] Block Mined in " + (System.currentTimeMillis() - currentTimeInMillis) + " milliseconds: "
-					+ block.getHash());
+		Integer difficulty = null;
+		if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
+			difficulty = difficultyAdjustment.adjust();
+		} else {
+			difficulty = BlockUtil.getLastTransactionBlock(blockDB, currentBlockDB.get()).getRewardTransaction()
+					.getDifficulty();
 		}
+
+		try {
+			block.setMiner(WalletUtil.getPublicKeyFromString(blockchainProperties.getMiner()));
+		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
+			throw new BusinessException("Invalid miner public key: " + blockchainProperties.getMiner());
+		}
+
+		// Miner reward
+		RewardTransaction reward = new RewardTransaction(currentPropertiesBlockDB.get().getCoinbase(),
+				currentPropertiesBlockDB.get().getReward(), difficulty);
+		reward.setTransactionId(transactionService.calulateHash(reward));
+		reward.setOutput(new TransactionOutput(block.getMiner(), reward.getValue(), reward.getTransactionId()));
+		block.getTransactions().add(reward);
+
+		// Transactions from pool
+		DBIterator iterator = mempoolDB.iterator();
+		try {
+			if (iterator.hasNext()) {
+				do {
+					blockService.addTransaction(block, mempoolDB.next(iterator));
+				} while (iterator.hasNext() && !blockService.isBlockFull(block));
+			}
+		} catch (IOException e) {
+			throw new BusinessException("Could not validate if block is full of transactions: " + e.getMessage());
+		}
+		LOG.trace("[Crypto] Transactions imported on block: " + block.getTransactions());
+
+		block.setMerkleRoot(TransactionUtil.getMerkleRoot(block.getTransactions()));
+
+		String target = StringUtil.getDificultyString(difficulty.intValue());
+		block.setHash(blockService.calculateHash(block));
+		while (!block.getHash().substring(0, difficulty.intValue()).equals(target)) {
+			block.setNonce(block.getNonce() + 1);
+			block.setHash(blockService.calculateHash(block));
+		}
+
+		blockStateManagement.foundBlock(block);
+		LOG.info("[Crypto] Block Mined in " + (System.currentTimeMillis() - currentTimeInMillis) + " milliseconds: "
+				+ block.getHash());
+		mineBlock();
 	}
 
 	public static void pause() {
 		LOG.info("[Crypto] Pausing for syncing");
-		if (MINING_THREAD != null) {
-			try {
-				MINING_THREAD.wait();
-			} catch (InterruptedException e) {
-				LOG.error("[Crypto] Thread pause error: {}", e.getMessage(), e);
-			}
-		}
+		PAUSE = true;
 	}
 
 	public static void resume() {
 		LOG.info("[Crypto] Resuming after syncing...");
-		if (MINING_THREAD != null) {
-			MINING_THREAD.notify();
-			MINING_THREAD.interrupt();
-		}
+		PAUSE = false;
 	}
 
 }
