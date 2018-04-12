@@ -79,12 +79,15 @@ public class BlockStateManagement {
 	public void validateBlock(TransactionsBlock block) throws BusinessException, ForkException {
 		LOG.info("[Crypto] Starting block[" + block + "] validation...");
 
+		LOG.debug("[Crypto] Validating if block[{}] from peer was not from the expected height from queue[{}]...",
+				block.getHeight(), BLOCKS_QUEUE.peek().getHeight());
 		if (!BLOCKS_QUEUE.peek().getHeight().equals(block.getHeight())) {
 			BLOCKS_QUEUE.clear();
-			throw new BusinessException("Block from peer was not from the expected height");
+			throw new BusinessException("Block from peer was not from the expected height from queue");
 		}
-		LOG.debug("[Crypto] Validating if block from peer was not from the expected height...");
 		AbstractBlock currentBlock = currentBlockDB.get();
+		LOG.debug("[Crypto] Validating if block[{}] from peer was not from the expected height[{}]...",
+				block.getHeight(), currentBlock.getHeight());
 		if (!currentBlock.getHeight().equals(block.getHeight() - 1)) {
 			throw new BusinessException("Block from peer was not from the expected height");
 		}
