@@ -105,11 +105,6 @@ public abstract class AbstractNode {
 			return;
 		LOG.info("[Crypto] Mining the premined block...");
 		String target = StringUtil.getDificultyString(propertiesBlock.getStartingDifficulty());
-		premined.setHash(blockService.calculateHash(premined));
-		while (!premined.getHash().substring(0, propertiesBlock.getStartingDifficulty()).equals(target)) {
-			premined.setNonce(premined.getNonce() + 1);
-			premined.setHash(blockService.calculateHash(premined));
-		}
 		RewardTransaction preminedTransaction = new RewardTransaction(propertiesBlock.getCoinbase(),
 				propertiesBlock.getPremined(), propertiesBlock.getStartingDifficulty());
 		preminedTransaction.setTransactionId(transactionService.calulateHash(preminedTransaction));
@@ -117,6 +112,11 @@ public abstract class AbstractNode {
 				preminedTransaction.getTransactionId()));
 		premined.getTransactions().add(preminedTransaction);
 		premined.setMerkleRoot(TransactionUtil.getMerkleRoot(premined.getTransactions()));
+		premined.setHash(blockService.calculateHash(premined));
+		while (!premined.getHash().substring(0, propertiesBlock.getStartingDifficulty()).equals(target)) {
+			premined.setNonce(premined.getNonce() + 1);
+			premined.setHash(blockService.calculateHash(premined));
+		}
 		blockStateManagement.foundBlock(premined);
 		LOG.info("Premined transaction: {}", premined.getTransactions());
 	}
