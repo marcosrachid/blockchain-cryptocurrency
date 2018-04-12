@@ -77,14 +77,16 @@ public class BlockStateManagement {
 	 * @throws ForkException
 	 */
 	public void validateBlock(TransactionsBlock block) throws BusinessException, ForkException {
-		LOG.info("[Crypto] Starting block validation...");
+		LOG.info("[Crypto] Starting block[" + block + "] validation...");
 		LOG.trace("[Crypto] Validating if block from peer was not from the expected height...");
 		if (!BLOCKS_QUEUE.peek().getHeight().equals(block.getHeight())) {
 			throw new BusinessException("Block from peer was not from the expected height");
 		}
 		LOG.trace("[Crypto] Validating if block is on a different difficulty from protocol...");
 		TransactionsBlock currentBlock = BlockUtil.getLastTransactionBlock(blockDB, currentBlockDB.get());
-		Integer difficulty = currentBlock.getRewardTransaction().getDifficulty();
+		PropertiesBlock propertiesBlock = currentPropertiesBlockDB.get();
+		Integer difficulty = (currentBlock != null) ? currentBlock.getRewardTransaction().getDifficulty()
+				: propertiesBlock.getStartingDifficulty();
 		if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
 			difficulty = difficultyAdjustment.adjust();
 		}
@@ -109,7 +111,6 @@ public class BlockStateManagement {
 		}
 		LOG.trace("[Crypto] Validating if block has an unexpected reward value...");
 		RewardTransaction reward = rewardList.get(0);
-		PropertiesBlock propertiesBlock = currentPropertiesBlockDB.get();
 		if (reward.getValue().compareTo(propertiesBlock.getReward()) != 0) {
 			throw new BusinessException("Block has an unexpected reward value[" + reward.getValue() + "]");
 		}

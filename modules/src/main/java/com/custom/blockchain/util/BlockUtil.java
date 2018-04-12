@@ -13,6 +13,9 @@ public final class BlockUtil {
 	 * @return
 	 */
 	public static TransactionsBlock getLastTransactionBlock(BlockDB blockDB, AbstractBlock block) {
+		if (block == null) {
+			return null;
+		}
 		if (block instanceof TransactionsBlock) {
 			return (TransactionsBlock) block;
 		}
