@@ -21,6 +21,8 @@ public class PropertiesBlock extends AbstractBlock {
 
 	private BigDecimal reward;
 
+	private BigDecimal fees;
+
 	private Long blockSize;
 
 	private String coinbase;
@@ -36,11 +38,12 @@ public class PropertiesBlock extends AbstractBlock {
 	}
 
 	public PropertiesBlock(BigDecimal minimunTransaction, BigDecimal coinLimit, BigDecimal miningTimeRate,
-			BigDecimal reward, Long blockSize, String coinbase) {
+			BigDecimal reward, BigDecimal fees, Long blockSize, String coinbase) {
 		this.minimunTransaction = minimunTransaction;
 		this.coinLimit = coinLimit;
 		this.miningTimeRate = miningTimeRate;
 		this.reward = reward;
+		this.fees = fees;
 		this.blockSize = blockSize;
 		this.coinbase = coinbase;
 		this.previousHash = "0";
@@ -49,11 +52,12 @@ public class PropertiesBlock extends AbstractBlock {
 	}
 
 	public PropertiesBlock(BigDecimal minimunTransaction, BigDecimal coinLimit, BigDecimal miningTimeRate,
-			BigDecimal reward, Long blockSize, String coinbase, AbstractBlock previousBlock) {
+			BigDecimal reward, BigDecimal fees, Long blockSize, String coinbase, AbstractBlock previousBlock) {
 		this.minimunTransaction = minimunTransaction;
 		this.coinLimit = coinLimit;
 		this.miningTimeRate = miningTimeRate;
 		this.reward = reward;
+		this.fees = fees;
 		this.blockSize = blockSize;
 		this.coinbase = coinbase;
 		this.previousHash = previousBlock.getHash();
@@ -91,6 +95,14 @@ public class PropertiesBlock extends AbstractBlock {
 
 	public void setReward(BigDecimal reward) {
 		this.reward = reward;
+	}
+
+	public BigDecimal getFees() {
+		return fees;
+	}
+
+	public void setFees(BigDecimal fees) {
+		this.fees = fees;
 	}
 
 	public Long getBlockSize() {
@@ -131,15 +143,16 @@ public class PropertiesBlock extends AbstractBlock {
 	 */
 	@JsonIgnore
 	public String getNetworkSignature() {
-		return DigestUtil.applySha256(DigestUtil.applySha256(minimunTransaction.toPlainString()
-				+ coinLimit.toPlainString() + miningTimeRate + reward.toPlainString() + blockSize + coinbase));
+		return DigestUtil
+				.applySha256(DigestUtil.applySha256(minimunTransaction.toPlainString() + coinLimit.toPlainString()
+						+ miningTimeRate + reward.toPlainString() + fees.toPlainString() + blockSize + coinbase));
 	}
 
 	@Override
 	public int hashCode() {
 		return new HashCodeBuilder().append(height).append(hash).append(previousHash).append(timeStamp)
-				.append(minimunTransaction).append(coinLimit).append(miningTimeRate).append(reward).append(blockSize)
-				.append(coinbase).append(premined).append(startingDifficulty).hashCode();
+				.append(minimunTransaction).append(coinLimit).append(miningTimeRate).append(reward).append(fees)
+				.append(blockSize).append(coinbase).append(premined).append(startingDifficulty).hashCode();
 	}
 
 	@Override
@@ -159,8 +172,8 @@ public class PropertiesBlock extends AbstractBlock {
 		return new ToStringBuilder(this).append("height", height).append("hash", hash)
 				.append("previousHash", previousHash).append("timeStamp", timeStamp)
 				.append("minimunTransaction", minimunTransaction).append("coinLimit", coinLimit)
-				.append("miningTimeRate", miningTimeRate).append("reward", reward).append("blockSize", blockSize)
-				.append("coinbase", coinbase).append("premined", premined)
+				.append("miningTimeRate", miningTimeRate).append("reward", reward).append("fees", fees)
+				.append("blockSize", blockSize).append("coinbase", coinbase).append("premined", premined)
 				.append("startingDifficulty", startingDifficulty).build();
 	}
 

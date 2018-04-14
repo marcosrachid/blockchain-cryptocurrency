@@ -66,8 +66,8 @@ public class ResourceExceptionHandler {
 	@ExceptionHandler(BusinessException.class)
 	public ResponseEntity<ResponseDTO> handleTransactionException(BusinessException e) {
 		LOG.debug(ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e));
-		return ResponseEntity.status(BAD_REQUEST).contentType(APPLICATION_JSON_UTF8).body(ResponseDTO.createBuilder()
-				.withError(new ResponseErrorsDTO(BAD_REQUEST.value(), e.getMessage())).build());
+		return ResponseEntity.status(e.getStatus()).contentType(APPLICATION_JSON_UTF8).body(ResponseDTO.createBuilder()
+				.withError(new ResponseErrorsDTO(e.getStatus().value(), e.getMessage())).build());
 	}
 
 	/**

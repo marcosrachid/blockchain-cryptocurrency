@@ -19,6 +19,8 @@ public class RequestPropertiesBlockDTO implements Serializable {
 
 	private BigDecimal reward;
 
+	private BigDecimal fees;
+
 	private Long blockSize;
 
 	private String coinbase;
@@ -62,6 +64,14 @@ public class RequestPropertiesBlockDTO implements Serializable {
 		this.reward = reward;
 	}
 
+	public BigDecimal getFees() {
+		return fees;
+	}
+
+	public void setFees(BigDecimal fees) {
+		this.fees = fees;
+	}
+
 	public Long getBlockSize() {
 		return blockSize;
 	}
@@ -97,7 +107,7 @@ public class RequestPropertiesBlockDTO implements Serializable {
 	@Override
 	public int hashCode() {
 		return new HashCodeBuilder().append(minimunTransaction).append(coinLimit).append(miningTimeRate).append(reward)
-				.append(blockSize).append(coinbase).append(premined).append(startingDifficulty).hashCode();
+				.append(fees).append(blockSize).append(coinbase).append(premined).append(startingDifficulty).hashCode();
 	}
 
 	@Override
@@ -111,15 +121,16 @@ public class RequestPropertiesBlockDTO implements Serializable {
 		RequestPropertiesBlockDTO other = (RequestPropertiesBlockDTO) obj;
 		return new EqualsBuilder().append(minimunTransaction, other.minimunTransaction)
 				.append(coinLimit, other.coinLimit).append(miningTimeRate, other.miningTimeRate)
-				.append(reward, other.reward).append(blockSize, other.blockSize).append(coinbase, other.coinbase)
-				.append(premined, other.premined).append(startingDifficulty, other.startingDifficulty).isEquals();
+				.append(reward, other.reward).append(fees, other.fees).append(blockSize, other.blockSize)
+				.append(coinbase, other.coinbase).append(premined, other.premined)
+				.append(startingDifficulty, other.startingDifficulty).isEquals();
 	}
 
 	@Override
 	public String toString() {
 		return new ToStringBuilder(this).append("minimunTransaction", minimunTransaction).append("coinLimit", coinLimit)
-				.append("miningTimeRate", miningTimeRate).append("reward", reward).append("blockSize", blockSize)
-				.append("coinbase", coinbase).append("premined", premined)
+				.append("miningTimeRate", miningTimeRate).append("reward", reward).append("fees", fees)
+				.append("blockSize", blockSize).append("coinbase", coinbase).append("premined", premined)
 				.append("startingDifficulty", startingDifficulty).build();
 	}
 

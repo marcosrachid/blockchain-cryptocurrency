@@ -55,6 +55,9 @@ public abstract class Transaction implements Serializable {
 		this.timeStamp = timeStamp;
 	}
 
+	@JsonIgnore
+	public abstract void applyFees(BigDecimal arg);
+
 	/**
 	 * 
 	 * @return
@@ -71,7 +74,7 @@ public abstract class Transaction implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(transactionId).append(value).hashCode();
+		return new HashCodeBuilder().append(transactionId).append(value).append(timeStamp).hashCode();
 	}
 
 	@Override
@@ -82,13 +85,14 @@ public abstract class Transaction implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		SimpleTransaction other = (SimpleTransaction) obj;
+		Transaction other = (Transaction) obj;
 		return new EqualsBuilder().append(transactionId, other.transactionId).isEquals();
 	}
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("transactionId", transactionId).append("value", value).build();
+		return new ToStringBuilder(this).append("transactionId", transactionId).append("value", value)
+				.append("timeStamp", timeStamp).build();
 	}
 
 }

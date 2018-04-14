@@ -60,6 +60,12 @@ public class RewardTransaction extends Transaction {
 	}
 
 	@Override
+	public void applyFees(BigDecimal feeValue) {
+		this.output.addFee(feeValue);
+
+	}
+
+	@Override
 	public BigDecimal getInputsValue() {
 		return BigDecimal.ZERO;
 	}

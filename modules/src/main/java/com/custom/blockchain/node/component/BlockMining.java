@@ -15,7 +15,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.custom.blockchain.block.AbstractBlock;
 import com.custom.blockchain.block.BlockStateManagement;
+import com.custom.blockchain.block.PropertiesBlock;
 import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.BlockDB;
@@ -26,6 +28,7 @@ import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.service.BlockService;
 import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.transaction.RewardTransaction;
+import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.BlockUtil;
 import com.custom.blockchain.util.StringUtil;
@@ -109,13 +112,16 @@ public class BlockMining {
 			mineBlock();
 		long currentTimeInMillis = System.currentTimeMillis();
 		TransactionsBlock block = blockStateManagement.getNextBlock();
+		AbstractBlock currentBlock = currentBlockDB.get();
+		PropertiesBlock propertiesBlock = currentPropertiesBlockDB.get();
 
 		Integer difficulty = null;
 		if (block.getHeight() % DIFFICULTY_ADJUSTMENT_BLOCK == 0) {
 			difficulty = difficultyAdjustment.adjust();
 		} else {
-			difficulty = BlockUtil.getLastTransactionBlock(blockDB, currentBlockDB.get()).getRewardTransaction()
-					.getDifficulty();
+			TransactionsBlock transactionBlock = BlockUtil.getLastTransactionBlock(blockDB, currentBlock);
+			difficulty = (transactionBlock == null) ? propertiesBlock.getStartingDifficulty()
+					: transactionBlock.getRewardTransaction().getDifficulty();
 		}
 
 		try {
@@ -125,8 +131,8 @@ public class BlockMining {
 		}
 
 		// Miner reward
-		RewardTransaction reward = new RewardTransaction(currentPropertiesBlockDB.get().getCoinbase(),
-				currentPropertiesBlockDB.get().getReward(), difficulty);
+		RewardTransaction reward = new RewardTransaction(propertiesBlock.getCoinbase(), propertiesBlock.getReward(),
+				difficulty);
 		reward.setTransactionId(transactionService.calulateHash(reward));
 		reward.setOutput(new TransactionOutput(block.getMiner(), reward.getValue(), reward.getTransactionId()));
 		block.getTransactions().add(reward);
@@ -136,7 +142,10 @@ public class BlockMining {
 		try {
 			if (iterator.hasNext()) {
 				do {
-					blockService.addTransaction(block, mempoolDB.next(iterator));
+					SimpleTransaction transaction = mempoolDB.next(iterator);
+					blockService.addTransaction(block, transaction);
+					block.getRewardTransaction().applyFees(propertiesBlock.getFees());
+					
 				} while (iterator.hasNext() && !blockService.isBlockFull(block));
 			}
 		} catch (IOException e) {

@@ -21,13 +21,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @author marcosrachid
  *
  */
-public class SimpleTransaction extends Transaction {
+public class SimpleTransaction<BigDecimal> extends Transaction {
 
 	private static final long serialVersionUID = 1L;
 
 	@JsonSerialize(using = PublicKeySerializer.class)
 	@JsonDeserialize(using = PublicKeyDeserializer.class)
 	private PublicKey sender;
+	private BigDecimal feeValue;
 	private byte[] signature;
 
 	private List<TransactionInput> inputs = new ArrayList<>();
@@ -49,6 +50,14 @@ public class SimpleTransaction extends Transaction {
 
 	public void setSender(PublicKey sender) {
 		this.sender = sender;
+	}
+
+	public BigDecimal getFeeValue() {
+		return feeValue;
+	}
+
+	public void setFeeValue(BigDecimal feeValue) {
+		this.feeValue = feeValue;
 	}
 
 	public byte[] getSignature() {
@@ -77,8 +86,22 @@ public class SimpleTransaction extends Transaction {
 
 	/**
 	 * 
+	 * @param fees
+	 */
+	@Override
+	public void applyFees(BigDecimal fees) {
+		this.feeValue = this.value.multiply(fees);
+		this.outputs.forEach(o -> {
+			BigDecimal feeValue = o.getValue().multiply(fees);
+			o.subtractFee(feeValue);
+		});
+	}
+
+	/**
+	 * 
 	 * @return
 	 */
+	@Override
 	public BigDecimal getInputsValue() {
 		BigDecimal total = BigDecimal.ZERO;
 		for (TransactionInput i : inputs) {
@@ -93,6 +116,7 @@ public class SimpleTransaction extends Transaction {
 	 * 
 	 * @return
 	 */
+	@Override
 	public BigDecimal getOutputsValue() {
 		BigDecimal total = BigDecimal.ZERO;
 		for (TransactionOutput o : outputs) {
@@ -103,8 +127,8 @@ public class SimpleTransaction extends Transaction {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(transactionId).append(sender).append(value).append(timeStamp)
-				.append(signature).append(inputs).append(outputs).hashCode();
+		return new HashCodeBuilder().append(transactionId).append(sender).append(value).append(feeValue)
+				.append(timeStamp).append(signature).append(inputs).append(outputs).hashCode();
 	}
 
 	@Override
@@ -123,8 +147,8 @@ public class SimpleTransaction extends Transaction {
 	public String toString() {
 		return new ToStringBuilder(this).append("transactionId", transactionId)
 				.append("sender", WalletUtil.getStringFromKey(sender)).append("value", value)
-				.append("timeStamp", timeStamp).append("signature", signature).append("inputs", inputs)
-				.append("outputs", outputs).build();
+				.append("feeValue", feeValue).append("timeStamp", timeStamp).append("signature", signature)
+				.append("inputs", inputs).append("outputs", outputs).build();
 	}
 
 }

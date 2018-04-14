@@ -86,6 +86,7 @@ public class NodeHandler {
 				(forkProperties.getMiningTimeRate() == null) ? oldPropertiesBlock.getMiningTimeRate()
 						: forkProperties.getMiningTimeRate(),
 				(forkProperties.getReward() == null) ? oldPropertiesBlock.getReward() : forkProperties.getReward(),
+				(forkProperties.getFees() == null) ? oldPropertiesBlock.getFees() : forkProperties.getFees(),
 				(forkProperties.getBlockSize() == null) ? oldPropertiesBlock.getBlockSize()
 						: forkProperties.getBlockSize(),
 				(forkProperties.getCoinbase() == null) ? oldPropertiesBlock.getCoinbase()

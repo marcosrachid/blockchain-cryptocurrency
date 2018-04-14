@@ -14,8 +14,8 @@ public class BlockFactory {
 	 * @return
 	 */
 	public static PropertiesBlock getStartPropertiesBlock(BigDecimal minimunTransaction, BigDecimal coinLimit,
-			BigDecimal miningTimeRate, BigDecimal reward, Long blockSize, String coinbase) {
-		return new PropertiesBlock(minimunTransaction, coinLimit, miningTimeRate, reward, blockSize, coinbase);
+			BigDecimal miningTimeRate, BigDecimal reward, BigDecimal fees, Long blockSize, String coinbase) {
+		return new PropertiesBlock(minimunTransaction, coinLimit, miningTimeRate, reward, fees, blockSize, coinbase);
 	}
 
 	/**
@@ -24,9 +24,9 @@ public class BlockFactory {
 	 * @return
 	 */
 	public static PropertiesBlock getPropertiesBlock(BigDecimal minimunTransaction, BigDecimal coinLimit,
-			BigDecimal miningTimeRate, BigDecimal reward, Long blockSize, String coinbase,
+			BigDecimal miningTimeRate, BigDecimal reward, BigDecimal fees, Long blockSize, String coinbase,
 			AbstractBlock previousBlock) {
-		return new PropertiesBlock(minimunTransaction, coinLimit, miningTimeRate, reward, blockSize, coinbase,
+		return new PropertiesBlock(minimunTransaction, coinLimit, miningTimeRate, reward, fees, blockSize, coinbase,
 				previousBlock);
 	}
 

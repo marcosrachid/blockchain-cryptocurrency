@@ -85,6 +85,14 @@ public class TransactionOutput implements Serializable {
 		return (publicKey.equals(reciepient));
 	}
 
+	public void addFee(BigDecimal value) {
+		this.value = this.value.add(value);
+	}
+
+	public void subtractFee(BigDecimal value) {
+		this.value = this.value.subtract(value);
+	}
+
 	@Override
 	public int hashCode() {
 		return new HashCodeBuilder().append(id).append(reciepient).append(value).append(parentTransactionId).hashCode();

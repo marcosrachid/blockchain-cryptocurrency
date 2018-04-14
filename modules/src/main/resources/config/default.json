@@ -4,6 +4,7 @@
 	"coinLimit": 1000000,
 	"miningTimeRate": 6311385,
 	"reward": 200,
+	"fees": 0.001,
 	"blockSize": 1000000,
 	"coinbase": "Lorem ipsum dolor sit amet",
 	"premined": 25000,

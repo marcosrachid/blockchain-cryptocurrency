@@ -37,6 +37,8 @@ public class ResponsePropertiesDTO implements Serializable {
 
 	private BigDecimal reward;
 
+	private BigDecimal fees;
+
 	private Long blockSize;
 
 	private Integer networkPort;
@@ -60,6 +62,7 @@ public class ResponsePropertiesDTO implements Serializable {
 		this.coinLimit = properties.getCoinLimit();
 		this.miningTimeRate = properties.getMiningTimeRate();
 		this.reward = properties.getReward();
+		this.fees = properties.getFees();
 		this.blockSize = properties.getBlockSize();
 		this.networkPort = blockchainProperties.getNetworkPort();
 		this.networkMaximumSeeds = blockchainProperties.getNetworkMaximumSeeds();
@@ -115,6 +118,14 @@ public class ResponsePropertiesDTO implements Serializable {
 		this.reward = reward;
 	}
 
+	public BigDecimal getFees() {
+		return fees;
+	}
+
+	public void setFees(BigDecimal fees) {
+		this.fees = fees;
+	}
+
 	public Long getBlockSize() {
 		return blockSize;
 	}
@@ -158,8 +169,8 @@ public class ResponsePropertiesDTO implements Serializable {
 	@Override
 	public int hashCode() {
 		return new HashCodeBuilder().append(coinName).append(version).append(minimunTransaction).append(coinLimit)
-				.append(miningTimeRate).append(reward).append(blockSize).append(networkPort).append(networkMaximumSeeds)
-				.append(networkMockedPeers).append(miner).hashCode();
+				.append(miningTimeRate).append(reward).append(fees).append(blockSize).append(networkPort)
+				.append(networkMaximumSeeds).append(networkMockedPeers).append(miner).hashCode();
 	}
 
 	@Override
@@ -173,7 +184,7 @@ public class ResponsePropertiesDTO implements Serializable {
 		ResponsePropertiesDTO other = (ResponsePropertiesDTO) obj;
 		return new EqualsBuilder().append(coinName, other.coinName).append(version, other.version)
 				.append(minimunTransaction, other.minimunTransaction).append(coinLimit, other.coinLimit)
-				.append(miningTimeRate, other.miningTimeRate).append(reward, other.reward)
+				.append(miningTimeRate, other.miningTimeRate).append(reward, other.reward).append(fees, other.fees)
 				.append(blockSize, other.blockSize).append(networkPort, other.networkPort)
 				.append(networkMaximumSeeds, other.networkMaximumSeeds)
 				.append(networkMockedPeers, other.networkMockedPeers).append(miner, other.miner).isEquals();
@@ -183,9 +194,10 @@ public class ResponsePropertiesDTO implements Serializable {
 	public String toString() {
 		return new ToStringBuilder(this).append("coinName", coinName).append("version", version)
 				.append("minimunTransaction", minimunTransaction).append("coinLimit", coinLimit)
-				.append("miningTimeRate", miningTimeRate).append("reward", reward).append("blockSize", blockSize)
-				.append("networkPort", networkPort).append("networkMaximumSeeds", networkMaximumSeeds)
-				.append("networkMockedPeers", networkMockedPeers).append("miner", miner).build();
+				.append("miningTimeRate", miningTimeRate).append("reward", reward).append("fees", fees)
+				.append("blockSize", blockSize).append("networkPort", networkPort)
+				.append("networkMaximumSeeds", networkMaximumSeeds).append("networkMockedPeers", networkMockedPeers)
+				.append("miner", miner).build();
 	}
 
 }

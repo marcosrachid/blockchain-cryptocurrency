@@ -6,11 +6,13 @@ import java.math.BigDecimal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.block.AbstractBlock;
 import com.custom.blockchain.block.PropertiesBlock;
 import com.custom.blockchain.block.TransactionsBlock;
+import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
@@ -30,6 +32,8 @@ public class BlockService {
 
 	private ObjectMapper objectMapper;
 
+	private BlockDB blockDB;
+
 	private CurrentBlockDB currentBlockDB;
 
 	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
@@ -38,14 +42,28 @@ public class BlockService {
 
 	private SignatureManager signatureManager;
 
-	public BlockService(final ObjectMapper objectMapper, final CurrentBlockDB currentBlockDB,
+	public BlockService(final ObjectMapper objectMapper, final BlockDB blockDB, final CurrentBlockDB currentBlockDB,
 			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final MempoolDB mempoolDB,
 			final SignatureManager signatureManager) {
 		this.objectMapper = objectMapper;
+		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.mempoolDB = mempoolDB;
 		this.signatureManager = signatureManager;
+	}
+
+	/**
+	 * 
+	 * @param height
+	 * @return
+	 * @throws BusinessException
+	 */
+	public AbstractBlock findBlockByHeight(Long height) throws BusinessException {
+		AbstractBlock block = blockDB.get(height);
+		if (block == null)
+			throw new BusinessException(HttpStatus.NOT_FOUND, "Block not found");
+		return block;
 	}
 
 	/**
@@ -104,6 +122,7 @@ public class BlockService {
 			throw new BusinessException("Non existent transaction");
 		mempoolDB.delete(transaction.getTransactionId());
 		processTransaction(transaction);
+		transaction.applyFees(currentPropertiesBlockDB.get().getFees());
 		block.getTransactions().add(transaction);
 	}
 
