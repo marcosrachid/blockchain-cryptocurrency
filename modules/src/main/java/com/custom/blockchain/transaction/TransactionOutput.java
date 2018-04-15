@@ -45,8 +45,8 @@ public class TransactionOutput implements Serializable {
 		this.reciepient = reciepient;
 		this.value = value;
 		this.parentTransactionId = parentTransactionId;
-		this.id = DigestUtil.applySha256(
-				WalletUtil.getStringFromKey(reciepient) + value.setScale(8).toString() + parentTransactionId);
+		this.id = DigestUtil
+				.applySha256(WalletUtil.getStringFromKey(reciepient) + value.toPlainString() + parentTransactionId);
 	}
 
 	public String getId() {

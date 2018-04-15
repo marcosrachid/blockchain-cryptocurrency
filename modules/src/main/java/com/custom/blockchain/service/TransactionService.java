@@ -5,9 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -21,7 +19,6 @@ import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
-import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
@@ -69,14 +66,7 @@ public class TransactionService {
 			throw new BusinessException("Not Enough funds to send transaction. Transaction Discarded");
 		}
 
-		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
-
-		List<TransactionOutput> UTXOsSender = utxoChainstateDb.get(from.getPublicKey());
-		UTXOsSender.forEach(u -> {
-			inputs.add(new TransactionInput(u));
-		});
-
-		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), value, inputs);
+		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), value);
 		newTransaction.setTransactionId(calulateHash(newTransaction));
 		newTransaction.getOutputs().add(new TransactionOutput(to, value, newTransaction.getTransactionId()));
 		signatureManager.generateSignature(newTransaction, from);
@@ -104,14 +94,7 @@ public class TransactionService {
 			throw new BusinessException("Not Enough funds to send transaction. Transaction Discarded");
 		}
 
-		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
-
-		List<TransactionOutput> UTXOsSender = utxoChainstateDb.get(from.getPublicKey());
-		UTXOsSender.forEach(u -> {
-			inputs.add(new TransactionInput(u));
-		});
-
-		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), totalSentFunds, inputs);
+		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), totalSentFunds);
 		newTransaction.setTransactionId(calulateHash(newTransaction));
 		for (RequestSendFundsDTO f : funds) {
 			PublicKey reciepient;
@@ -150,16 +133,16 @@ public class TransactionService {
 	 */
 	public String calulateHash(SimpleTransaction transaction) {
 		Transaction.sequence++;
-		return DigestUtil.applySha256(DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender())
-				+ transaction.getSignature() + transaction.getValue().setScale(8).toString()
-				+ transaction.getTimeStamp() + Transaction.sequence));
+		return DigestUtil.applySha256(
+				DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender()) + transaction.getSignature()
+						+ transaction.getValue().toPlainString() + transaction.getTimeStamp() + Transaction.sequence));
 	}
 
 	/**
 	 * 
 	 * @param transactions
 	 */
-	public void addTransactionsUtxo(Set<Transaction> transactions) {
+	public void addTransactionsUtxo(Collection<Transaction> transactions) {
 		for (Transaction transaction : transactions) {
 			if (transaction instanceof SimpleTransaction)
 				addToUtxo((SimpleTransaction) transaction);
@@ -172,7 +155,7 @@ public class TransactionService {
 	 * 
 	 * @param transactions
 	 */
-	public void removeTransactionsUtxo(Set<Transaction> transactions) {
+	public void removeTransactionsUtxo(Collection<Transaction> transactions) {
 		for (Transaction transaction : transactions) {
 			if (transaction instanceof SimpleTransaction)
 				removeUtxo((SimpleTransaction) transaction);
@@ -185,7 +168,7 @@ public class TransactionService {
 	 * 
 	 * @param transactions
 	 */
-	public void mempoolChargeback(Set<Transaction> transactions) {
+	public void mempoolChargeback(Collection<Transaction> transactions) {
 		for (SimpleTransaction transaction : transactions.stream().filter(t -> t instanceof SimpleTransaction)
 				.map(t -> (SimpleTransaction) t).collect(Collectors.toSet())) {
 			mempoolDB.put(transaction.getTransactionId(), (SimpleTransaction) transaction);

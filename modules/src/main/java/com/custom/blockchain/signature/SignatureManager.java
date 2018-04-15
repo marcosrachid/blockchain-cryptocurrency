@@ -39,7 +39,7 @@ public class SignatureManager {
 		try {
 			data = WalletUtil.getStringFromKey(transaction.getSender())
 					+ objectMapper.writeValueAsString(transaction.getOutputs())
-					+ transaction.getValue().setScale(8).toString();
+					+ transaction.getValue().toPlainString();
 		} catch (JsonProcessingException e) {
 			throw new BusinessException("Could not read transaction outputs");
 		}
@@ -57,7 +57,7 @@ public class SignatureManager {
 		try {
 			data = WalletUtil.getStringFromKey(transaction.getSender())
 					+ objectMapper.writeValueAsString(transaction.getOutputs())
-					+ transaction.getValue().setScale(8).toString();
+					+ transaction.getValue().toPlainString();
 		} catch (JsonProcessingException e) {
 			return false;
 		}

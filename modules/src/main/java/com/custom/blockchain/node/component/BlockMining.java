@@ -144,8 +144,6 @@ public class BlockMining {
 				do {
 					SimpleTransaction transaction = mempoolDB.next(iterator);
 					blockService.addTransaction(block, transaction);
-					block.getRewardTransaction().applyFees(propertiesBlock.getFees());
-					
 				} while (iterator.hasNext() && !blockService.isBlockFull(block));
 			}
 		} catch (IOException e) {

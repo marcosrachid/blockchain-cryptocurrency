@@ -2,9 +2,9 @@ package com.custom.blockchain.block;
 
 import java.security.PublicKey;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -35,7 +35,7 @@ public class TransactionsBlock extends AbstractBlock {
 	private Integer nonce;
 	private String propertiesHash;
 
-	private Set<Transaction> transactions = new HashSet<>();
+	private Set<Transaction> transactions = new TreeSet<>();
 
 	public TransactionsBlock() {
 	}

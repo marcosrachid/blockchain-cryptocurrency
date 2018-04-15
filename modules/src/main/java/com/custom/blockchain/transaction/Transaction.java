@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 @JsonTypeInfo(use = Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({ @Type(value = RewardTransaction.class, name = "reward"),
 		@Type(value = SimpleTransaction.class, name = "transaction") })
-public abstract class Transaction implements Serializable {
+public abstract class Transaction implements Serializable, Comparable<Transaction> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -55,6 +55,10 @@ public abstract class Transaction implements Serializable {
 		this.timeStamp = timeStamp;
 	}
 
+	/**
+	 * 
+	 * @param arg
+	 */
 	@JsonIgnore
 	public abstract void applyFees(BigDecimal arg);
 
@@ -93,6 +97,11 @@ public abstract class Transaction implements Serializable {
 	public String toString() {
 		return new ToStringBuilder(this).append("transactionId", transactionId).append("value", value)
 				.append("timeStamp", timeStamp).build();
+	}
+
+	@Override
+	public int compareTo(Transaction o) {
+		return this.getTimeStamp().compareTo(o.getTimeStamp());
 	}
 
 }

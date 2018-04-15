@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @author marcosrachid
  *
  */
-public class SimpleTransaction<BigDecimal> extends Transaction {
+public class SimpleTransaction extends Transaction {
 
 	private static final long serialVersionUID = 1L;
 
@@ -37,10 +37,9 @@ public class SimpleTransaction<BigDecimal> extends Transaction {
 	public SimpleTransaction() {
 	}
 
-	public SimpleTransaction(PublicKey from, BigDecimal value, List<TransactionInput> inputs) {
+	public SimpleTransaction(PublicKey from, BigDecimal value) {
 		this.sender = from;
 		this.value = value;
-		this.inputs = inputs;
 		this.timeStamp = new Date().getTime();
 	}
 

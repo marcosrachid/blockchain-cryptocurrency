@@ -3,6 +3,7 @@ package com.custom.blockchain.service;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,10 +16,12 @@ import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.data.block.BlockDB;
 import com.custom.blockchain.data.block.CurrentBlockDB;
 import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.SimpleTransaction;
+import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.StringUtil;
@@ -38,17 +41,20 @@ public class BlockService {
 
 	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
 
+	private UTXOChainstateDB utxoChainstateDb;
+
 	private MempoolDB mempoolDB;
 
 	private SignatureManager signatureManager;
 
 	public BlockService(final ObjectMapper objectMapper, final BlockDB blockDB, final CurrentBlockDB currentBlockDB,
-			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final MempoolDB mempoolDB,
-			final SignatureManager signatureManager) {
+			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final UTXOChainstateDB utxoChainstateDb,
+			final MempoolDB mempoolDB, final SignatureManager signatureManager) {
 		this.objectMapper = objectMapper;
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
+		this.utxoChainstateDb = utxoChainstateDb;
 		this.mempoolDB = mempoolDB;
 		this.signatureManager = signatureManager;
 	}
@@ -119,10 +125,16 @@ public class BlockService {
 	 */
 	public void addTransaction(final TransactionsBlock block, SimpleTransaction transaction) throws BusinessException {
 		if (transaction == null)
-			throw new BusinessException("Non existent transaction");
+			return;
+		if (block.getTransactions().stream().filter(t -> t instanceof SimpleTransaction)
+				.map(t -> ((SimpleTransaction) t).getSender().equals(transaction.getSender())).findFirst().isPresent())
+			return;
 		mempoolDB.delete(transaction.getTransactionId());
 		processTransaction(transaction);
+		// Apply fees
 		transaction.applyFees(currentPropertiesBlockDB.get().getFees());
+		block.getRewardTransaction().applyFees(transaction.getFeeValue());
+
 		block.getTransactions().add(transaction);
 	}
 
@@ -154,6 +166,11 @@ public class BlockService {
 		if (transaction.getValue().compareTo(currentPropertiesBlockDB.get().getMinimunTransaction()) < 0) {
 			throw new BusinessException("Transaction sent funds are too low. Transaction Discarded");
 		}
+
+		List<TransactionOutput> UTXOsSender = utxoChainstateDb.get(transaction.getSender());
+		UTXOsSender.forEach(u -> {
+			transaction.getInputs().add(new TransactionInput(u));
+		});
 
 		// leftover
 		BigDecimal leftOver = transaction.getInputsValue().subtract(transaction.getValue());

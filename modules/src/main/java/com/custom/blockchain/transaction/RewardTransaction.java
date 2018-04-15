@@ -62,7 +62,6 @@ public class RewardTransaction extends Transaction {
 	@Override
 	public void applyFees(BigDecimal feeValue) {
 		this.output.addFee(feeValue);
-
 	}
 
 	@Override
