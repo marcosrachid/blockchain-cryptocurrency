@@ -2,8 +2,6 @@
 
 * Fork treatment return utxo to fork height state
 
-* Miner reward readjustment
-
 * Use Wallet management
 
 * Fork treatment for new PropertiesBlock
