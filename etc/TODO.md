@@ -9,3 +9,7 @@
 * getBlockResponse send list of blocks up to 10mb size
 
 * mutable application.properties
+
+## Optional
+
+* get DNS from peers
