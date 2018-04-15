@@ -8,8 +8,6 @@
 
 * Miner reward readjustment
 
-* Fees
-
 * Use Wallet management
 
 * Fork treatment for new PropertiesBlock
