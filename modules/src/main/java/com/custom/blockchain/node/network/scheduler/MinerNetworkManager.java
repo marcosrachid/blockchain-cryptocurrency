@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.node.component.PeerFinder;
 import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.node.network.server.SocketThread;
@@ -29,7 +29,7 @@ public class MinerNetworkManager extends AbstractNetworkManager {
 	private static final Logger LOG = LoggerFactory.getLogger(MinerNetworkManager.class);
 
 	public MinerNetworkManager(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final PeerFinder peerFinder,
+			final CurrentPropertiesChainstateDB currentPropertiesBlockDB, final PeerFinder peerFinder,
 			final Server peerListener) {
 		this.objectMapper = objectMapper;
 		this.blockchainProperties = blockchainProperties;

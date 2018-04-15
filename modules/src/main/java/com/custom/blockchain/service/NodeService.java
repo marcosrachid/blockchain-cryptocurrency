@@ -1,10 +1,13 @@
 package com.custom.blockchain.service;
 
+import java.math.BigDecimal;
+
 import org.springframework.stereotype.Service;
 
 import com.custom.blockchain.block.AbstractBlock;
 import com.custom.blockchain.data.block.BlockDB;
-import com.custom.blockchain.data.block.CurrentBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentCirculatingSupplyChainstateDB;
 import com.custom.blockchain.util.BlockUtil;
 
 /**
@@ -17,11 +20,15 @@ public class NodeService {
 
 	private BlockDB blockDB;
 
-	private CurrentBlockDB currentBlockDB;
+	private CurrentBlockChainstateDB currentBlockDB;
 
-	public NodeService(final BlockDB blockDB, final CurrentBlockDB currentBlockDB) {
+	private CurrentCirculatingSupplyChainstateDB currentCirculatingSupplyChainstateDB;
+
+	public NodeService(final BlockDB blockDB, final CurrentBlockChainstateDB currentBlockDB,
+			final CurrentCirculatingSupplyChainstateDB currentCirculatingSupplyChainstateDB) {
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
+		this.currentCirculatingSupplyChainstateDB = currentCirculatingSupplyChainstateDB;
 	}
 
 	public AbstractBlock getCurrentBlock() {
@@ -42,6 +49,14 @@ public class NodeService {
 	 */
 	public Long getCurrentHeight() {
 		return getCurrentBlock().getHeight();
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public BigDecimal getCurrentCirculatingSupply() {
+		return currentCirculatingSupplyChainstateDB.get();
 	}
 
 }

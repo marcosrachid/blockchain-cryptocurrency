@@ -14,8 +14,8 @@ import com.custom.blockchain.block.AbstractBlock;
 import com.custom.blockchain.block.PropertiesBlock;
 import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.data.block.BlockDB;
-import com.custom.blockchain.data.block.CurrentBlockDB;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
@@ -37,9 +37,9 @@ public class BlockService {
 
 	private BlockDB blockDB;
 
-	private CurrentBlockDB currentBlockDB;
+	private CurrentBlockChainstateDB currentBlockDB;
 
-	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+	private CurrentPropertiesChainstateDB currentPropertiesBlockDB;
 
 	private UTXOChainstateDB utxoChainstateDb;
 
@@ -47,9 +47,10 @@ public class BlockService {
 
 	private SignatureManager signatureManager;
 
-	public BlockService(final ObjectMapper objectMapper, final BlockDB blockDB, final CurrentBlockDB currentBlockDB,
-			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final UTXOChainstateDB utxoChainstateDb,
-			final MempoolDB mempoolDB, final SignatureManager signatureManager) {
+	public BlockService(final ObjectMapper objectMapper, final BlockDB blockDB,
+			final CurrentBlockChainstateDB currentBlockDB, final CurrentPropertiesChainstateDB currentPropertiesBlockDB,
+			final UTXOChainstateDB utxoChainstateDb, final MempoolDB mempoolDB,
+			final SignatureManager signatureManager) {
 		this.objectMapper = objectMapper;
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
@@ -87,7 +88,7 @@ public class BlockService {
 	public String calculateHash(PropertiesBlock propertiesBlock) {
 		return DigestUtil.applySha256(DigestUtil
 				.applySha256(propertiesBlock.getPreviousHash() + propertiesBlock.getMinimunTransaction().toPlainString()
-						+ propertiesBlock.getCoinLimit().toPlainString() + propertiesBlock.getMiningTimeRate()
+						+ propertiesBlock.getSupplyLimit().toPlainString() + propertiesBlock.getMiningTimeRate()
 						+ propertiesBlock.getReward().toPlainString() + propertiesBlock.getBlockSize()
 						+ propertiesBlock.getCoinbase()));
 	}

@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.node.component.PeerFinder;
 import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.node.network.server.SocketThread;
@@ -34,7 +34,7 @@ public abstract class AbstractNetworkManager {
 
 	protected BlockchainProperties blockchainProperties;
 
-	protected CurrentPropertiesBlockDB currentPropertiesBlockDB;
+	protected CurrentPropertiesChainstateDB currentPropertiesBlockDB;
 
 	protected PeerFinder peerFinder;
 

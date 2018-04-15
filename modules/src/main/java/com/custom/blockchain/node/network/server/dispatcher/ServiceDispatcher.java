@@ -21,8 +21,8 @@ import com.custom.blockchain.block.PropertiesBlock;
 import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.BlockDB;
-import com.custom.blockchain.data.block.CurrentBlockDB;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.exception.ForkException;
@@ -54,9 +54,9 @@ public class ServiceDispatcher {
 
 	private BlockDB blockDB;
 
-	private CurrentBlockDB currentBlockDB;
+	private CurrentBlockChainstateDB currentBlockDB;
 
-	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+	private CurrentPropertiesChainstateDB currentPropertiesBlockDB;
 
 	private MempoolDB mempoolDB;
 
@@ -65,7 +65,7 @@ public class ServiceDispatcher {
 	private ForcedNodeFork nodeFork;
 
 	public ServiceDispatcher(final BlockchainProperties blockchainProperties, final BlockDB blockDB,
-			final CurrentBlockDB currentBlockDB, final CurrentPropertiesBlockDB currentPropertiesBlockDB,
+			final CurrentBlockChainstateDB currentBlockDB, final CurrentPropertiesChainstateDB currentPropertiesBlockDB,
 			final MempoolDB mempoolDB, final BlockStateManagement blockStateManagement, final ForcedNodeFork nodeFork) {
 		this.blockchainProperties = blockchainProperties;
 		this.blockDB = blockDB;

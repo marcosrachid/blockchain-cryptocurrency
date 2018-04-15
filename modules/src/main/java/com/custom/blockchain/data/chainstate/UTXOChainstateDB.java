@@ -35,6 +35,10 @@ public class UTXOChainstateDB extends AbstractLevelDB<PublicKey, List<Transactio
 	private static final TypeReference<List<TransactionOutput>> MAPPER = new TypeReference<List<TransactionOutput>>() {
 	};
 
+	private static final String KEY_BINDER = "c";
+
+	private static final String[] EXCLUDING_KEY_BINDER = { "B", "P", "S" };
+
 	private DB chainstateDb;
 
 	private ObjectMapper objectMapper;
@@ -47,11 +51,11 @@ public class UTXOChainstateDB extends AbstractLevelDB<PublicKey, List<Transactio
 	@Override
 	public List<TransactionOutput> get(PublicKey key) {
 		String k = WalletUtil.getStringFromKey(key);
-		LOG.trace("[Crypto] ChainstateDB Get - Key: " + k);
+		LOG.trace("[Crypto] ChainstateDB Get - Key: " + KEY_BINDER + k);
 		try {
 			return objectMapper.readValue(StringUtil.decompress(chainstateDb.get(StringUtil.compress(k))), MAPPER);
 		} catch (DBException | IOException e) {
-			LOG.debug("[Crypto] ChainstateDB Error from key [" + k + "]: " + e.getMessage());
+			LOG.debug("[Crypto] ChainstateDB Error from key [" + KEY_BINDER + k + "]: " + e.getMessage());
 			return new ArrayList<TransactionOutput>();
 		}
 	}
@@ -61,22 +65,22 @@ public class UTXOChainstateDB extends AbstractLevelDB<PublicKey, List<Transactio
 		String k = WalletUtil.getStringFromKey(key);
 		try {
 			String v = objectMapper.writeValueAsString(value);
-			LOG.trace("[Crypto] ChainstateDB Add Object - Key: " + k + ", Value: " + v);
+			LOG.trace("[Crypto] ChainstateDB Add Object - Key: " + KEY_BINDER + k + ", Value: " + v);
 			chainstateDb.put(StringUtil.compress(k), StringUtil.compress(v));
 		} catch (DBException | IOException e) {
-			throw new DatabaseException(
-					"Could not put data from key [" + k + "] and TransactionOutput [" + value + "]: " + e.getMessage());
+			throw new DatabaseException("Could not put data from key [" + KEY_BINDER + k + "] and TransactionOutput ["
+					+ value + "]: " + e.getMessage());
 		}
 	}
 
 	@Override
 	public void delete(PublicKey key) {
 		String k = WalletUtil.getStringFromKey(key);
-		LOG.trace("[Crypto] ChainstateDB Deleted - Key: " + k);
+		LOG.trace("[Crypto] ChainstateDB Deleted - Key: " + KEY_BINDER + k);
 		try {
 			chainstateDb.delete(StringUtil.compress(k));
 		} catch (DBException | IOException e) {
-			throw new DatabaseException("Could not delete data from key [" + k + "]: " + e.getMessage());
+			throw new DatabaseException("Could not delete data from key [" + KEY_BINDER + k + "]: " + e.getMessage());
 		}
 	}
 
@@ -92,8 +96,12 @@ public class UTXOChainstateDB extends AbstractLevelDB<PublicKey, List<Transactio
 		try {
 			Entry<byte[], byte[]> entry = iterator.next();
 			String key = StringUtil.decompress(entry.getKey());
+			for (String excluded : EXCLUDING_KEY_BINDER) {
+				if (key.startsWith(excluded))
+					return next(iterator);
+			}
 			String value = StringUtil.decompress(entry.getValue());
-			LOG.trace("[Crypto] ChainstateDB Current Iterator - Key: " + key + ", Value: " + value);
+			LOG.trace("[Crypto] ChainstateDB Current Iterator - Key: " + KEY_BINDER + key + ", Value: " + value);
 			return objectMapper.readValue(value, MAPPER);
 		} catch (Exception e) {
 			throw new DatabaseException("Could not get data from iterator: " + e.getMessage());

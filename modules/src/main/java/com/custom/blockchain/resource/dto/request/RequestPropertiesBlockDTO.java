@@ -13,7 +13,7 @@ public class RequestPropertiesBlockDTO implements Serializable {
 
 	private BigDecimal minimunTransaction;
 
-	private BigDecimal coinLimit;
+	private BigDecimal supplyLimit;
 
 	private BigDecimal miningTimeRate;
 
@@ -40,12 +40,12 @@ public class RequestPropertiesBlockDTO implements Serializable {
 		this.minimunTransaction = minimunTransaction;
 	}
 
-	public BigDecimal getCoinLimit() {
-		return coinLimit;
+	public BigDecimal getSupplyLimit() {
+		return supplyLimit;
 	}
 
-	public void setCoinLimit(BigDecimal coinLimit) {
-		this.coinLimit = coinLimit;
+	public void setSupplyLimit(BigDecimal supplyLimit) {
+		this.supplyLimit = supplyLimit;
 	}
 
 	public BigDecimal getMiningTimeRate() {
@@ -106,8 +106,9 @@ public class RequestPropertiesBlockDTO implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(minimunTransaction).append(coinLimit).append(miningTimeRate).append(reward)
-				.append(fees).append(blockSize).append(coinbase).append(premined).append(startingDifficulty).hashCode();
+		return new HashCodeBuilder().append(minimunTransaction).append(supplyLimit).append(miningTimeRate)
+				.append(reward).append(fees).append(blockSize).append(coinbase).append(premined)
+				.append(startingDifficulty).hashCode();
 	}
 
 	@Override
@@ -120,7 +121,7 @@ public class RequestPropertiesBlockDTO implements Serializable {
 			return false;
 		RequestPropertiesBlockDTO other = (RequestPropertiesBlockDTO) obj;
 		return new EqualsBuilder().append(minimunTransaction, other.minimunTransaction)
-				.append(coinLimit, other.coinLimit).append(miningTimeRate, other.miningTimeRate)
+				.append(supplyLimit, other.supplyLimit).append(miningTimeRate, other.miningTimeRate)
 				.append(reward, other.reward).append(fees, other.fees).append(blockSize, other.blockSize)
 				.append(coinbase, other.coinbase).append(premined, other.premined)
 				.append(startingDifficulty, other.startingDifficulty).isEquals();
@@ -128,10 +129,10 @@ public class RequestPropertiesBlockDTO implements Serializable {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("minimunTransaction", minimunTransaction).append("coinLimit", coinLimit)
-				.append("miningTimeRate", miningTimeRate).append("reward", reward).append("fees", fees)
-				.append("blockSize", blockSize).append("coinbase", coinbase).append("premined", premined)
-				.append("startingDifficulty", startingDifficulty).build();
+		return new ToStringBuilder(this).append("minimunTransaction", minimunTransaction)
+				.append("coinLimit", supplyLimit).append("miningTimeRate", miningTimeRate).append("reward", reward)
+				.append("fees", fees).append("blockSize", blockSize).append("coinbase", coinbase)
+				.append("premined", premined).append("startingDifficulty", startingDifficulty).build();
 	}
 
 }

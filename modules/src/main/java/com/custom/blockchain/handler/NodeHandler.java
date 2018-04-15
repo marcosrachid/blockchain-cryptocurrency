@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 import com.custom.blockchain.block.AbstractBlock;
 import com.custom.blockchain.block.PropertiesBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.block.CurrentBlockDB;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.node.component.ForcedNodeFork;
 import com.custom.blockchain.resource.dto.request.RequestForkDTO;
@@ -32,14 +32,14 @@ public class NodeHandler {
 
 	private BlockchainProperties blockchainProperties;
 
-	private CurrentBlockDB currentBlockDB;
+	private CurrentBlockChainstateDB currentBlockDB;
 
-	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+	private CurrentPropertiesChainstateDB currentPropertiesBlockDB;
 
 	private ForcedNodeFork nodeFork;
 
-	public NodeHandler(final BlockchainProperties blockchainProperties, final CurrentBlockDB currentBlockDB,
-			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final ForcedNodeFork nodeFork) {
+	public NodeHandler(final BlockchainProperties blockchainProperties, final CurrentBlockChainstateDB currentBlockDB,
+			final CurrentPropertiesChainstateDB currentPropertiesBlockDB, final ForcedNodeFork nodeFork) {
 		this.blockchainProperties = blockchainProperties;
 		this.currentBlockDB = currentBlockDB;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
@@ -81,8 +81,8 @@ public class NodeHandler {
 		return new PropertiesBlock(
 				(forkProperties.getMinimunTransaction() == null) ? oldPropertiesBlock.getMinimunTransaction()
 						: forkProperties.getMinimunTransaction(),
-				(forkProperties.getCoinLimit() == null) ? oldPropertiesBlock.getCoinLimit()
-						: forkProperties.getCoinLimit(),
+				(forkProperties.getSupplyLimit() == null) ? oldPropertiesBlock.getSupplyLimit()
+						: forkProperties.getSupplyLimit(),
 				(forkProperties.getMiningTimeRate() == null) ? oldPropertiesBlock.getMiningTimeRate()
 						: forkProperties.getMiningTimeRate(),
 				(forkProperties.getReward() == null) ? oldPropertiesBlock.getReward() : forkProperties.getReward(),

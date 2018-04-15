@@ -80,4 +80,14 @@ public class NodeResource {
 				.body(new ResponseDTO(nodeService.getCurrentHeight()));
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
+	@RequestMapping(value = "/state/supply", method = RequestMethod.GET, produces = APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<ResponseDTO> getCurrentCirculatingSupply() {
+		return ResponseEntity.status(HttpStatus.OK).contentType(APPLICATION_JSON_UTF8)
+				.body(new ResponseDTO(nodeService.getCurrentCirculatingSupply()));
+	}
+
 }

@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.node.network.server.dispatcher.ServiceDispatcher;
 import com.custom.blockchain.util.ConnectionUtil;
 
@@ -22,7 +22,7 @@ public class Server {
 
 	private BlockchainProperties blockchainProperties;
 
-	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+	private CurrentPropertiesChainstateDB currentPropertiesBlockDB;
 
 	private ServiceDispatcher serviceDispatcher;
 
@@ -31,7 +31,7 @@ public class Server {
 	private boolean isRunning;
 
 	public Server(final BlockchainProperties blockchainProperties,
-			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final ServiceDispatcher serviceDispatcher) {
+			final CurrentPropertiesChainstateDB currentPropertiesBlockDB, final ServiceDispatcher serviceDispatcher) {
 		this.blockchainProperties = blockchainProperties;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.serviceDispatcher = serviceDispatcher;

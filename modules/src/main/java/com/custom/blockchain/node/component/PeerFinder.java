@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.data.peers.PeersDB;
 import com.custom.blockchain.node.network.server.SocketThread;
 import com.custom.blockchain.node.network.server.dispatcher.Service;
@@ -43,7 +43,7 @@ public class PeerFinder {
 
 	private BlockchainProperties blockchainProperties;
 
-	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+	private CurrentPropertiesChainstateDB currentPropertiesBlockDB;
 
 	private ServiceDispatcher serviceDispatcher;
 
@@ -52,7 +52,7 @@ public class PeerFinder {
 	private List<Peer> hasPeer = new ArrayList<>();
 
 	public PeerFinder(final BlockchainProperties blockchainProperties,
-			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final ServiceDispatcher serviceDispatcher,
+			final CurrentPropertiesChainstateDB currentPropertiesBlockDB, final ServiceDispatcher serviceDispatcher,
 			final PeersDB peersDB) {
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.blockchainProperties = blockchainProperties;

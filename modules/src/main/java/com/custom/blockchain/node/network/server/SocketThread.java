@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.node.network.server.dispatcher.ServiceDispatcher;
 import com.custom.blockchain.node.network.server.request.BlockchainRequest;
 import com.custom.blockchain.peer.Peer;
@@ -31,7 +31,7 @@ public class SocketThread extends Thread {
 
 	private BlockchainProperties blockchainProperties;
 
-	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+	private CurrentPropertiesChainstateDB currentPropertiesBlockDB;
 
 	private ServiceDispatcher serviceDispatcher;
 
@@ -41,7 +41,7 @@ public class SocketThread extends Thread {
 
 	private boolean isRunning;
 
-	public SocketThread(BlockchainProperties blockchainProperties, CurrentPropertiesBlockDB currentPropertiesBlockDB,
+	public SocketThread(BlockchainProperties blockchainProperties, CurrentPropertiesChainstateDB currentPropertiesBlockDB,
 			ServiceDispatcher serviceDispatcher, Socket client) {
 		this.blockchainProperties = blockchainProperties;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;

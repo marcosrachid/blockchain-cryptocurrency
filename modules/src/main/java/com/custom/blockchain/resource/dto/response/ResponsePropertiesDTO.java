@@ -11,7 +11,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.custom.blockchain.block.PropertiesBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.peer.Peer;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -31,7 +31,7 @@ public class ResponsePropertiesDTO implements Serializable {
 
 	private BigDecimal minimunTransaction;
 
-	private BigDecimal coinLimit;
+	private BigDecimal supplyLimit;
 
 	private BigDecimal miningTimeRate;
 
@@ -53,13 +53,13 @@ public class ResponsePropertiesDTO implements Serializable {
 	}
 
 	public ResponsePropertiesDTO(String coinName, String version, BlockchainProperties blockchainProperties,
-			CurrentPropertiesBlockDB currentPropertiesBlockDB)
+			CurrentPropertiesChainstateDB currentPropertiesBlockDB)
 			throws JsonParseException, JsonMappingException, IOException {
 		PropertiesBlock properties = currentPropertiesBlockDB.get();
 		this.coinName = coinName;
 		this.version = version;
 		this.minimunTransaction = properties.getMinimunTransaction();
-		this.coinLimit = properties.getCoinLimit();
+		this.supplyLimit = properties.getSupplyLimit();
 		this.miningTimeRate = properties.getMiningTimeRate();
 		this.reward = properties.getReward();
 		this.fees = properties.getFees();
@@ -94,12 +94,12 @@ public class ResponsePropertiesDTO implements Serializable {
 		this.minimunTransaction = minimunTransaction;
 	}
 
-	public BigDecimal getCoinLimit() {
-		return coinLimit;
+	public BigDecimal getSupplyLimit() {
+		return supplyLimit;
 	}
 
-	public void setCoinLimit(BigDecimal coinLimit) {
-		this.coinLimit = coinLimit;
+	public void setSupplyLimit(BigDecimal supplyLimit) {
+		this.supplyLimit = supplyLimit;
 	}
 
 	public BigDecimal getMiningTimeRate() {
@@ -168,7 +168,7 @@ public class ResponsePropertiesDTO implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(coinName).append(version).append(minimunTransaction).append(coinLimit)
+		return new HashCodeBuilder().append(coinName).append(version).append(minimunTransaction).append(supplyLimit)
 				.append(miningTimeRate).append(reward).append(fees).append(blockSize).append(networkPort)
 				.append(networkMaximumSeeds).append(networkMockedPeers).append(miner).hashCode();
 	}
@@ -183,7 +183,7 @@ public class ResponsePropertiesDTO implements Serializable {
 			return false;
 		ResponsePropertiesDTO other = (ResponsePropertiesDTO) obj;
 		return new EqualsBuilder().append(coinName, other.coinName).append(version, other.version)
-				.append(minimunTransaction, other.minimunTransaction).append(coinLimit, other.coinLimit)
+				.append(minimunTransaction, other.minimunTransaction).append(supplyLimit, other.supplyLimit)
 				.append(miningTimeRate, other.miningTimeRate).append(reward, other.reward).append(fees, other.fees)
 				.append(blockSize, other.blockSize).append(networkPort, other.networkPort)
 				.append(networkMaximumSeeds, other.networkMaximumSeeds)
@@ -193,7 +193,7 @@ public class ResponsePropertiesDTO implements Serializable {
 	@Override
 	public String toString() {
 		return new ToStringBuilder(this).append("coinName", coinName).append("version", version)
-				.append("minimunTransaction", minimunTransaction).append("coinLimit", coinLimit)
+				.append("minimunTransaction", minimunTransaction).append("coinLimit", supplyLimit)
 				.append("miningTimeRate", miningTimeRate).append("reward", reward).append("fees", fees)
 				.append("blockSize", blockSize).append("networkPort", networkPort)
 				.append("networkMaximumSeeds", networkMaximumSeeds).append("networkMockedPeers", networkMockedPeers)

@@ -5,12 +5,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
@@ -19,6 +20,7 @@ import com.custom.blockchain.signature.SignatureManager;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.transaction.Transaction;
+import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
@@ -33,7 +35,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 @Service
 public class TransactionService {
 
-	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+	private CurrentPropertiesChainstateDB currentPropertiesBlockDB;
 
 	private UTXOChainstateDB utxoChainstateDb;
 
@@ -41,7 +43,7 @@ public class TransactionService {
 
 	private SignatureManager signatureManager;
 
-	public TransactionService(final CurrentPropertiesBlockDB currentPropertiesBlockDB,
+	public TransactionService(final CurrentPropertiesChainstateDB currentPropertiesBlockDB,
 			final UTXOChainstateDB utxoChainstateDb, final MempoolDB mempoolDB,
 			final SignatureManager signatureManager) {
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
@@ -171,8 +173,8 @@ public class TransactionService {
 	public void mempoolChargeback(Collection<Transaction> transactions) {
 		for (SimpleTransaction transaction : transactions.stream().filter(t -> t instanceof SimpleTransaction)
 				.map(t -> (SimpleTransaction) t).collect(Collectors.toSet())) {
+			transaction.setInputs(new ArrayList<TransactionInput>());
 			mempoolDB.put(transaction.getTransactionId(), (SimpleTransaction) transaction);
-			transaction.getOutputs();
 		}
 	}
 

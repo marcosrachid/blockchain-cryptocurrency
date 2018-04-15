@@ -1,7 +1,7 @@
 {
 	"type": "properties",
 	"minimunTransaction": 0.00000001,
-	"coinLimit": 1000000,
+	"supplyLimit": 1000000,
 	"miningTimeRate": 6311385,
 	"reward": 200,
 	"fees": 0.001,

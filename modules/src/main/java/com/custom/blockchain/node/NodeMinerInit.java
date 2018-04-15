@@ -21,8 +21,8 @@ import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.block.PropertiesBlock;
 import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.block.CurrentBlockDB;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.node.network.server.Server;
@@ -45,7 +45,7 @@ public class NodeMinerInit extends AbstractNode {
 	private static final Logger LOG = LoggerFactory.getLogger(NodeMinerInit.class);
 
 	public NodeMinerInit(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
-			final CurrentBlockDB currentBlockDB, final CurrentPropertiesBlockDB currentPropertiesBlockDB,
+			final CurrentBlockChainstateDB currentBlockDB, final CurrentPropertiesChainstateDB currentPropertiesBlockDB,
 			final UTXOChainstateDB utxoChainstateDB, final MempoolDB mempoolDB, final BlockService blockService,
 			final TransactionService transactionService, final BlockStateManagement blockStateManagement,
 			final Server server, final @Qualifier("StartingProperties") PropertiesBlock propertiesBlock) {

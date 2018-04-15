@@ -12,8 +12,8 @@ import com.custom.blockchain.block.BlockStateManagement;
 import com.custom.blockchain.block.PropertiesBlock;
 import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
-import com.custom.blockchain.data.block.CurrentBlockDB;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.data.chainstate.UTXOChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.data.peers.PeersDB;
@@ -40,9 +40,9 @@ public abstract class AbstractNode {
 
 	protected BlockchainProperties blockchainProperties;
 
-	protected CurrentBlockDB currentBlockDB;
+	protected CurrentBlockChainstateDB currentBlockDB;
 
-	protected CurrentPropertiesBlockDB currentPropertiesBlockDB;
+	protected CurrentPropertiesChainstateDB currentPropertiesBlockDB;
 
 	protected UTXOChainstateDB utxoChainstateDB;
 

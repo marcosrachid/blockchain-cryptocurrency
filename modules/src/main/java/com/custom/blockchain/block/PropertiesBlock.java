@@ -15,7 +15,7 @@ public class PropertiesBlock extends AbstractBlock {
 
 	private BigDecimal minimunTransaction;
 
-	private BigDecimal coinLimit;
+	private BigDecimal supplyLimit;
 
 	private BigDecimal miningTimeRate;
 
@@ -37,10 +37,10 @@ public class PropertiesBlock extends AbstractBlock {
 		this.timeStamp = System.currentTimeMillis();
 	}
 
-	public PropertiesBlock(BigDecimal minimunTransaction, BigDecimal coinLimit, BigDecimal miningTimeRate,
+	public PropertiesBlock(BigDecimal minimunTransaction, BigDecimal supplyLimit, BigDecimal miningTimeRate,
 			BigDecimal reward, BigDecimal fees, Long blockSize, String coinbase) {
 		this.minimunTransaction = minimunTransaction;
-		this.coinLimit = coinLimit;
+		this.supplyLimit = supplyLimit;
 		this.miningTimeRate = miningTimeRate;
 		this.reward = reward;
 		this.fees = fees;
@@ -51,10 +51,10 @@ public class PropertiesBlock extends AbstractBlock {
 		this.timeStamp = System.currentTimeMillis();
 	}
 
-	public PropertiesBlock(BigDecimal minimunTransaction, BigDecimal coinLimit, BigDecimal miningTimeRate,
+	public PropertiesBlock(BigDecimal minimunTransaction, BigDecimal supplyLimit, BigDecimal miningTimeRate,
 			BigDecimal reward, BigDecimal fees, Long blockSize, String coinbase, AbstractBlock previousBlock) {
 		this.minimunTransaction = minimunTransaction;
-		this.coinLimit = coinLimit;
+		this.supplyLimit = supplyLimit;
 		this.miningTimeRate = miningTimeRate;
 		this.reward = reward;
 		this.fees = fees;
@@ -73,12 +73,12 @@ public class PropertiesBlock extends AbstractBlock {
 		this.minimunTransaction = minimunTransaction;
 	}
 
-	public BigDecimal getCoinLimit() {
-		return coinLimit;
+	public BigDecimal getSupplyLimit() {
+		return supplyLimit;
 	}
 
-	public void setCoinLimit(BigDecimal coinLimit) {
-		this.coinLimit = coinLimit;
+	public void setSupplyLimit(BigDecimal supplyLimit) {
+		this.supplyLimit = supplyLimit;
 	}
 
 	public BigDecimal getMiningTimeRate() {
@@ -144,14 +144,14 @@ public class PropertiesBlock extends AbstractBlock {
 	@JsonIgnore
 	public String getNetworkSignature() {
 		return DigestUtil
-				.applySha256(DigestUtil.applySha256(minimunTransaction.toPlainString() + coinLimit.toPlainString()
+				.applySha256(DigestUtil.applySha256(minimunTransaction.toPlainString() + supplyLimit.toPlainString()
 						+ miningTimeRate + reward.toPlainString() + fees.toPlainString() + blockSize + coinbase));
 	}
 
 	@Override
 	public int hashCode() {
 		return new HashCodeBuilder().append(height).append(hash).append(previousHash).append(timeStamp)
-				.append(minimunTransaction).append(coinLimit).append(miningTimeRate).append(reward).append(fees)
+				.append(minimunTransaction).append(supplyLimit).append(miningTimeRate).append(reward).append(fees)
 				.append(blockSize).append(coinbase).append(premined).append(startingDifficulty).hashCode();
 	}
 
@@ -171,7 +171,7 @@ public class PropertiesBlock extends AbstractBlock {
 	public String toString() {
 		return new ToStringBuilder(this).append("height", height).append("hash", hash)
 				.append("previousHash", previousHash).append("timeStamp", timeStamp)
-				.append("minimunTransaction", minimunTransaction).append("coinLimit", coinLimit)
+				.append("minimunTransaction", minimunTransaction).append("coinLimit", supplyLimit)
 				.append("miningTimeRate", miningTimeRate).append("reward", reward).append("fees", fees)
 				.append("blockSize", blockSize).append("coinbase", coinbase).append("premined", premined)
 				.append("startingDifficulty", startingDifficulty).build();

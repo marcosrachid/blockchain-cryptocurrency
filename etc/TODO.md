@@ -1,10 +1,6 @@
 # blockchain-cryptocurrency *TODO* List
 
-* PeerFinder.java: MAYBE
-
 * Fork treatment return utxo to fork height state
-
-* Give back Transaction to mempool if necessary when a Fork is found
 
 * Miner reward readjustment
 

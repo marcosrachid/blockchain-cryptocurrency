@@ -4,6 +4,7 @@ import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY_ADJUSTME
 import static com.custom.blockchain.node.NodeStateManagement.MINING_THREAD;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
@@ -21,8 +22,9 @@ import com.custom.blockchain.block.PropertiesBlock;
 import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.block.BlockDB;
-import com.custom.blockchain.data.block.CurrentBlockDB;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentCirculatingSupplyChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.service.BlockService;
@@ -47,9 +49,11 @@ public class BlockMining {
 
 	private BlockDB blockDB;
 
-	private CurrentBlockDB currentBlockDB;
+	private CurrentBlockChainstateDB currentBlockDB;
 
-	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+	private CurrentPropertiesChainstateDB currentPropertiesBlockDB;
+
+	private CurrentCirculatingSupplyChainstateDB currentCirculatingSupplyChainstateDB;
 
 	private MempoolDB mempoolDB;
 
@@ -62,13 +66,15 @@ public class BlockMining {
 	private DifficultyAdjustment difficultyAdjustment;
 
 	public BlockMining(final BlockchainProperties blockchainProperties, final BlockDB blockDB,
-			final CurrentBlockDB currentBlockDB, final CurrentPropertiesBlockDB currentPropertiesBlockDB,
-			final MempoolDB mempoolDB, final BlockService blockService, final TransactionService transactionService,
+			final CurrentBlockChainstateDB currentBlockDB, final CurrentPropertiesChainstateDB currentPropertiesBlockDB,
+			final CurrentCirculatingSupplyChainstateDB currentCirculatingSupplyChainstateDB, final MempoolDB mempoolDB,
+			final BlockService blockService, final TransactionService transactionService,
 			final BlockStateManagement blockStateManagement, final DifficultyAdjustment difficultyAdjustment) {
 		this.blockchainProperties = blockchainProperties;
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
+		this.currentCirculatingSupplyChainstateDB = currentCirculatingSupplyChainstateDB;
 		this.mempoolDB = mempoolDB;
 		this.blockService = blockService;
 		this.transactionService = transactionService;
@@ -108,8 +114,16 @@ public class BlockMining {
 	 * @throws BusinessException
 	 */
 	public void mineBlock() throws BusinessException {
-		if (PAUSE)
+		try {
+			LOG.info("[Crypto] Preparing to mine new block...");
+			Thread.sleep(5000l);
+		} catch (InterruptedException e1) {
+		}
+		DBIterator iterator = mempoolDB.iterator();
+		if (PAUSE || !iterator.hasNext()) {
+			LOG.info("[Crypto] Skip mining...");
 			mineBlock();
+		}
 		long currentTimeInMillis = System.currentTimeMillis();
 		TransactionsBlock block = blockStateManagement.getNextBlock();
 		AbstractBlock currentBlock = currentBlockDB.get();
@@ -130,22 +144,24 @@ public class BlockMining {
 			throw new BusinessException("Invalid miner public key: " + blockchainProperties.getMiner());
 		}
 
+		BigDecimal missingSupply = propertiesBlock.getSupplyLimit()
+				.subtract(currentCirculatingSupplyChainstateDB.get());
+
 		// Miner reward
-		RewardTransaction reward = new RewardTransaction(propertiesBlock.getCoinbase(), propertiesBlock.getReward(),
+		RewardTransaction reward = new RewardTransaction(propertiesBlock.getCoinbase(),
+				(missingSupply.compareTo(propertiesBlock.getReward()) > 0) ? propertiesBlock.getReward()
+						: missingSupply,
 				difficulty);
 		reward.setTransactionId(transactionService.calulateHash(reward));
 		reward.setOutput(new TransactionOutput(block.getMiner(), reward.getValue(), reward.getTransactionId()));
 		block.getTransactions().add(reward);
 
 		// Transactions from pool
-		DBIterator iterator = mempoolDB.iterator();
 		try {
-			if (iterator.hasNext()) {
-				do {
-					SimpleTransaction transaction = mempoolDB.next(iterator);
-					blockService.addTransaction(block, transaction);
-				} while (iterator.hasNext() && !blockService.isBlockFull(block));
-			}
+			do {
+				SimpleTransaction transaction = mempoolDB.next(iterator);
+				blockService.addTransaction(block, transaction);
+			} while (iterator.hasNext() && !blockService.isBlockFull(block));
 		} catch (IOException e) {
 			throw new BusinessException("Could not validate if block is full of transactions: " + e.getMessage());
 		}

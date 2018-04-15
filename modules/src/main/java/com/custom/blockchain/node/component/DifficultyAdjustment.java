@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 import com.custom.blockchain.block.AbstractBlock;
 import com.custom.blockchain.block.TransactionsBlock;
 import com.custom.blockchain.data.block.BlockDB;
-import com.custom.blockchain.data.block.CurrentBlockDB;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.util.BlockUtil;
 
 /**
@@ -36,12 +36,12 @@ public class DifficultyAdjustment {
 
 	private BlockDB blockDB;
 
-	private CurrentBlockDB currentBlockDB;
+	private CurrentBlockChainstateDB currentBlockDB;
 
-	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+	private CurrentPropertiesChainstateDB currentPropertiesBlockDB;
 
-	public DifficultyAdjustment(final BlockDB blockDB, final CurrentBlockDB currentBlockDB,
-			final CurrentPropertiesBlockDB currentPropertiesBlockDB) {
+	public DifficultyAdjustment(final BlockDB blockDB, final CurrentBlockChainstateDB currentBlockDB,
+			final CurrentPropertiesChainstateDB currentPropertiesBlockDB) {
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;

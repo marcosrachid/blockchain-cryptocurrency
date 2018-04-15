@@ -13,8 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.data.block.BlockDB;
-import com.custom.blockchain.data.block.CurrentBlockDB;
-import com.custom.blockchain.data.block.CurrentPropertiesBlockDB;
+import com.custom.blockchain.data.chainstate.CurrentBlockChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentCirculatingSupplyChainstateDB;
+import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.exception.ForkException;
 import com.custom.blockchain.node.component.DifficultyAdjustment;
@@ -43,9 +44,11 @@ public class BlockStateManagement {
 
 	private BlockDB blockDB;
 
-	private CurrentBlockDB currentBlockDB;
+	private CurrentBlockChainstateDB currentBlockDB;
 
-	private CurrentPropertiesBlockDB currentPropertiesBlockDB;
+	private CurrentPropertiesChainstateDB currentPropertiesBlockDB;
+
+	private CurrentCirculatingSupplyChainstateDB currentCirculatingSupplyChainstateDB;
 
 	private BlockService blockService;
 
@@ -57,13 +60,15 @@ public class BlockStateManagement {
 
 	private TransactionsBlock nextBlock;
 
-	public BlockStateManagement(final BlockDB blockDB, final CurrentBlockDB currentBlockDB,
-			final CurrentPropertiesBlockDB currentPropertiesBlockDB, final BlockService blockService,
-			final TransactionService transactionService, final SignatureManager signatureManager,
-			final DifficultyAdjustment difficultyAdjustment) {
+	public BlockStateManagement(final BlockDB blockDB, final CurrentBlockChainstateDB currentBlockDB,
+			final CurrentPropertiesChainstateDB currentPropertiesBlockDB,
+			final CurrentCirculatingSupplyChainstateDB currentCirculatingSupplyChainstateDB,
+			final BlockService blockService, final TransactionService transactionService,
+			final SignatureManager signatureManager, final DifficultyAdjustment difficultyAdjustment) {
 		this.blockDB = blockDB;
 		this.currentBlockDB = currentBlockDB;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
+		this.currentCirculatingSupplyChainstateDB = currentCirculatingSupplyChainstateDB;
 		this.blockService = blockService;
 		this.transactionService = transactionService;
 		this.signatureManager = signatureManager;
@@ -191,6 +196,7 @@ public class BlockStateManagement {
 		LOG.info("[Crypto] Found new block: " + block);
 		blockDB.put(block.getHeight(), block);
 		currentBlockDB.put(block);
+		currentCirculatingSupplyChainstateDB.add(block.getRewardTransaction().getValue());
 		transactionService.addTransactionsUtxo(block.getTransactions());
 		nextBlock = BlockFactory.getBlock(block, currentPropertiesBlockDB.get());
 	}
@@ -204,12 +210,13 @@ public class BlockStateManagement {
 		AbstractBlock currentBlock = currentBlockDB.get();
 		BLOCKS_QUEUE.clear();
 		for (long i = currentBlock.getHeight(); i >= height; i--) {
-			AbstractBlock block = blockDB.get(i);
-			transactionService.removeTransactionsUtxo(((TransactionsBlock) block).getTransactions());
+			TransactionsBlock block = (TransactionsBlock) blockDB.get(i);
+			transactionService.removeTransactionsUtxo(block.getTransactions());
 		}
 		for (long i = height; i <= currentBlock.getHeight(); i++) {
-			AbstractBlock block = blockDB.get(i);
-			transactionService.mempoolChargeback(((TransactionsBlock) block).getTransactions());
+			TransactionsBlock block = (TransactionsBlock) blockDB.get(i);
+			transactionService.mempoolChargeback(block.getTransactions());
+			currentCirculatingSupplyChainstateDB.subtract(block.getRewardTransaction().getValue());
 			blockDB.delete(i);
 			BLOCKS_QUEUE.add(new BlockArguments(i));
 		}
