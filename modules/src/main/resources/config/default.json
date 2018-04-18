@@ -1,12 +1,12 @@
 {
 	"type": "properties",
 	"minimunTransaction": 0.00000001,
-	"supplyLimit": 1000000,
+	"supplyLimit": 1000000000,
 	"miningTimeRate": 6311385,
 	"reward": 200,
 	"fees": 0.001,
 	"blockSize": 1000000,
 	"coinbase": "Lorem ipsum dolor sit amet",
-	"premined": 25000,
+	"premined": 2000000,
 	"startingDifficulty": 5
 }
