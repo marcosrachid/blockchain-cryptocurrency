@@ -1,7 +1,10 @@
 package com.custom.blockchain.block;
 
 import static com.custom.blockchain.constants.SystemConstants.DIFFICULTY_ADJUSTMENT_BLOCK;
+import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -19,6 +22,9 @@ import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.exception.ForkException;
 import com.custom.blockchain.node.component.DifficultyAdjustment;
 import com.custom.blockchain.node.network.server.SocketThread;
+import com.custom.blockchain.node.network.server.dispatcher.Service;
+import com.custom.blockchain.node.network.server.request.BlockchainRequest;
+import com.custom.blockchain.node.network.server.request.arguments.BlockResponseArguments;
 import com.custom.blockchain.service.BlockService;
 import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.signature.SignatureManager;
@@ -191,6 +197,11 @@ public class BlockStateManagement {
 		currentCirculatingSupplyChainstateDB.add(block.getRewardTransaction().getValue());
 		transactionService.addTransactionsUtxo(block.getTransactions());
 		nextBlock = BlockFactory.getBlock(block, currentPropertiesBlockDB.get());
+		LOG.debug("[Crypto] sending new block to peers...");
+		for (SocketThread socketThread : SOCKET_THREADS.values()) {
+			socketThread.send(BlockchainRequest.createBuilder().withService(Service.GET_BLOCK_RESPONSE)
+					.withArguments(new BlockResponseArguments(new ArrayList<>(Arrays.asList(block)))).build());
+		}
 	}
 
 	/**

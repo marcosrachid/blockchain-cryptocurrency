@@ -9,14 +9,18 @@ public class StateResponseArguments implements GenericArguments {
 	private static final long serialVersionUID = 1L;
 
 	private Long currentBlock;
+	private String hash;
+	private Long timestamp;
 
 	public StateResponseArguments() {
 		super();
 	}
 
-	public StateResponseArguments(Long currentBlock) {
+	public StateResponseArguments(Long currentBlock, String hash, Long timestamp) {
 		super();
 		this.currentBlock = currentBlock;
+		this.hash = hash;
+		this.timestamp = timestamp;
 	}
 
 	public Long getCurrentBlock() {
@@ -27,9 +31,25 @@ public class StateResponseArguments implements GenericArguments {
 		this.currentBlock = currentBlock;
 	}
 
+	public String getHash() {
+		return hash;
+	}
+
+	public void setHash(String hash) {
+		this.hash = hash;
+	}
+
+	public Long getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(Long timestamp) {
+		this.timestamp = timestamp;
+	}
+
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(currentBlock).hashCode();
+		return new HashCodeBuilder().append(currentBlock).append(hash).append(timestamp).hashCode();
 	}
 
 	@Override
@@ -41,11 +61,13 @@ public class StateResponseArguments implements GenericArguments {
 		if (getClass() != obj.getClass())
 			return false;
 		StateResponseArguments other = (StateResponseArguments) obj;
-		return new EqualsBuilder().append(currentBlock, other.currentBlock).isEquals();
+		return new EqualsBuilder().append(currentBlock, other.currentBlock).append(hash, other.hash)
+				.append(timestamp, other.timestamp).isEquals();
 	}
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("currentBlock", currentBlock).build();
+		return new ToStringBuilder(getClass().getSimpleName()).append("currentBlock", currentBlock).append("hash", hash)
+				.append("timestamp", timestamp).build();
 	}
 }

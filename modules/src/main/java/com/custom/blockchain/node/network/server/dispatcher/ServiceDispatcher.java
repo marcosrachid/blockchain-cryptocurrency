@@ -125,9 +125,13 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getState(OutputStream sender, Peer peer) {
 		LOG.debug("[Crypto] Found a " + Service.GET_STATE.getService() + " event from peer [" + peer + "]");
+		AbstractBlock currentBlock = currentBlockDB.get();
 		PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
-				sender, BlockchainRequest.createBuilder().withService(Service.GET_STATE_RESPONSE)
-						.withArguments(new StateResponseArguments(currentBlockDB.get().getHeight())).build());
+				sender,
+				BlockchainRequest.createBuilder().withService(Service.GET_STATE_RESPONSE)
+						.withArguments(new StateResponseArguments(currentBlock.getHeight(), currentBlock.getHash(),
+								currentBlock.getTimeStamp()))
+						.build());
 	}
 
 	/**
@@ -141,13 +145,17 @@ public class ServiceDispatcher {
 		LOG.trace("[Crypto] Found a " + Service.GET_STATE_RESPONSE.getService() + " event from peer [" + peer + "]");
 		Long peerCurrentBlock = args.getCurrentBlock();
 		LOG.debug("[Crypto] peer [" + peer + "] current block [" + peerCurrentBlock + "]");
-		Long currentMappedHeight = currentBlockDB.get().getHeight();
-		if (peerCurrentBlock > currentMappedHeight) {
+		AbstractBlock currentBlock = currentBlockDB.get();
+		if (peerCurrentBlock > currentBlock.getHeight()) {
 			LOG.info("[Crypto] Found new block from peer [" + peer + "], requesting block...");
 			BlockMining.pause();
 			PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
 					sender, BlockchainRequest.createBuilder().withService(Service.GET_BLOCK)
-							.withArguments(new BlockArguments(currentMappedHeight + 1, peerCurrentBlock)).build());
+							.withArguments(new BlockArguments(currentBlock.getHeight() + 1, peerCurrentBlock)).build());
+		}
+		if (!currentBlock.getHash().equals(args.getHash())) {
+			discardingBlock(sender, currentBlock, currentBlock.getTimeStamp().compareTo(args.getTimestamp()),
+					currentBlock.getHeight());
 		}
 	}
 
@@ -186,8 +194,13 @@ public class ServiceDispatcher {
 	private void getBlockResponse(OutputStream sender, Peer peer, BlockResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event from peer [" + peer + "]");
 		Collection<AbstractBlock> blocks = args.getBlocks();
+		Long currentMappedHeight = currentBlockDB.get().getHeight();
 		for (AbstractBlock block : blocks) {
 			try {
+				if (block.getHeight().equals(currentMappedHeight)) {
+					LOG.debug("[Crypto] block already found");
+					continue;
+				}
 				if (block instanceof PropertiesBlock) {
 					blockStateManagement.foundBlock((PropertiesBlock) block);
 					return;
@@ -199,18 +212,7 @@ public class ServiceDispatcher {
 				}
 			} catch (ForkException e) {
 				LOG.info("Fork identified on Block[" + block + "]");
-				switch (e.getMyBlockDiscarded()) {
-				case -1:
-					PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(),
-							blockchainProperties.getNetworkPort(), sender,
-							BlockchainRequest.createBuilder().withService(Service.GET_INVALID_BLOCK)
-									.withArguments(new InvalidBlockArguments(e.getHeightBranchToRemove())).build());
-					break;
-				case 0:
-				case 1:
-					blockStateManagement.removeBlockBranch(e.getHeightBranchToRemove());
-					break;
-				}
+				discardingBlock(sender, block, e.getMyBlockDiscarded(), e.getHeightBranchToRemove());
 				break;
 			} catch (BusinessException e) {
 				LOG.error("[Crypto] Block[" + block + "] was identified as invalid: " + e.getMessage(), e);
@@ -294,6 +296,28 @@ public class ServiceDispatcher {
 				+ "]");
 		for (SimpleTransaction t : args.getTransactions()) {
 			mempoolDB.put(t.getTransactionId(), t);
+		}
+	}
+
+	/**
+	 * 
+	 * @param sender
+	 * @param block
+	 * @param compare
+	 * @param height
+	 */
+	private void discardingBlock(OutputStream sender, AbstractBlock block, Integer compare, Long height) {
+		LOG.info("Fork identified on Block[" + block + "]");
+		switch (compare) {
+		case -1:
+			PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
+					sender, BlockchainRequest.createBuilder().withService(Service.GET_INVALID_BLOCK)
+							.withArguments(new InvalidBlockArguments(height)).build());
+			break;
+		case 0:
+		case 1:
+			blockStateManagement.removeBlockBranch(height);
+			break;
 		}
 	}
 
