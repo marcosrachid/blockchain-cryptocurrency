@@ -31,7 +31,8 @@ public class CurrentPropertiesChainstateDB extends PropertyAbstractLevelDB<Prope
 
 	private ObjectMapper objectMapper;
 
-	public CurrentPropertiesChainstateDB(final ObjectMapper objectMapper, final @Qualifier("ChainStateDB") DB chainstateDb) {
+	public CurrentPropertiesChainstateDB(final ObjectMapper objectMapper,
+			final @Qualifier("ChainStateDB") DB chainstateDb) {
 		this.objectMapper = objectMapper;
 		this.chainstateDb = chainstateDb;
 	}
@@ -43,7 +44,7 @@ public class CurrentPropertiesChainstateDB extends PropertyAbstractLevelDB<Prope
 			return objectMapper.readValue(StringUtil.decompress(chainstateDb.get(KEY_BINDER.getBytes())),
 					PropertiesBlock.class);
 		} catch (DBException | IOException e) {
-			LOG.debug("[Crypto] ChainStateDB Error from key [" + KEY_BINDER + "]: " + e.getMessage());
+			LOG.debug("[Crypto] ChainStateDB Error from key [" + KEY_BINDER + "]: " + e.getMessage(), e);
 			return null;
 		}
 	}

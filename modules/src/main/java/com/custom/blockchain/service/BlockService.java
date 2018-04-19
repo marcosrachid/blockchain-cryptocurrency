@@ -72,6 +72,19 @@ public class BlockService {
 			throw new BusinessException(HttpStatus.NOT_FOUND, "Block not found");
 		return block;
 	}
+	
+	/**
+	 * 
+	 * @param hash
+	 * @return
+	 * @throws BusinessException
+	 */
+	public AbstractBlock findBlockByHash(String hash) throws BusinessException {
+		AbstractBlock block = blockDB.get(hash);
+		if (block == null)
+			throw new BusinessException(HttpStatus.NOT_FOUND, "Block not found");
+		return block;
+	}
 
 	/**
 	 * 

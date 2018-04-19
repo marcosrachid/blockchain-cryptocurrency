@@ -38,7 +38,7 @@ public class CurrentCirculatingSupplyChainstateDB extends PropertyAbstractLevelD
 		try {
 			return NumberUtil.toBigDecimal(chainstateDb.get(KEY_BINDER.getBytes()));
 		} catch (DBException e) {
-			LOG.debug("[Crypto] ChainStateDB Error from key [" + KEY_BINDER + "]: " + e.getMessage());
+			LOG.debug("[Crypto] ChainStateDB Error from key [" + KEY_BINDER + "]: " + e.getMessage(), e);
 			return BigDecimal.ZERO;
 		}
 	}

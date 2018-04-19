@@ -36,6 +36,7 @@ public class BannedPeersDB extends FlagAbstractLevelDB<String> {
 			LOG.trace("[Crypto] PeersDB Get - Key: " + KEY_BINDER + key);
 			return Boolean.valueOf(StringUtil.decompress(peersDB.get(StringUtil.compress(KEY_BINDER + key))));
 		} catch (DBException | IOException e) {
+			LOG.debug("[Crypto] PeersDB Error from key [" + KEY_BINDER + key + "]: " + e.getMessage(), e);
 			return false;
 		}
 	}

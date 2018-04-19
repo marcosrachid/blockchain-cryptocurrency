@@ -35,10 +35,22 @@ public class BlockResource {
 	 * @return
 	 * @throws BusinessException
 	 */
-	@RequestMapping(value = "/{height}", method = RequestMethod.GET, produces = APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/{height:[0-9]+}", method = RequestMethod.GET, produces = APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<ResponseDTO> getBlockByHeight(@PathVariable("height") Long height) throws BusinessException {
 		return ResponseEntity.status(HttpStatus.OK).contentType(APPLICATION_JSON_UTF8)
 				.body(new ResponseDTO(blockService.findBlockByHeight(height)));
+	}
+	
+	/**
+	 * 
+	 * @param hash
+	 * @return
+	 * @throws BusinessException
+	 */
+	@RequestMapping(value = "/{hash:[a-zA-Z0-9]{64}}", method = RequestMethod.GET, produces = APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<ResponseDTO> getBlockByHash(@PathVariable("hash") String hash) throws BusinessException {
+		return ResponseEntity.status(HttpStatus.OK).contentType(APPLICATION_JSON_UTF8)
+				.body(new ResponseDTO(blockService.findBlockByHash(hash)));
 	}
 
 }
