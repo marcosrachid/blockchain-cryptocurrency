@@ -8,28 +8,38 @@ public class BlockArguments implements GenericArguments {
 
 	private static final long serialVersionUID = 1L;
 
-	private Long height;
+	private Long startHeight;
+	private Long peerHeight;
 
 	public BlockArguments() {
 		super();
 	}
 
-	public BlockArguments(Long height) {
+	public BlockArguments(Long startHeight, Long peerHeight) {
 		super();
-		this.height = height;
+		this.startHeight = startHeight;
+		this.peerHeight = peerHeight;
 	}
 
-	public Long getHeight() {
-		return height;
+	public Long getStartHeight() {
+		return startHeight;
 	}
 
-	public void setHeight(Long height) {
-		this.height = height;
+	public void setStartHeight(Long startHeight) {
+		this.startHeight = startHeight;
+	}
+
+	public Long getPeerHeight() {
+		return peerHeight;
+	}
+
+	public void setPeerHeight(Long peerHeight) {
+		this.peerHeight = peerHeight;
 	}
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(height).hashCode();
+		return new HashCodeBuilder().append(startHeight).append(peerHeight).hashCode();
 	}
 
 	@Override
@@ -41,12 +51,12 @@ public class BlockArguments implements GenericArguments {
 		if (getClass() != obj.getClass())
 			return false;
 		BlockArguments other = (BlockArguments) obj;
-		return new EqualsBuilder().append(height, other.height).isEquals();
+		return new EqualsBuilder().append(startHeight, other.startHeight).append(peerHeight, other.peerHeight).isEquals();
 	}
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("height", height).build();
+		return new ToStringBuilder(getClass().getSimpleName()).append("startHeight", startHeight).append("peerHeight", peerHeight).build();
 	}
 
 }

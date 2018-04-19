@@ -1,13 +1,16 @@
 package com.custom.blockchain.node.component;
 
-import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY_ADJUSTMENT_BLOCK;
+import static com.custom.blockchain.constants.SystemConstants.DIFFICULTY_ADJUSTMENT_BLOCK;
 import static com.custom.blockchain.node.NodeStateManagement.MINING_THREAD;
+import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.iq80.leveldb.DBIterator;
 import org.slf4j.Logger;
@@ -27,6 +30,10 @@ import com.custom.blockchain.data.chainstate.CurrentCirculatingSupplyChainstateD
 import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
+import com.custom.blockchain.node.network.server.SocketThread;
+import com.custom.blockchain.node.network.server.dispatcher.Service;
+import com.custom.blockchain.node.network.server.request.BlockchainRequest;
+import com.custom.blockchain.node.network.server.request.arguments.BlockResponseArguments;
 import com.custom.blockchain.service.BlockService;
 import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.transaction.RewardTransaction;
@@ -179,6 +186,11 @@ public class BlockMining {
 		blockStateManagement.foundBlock(block);
 		LOG.info("[Crypto] Block Mined in " + (System.currentTimeMillis() - currentTimeInMillis) + " milliseconds: "
 				+ block.getHash());
+		LOG.debug("[Crypto] sending new block to peers...");
+		for (SocketThread socketThread : SOCKET_THREADS.values()) {
+			socketThread.send(BlockchainRequest.createBuilder().withService(Service.GET_BLOCK_RESPONSE)
+					.withArguments(new BlockResponseArguments(new ArrayList<>(Arrays.asList(block)))).build());
+		}
 		mineBlock();
 	}
 

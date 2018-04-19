@@ -1,7 +1,7 @@
 package com.custom.blockchain.util;
 
-import static com.custom.blockchain.costants.SystemConstants.COIN_ROOT_UNIX_DIRECTORY;
-import static com.custom.blockchain.costants.SystemConstants.COIN_ROOT_WINDOWS_DIRECTORY;
+import static com.custom.blockchain.constants.SystemConstants.COIN_ROOT_UNIX_DIRECTORY;
+import static com.custom.blockchain.constants.SystemConstants.COIN_ROOT_WINDOWS_DIRECTORY;
 
 public final class OsUtil {
 

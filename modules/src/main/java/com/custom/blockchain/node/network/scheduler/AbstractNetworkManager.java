@@ -1,10 +1,7 @@
 package com.custom.blockchain.node.network.scheduler;
 
-import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
 import static com.custom.blockchain.node.NodeStateManagement.SERVER_THREAD;
 import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
-
-import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +14,6 @@ import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.node.network.server.SocketThread;
 import com.custom.blockchain.node.network.server.dispatcher.Service;
 import com.custom.blockchain.node.network.server.request.BlockchainRequest;
-import com.custom.blockchain.peer.Peer;
 import com.custom.blockchain.util.ConnectionUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -68,30 +64,12 @@ public abstract class AbstractNetworkManager {
 	/**
 	 * 
 	 */
-	@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 5000)
 	public synchronized void getState() {
 		LOG.debug("[Crypto] Getting state from connected peers...");
 		LOG.debug("[Crypto] peers: " + ConnectionUtil.getConnectedPeers());
 		for (SocketThread socketThread : SOCKET_THREADS.values()) {
 			socketThread.send(BlockchainRequest.createBuilder().withService(Service.GET_STATE).build());
-		}
-	}
-
-	/**
-	 * 
-	 */
-	@Scheduled(fixedRate = 1000)
-	public synchronized void getBlocks() {
-		Iterator<Peer> peers = ConnectionUtil.getConnectedPeers().iterator();
-		while (peers.hasNext() && BLOCKS_QUEUE.size() > 0) {
-			Peer p = peers.next();
-			LOG.debug("[Crypto] Trying to send a service[" + Service.GET_BLOCK.getService() + "] request to peer[" + p
-					+ "]");
-			for (SocketThread socketThread : SOCKET_THREADS.values()) {
-				socketThread.send(BlockchainRequest.createBuilder()
-						.withSignature(currentPropertiesBlockDB.get().getNetworkSignature())
-						.withService(Service.GET_BLOCK).withArguments(BLOCKS_QUEUE.peek()).build());
-			}
 		}
 	}
 

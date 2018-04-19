@@ -1,7 +1,6 @@
 package com.custom.blockchain.block;
 
-import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
-import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY_ADJUSTMENT_BLOCK;
+import static com.custom.blockchain.constants.SystemConstants.DIFFICULTY_ADJUSTMENT_BLOCK;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +19,6 @@ import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.exception.ForkException;
 import com.custom.blockchain.node.component.DifficultyAdjustment;
 import com.custom.blockchain.node.network.server.SocketThread;
-import com.custom.blockchain.node.network.server.request.arguments.BlockArguments;
 import com.custom.blockchain.service.BlockService;
 import com.custom.blockchain.service.TransactionService;
 import com.custom.blockchain.signature.SignatureManager;
@@ -84,12 +82,6 @@ public class BlockStateManagement {
 	public void validateBlock(TransactionsBlock block) throws BusinessException, ForkException {
 		LOG.info("[Crypto] Starting block[" + block + "] validation...");
 
-		LOG.debug("[Crypto] Validating if block[{}] from peer was not from the expected height from queue[{}]...",
-				block.getHeight(), BLOCKS_QUEUE.peek().getHeight());
-		if (!BLOCKS_QUEUE.peek().getHeight().equals(block.getHeight())) {
-			BLOCKS_QUEUE.clear();
-			throw new BusinessException("Block from peer was not from the expected height from queue");
-		}
 		AbstractBlock currentBlock = currentBlockDB.get();
 		LOG.debug("[Crypto] Validating if block[{}] from peer was not from the expected height[{}]...",
 				block.getHeight(), currentBlock.getHeight());
@@ -208,7 +200,6 @@ public class BlockStateManagement {
 	public void removeBlockBranch(Long height) {
 		LOG.info("[Crypto] Removing forked blockchain branch from height: " + height);
 		AbstractBlock currentBlock = currentBlockDB.get();
-		BLOCKS_QUEUE.clear();
 		for (long i = currentBlock.getHeight(); i >= height; i--) {
 			TransactionsBlock block = (TransactionsBlock) blockDB.get(i);
 			transactionService.removeTransactionsUtxo(block.getTransactions());
@@ -218,7 +209,6 @@ public class BlockStateManagement {
 			transactionService.mempoolChargeback(block.getTransactions());
 			currentCirculatingSupplyChainstateDB.subtract(block.getRewardTransaction().getValue());
 			blockDB.delete(i);
-			BLOCKS_QUEUE.add(new BlockArguments(i));
 		}
 		currentBlockDB.put(blockDB.get(height - 1));
 	}

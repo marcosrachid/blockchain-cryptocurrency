@@ -1,12 +1,16 @@
 package com.custom.blockchain.node.network.server.dispatcher;
 
-import static com.custom.blockchain.node.NodeStateManagement.BLOCKS_QUEUE;
+import static com.custom.blockchain.constants.SystemConstants.MAX_NETWORK_SIZE_PACKAGE;
 import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
 import static com.custom.blockchain.peer.PeerStateManagement.PEERS;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,6 +42,7 @@ import com.custom.blockchain.node.network.server.request.arguments.TransactionsR
 import com.custom.blockchain.peer.Peer;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.util.ConnectionUtil;
+import com.custom.blockchain.util.ObjectUtil;
 import com.custom.blockchain.util.PeerUtil;
 
 /**
@@ -136,14 +141,13 @@ public class ServiceDispatcher {
 		LOG.trace("[Crypto] Found a " + Service.GET_STATE_RESPONSE.getService() + " event from peer [" + peer + "]");
 		Long peerCurrentBlock = args.getCurrentBlock();
 		LOG.debug("[Crypto] peer [" + peer + "] current block [" + peerCurrentBlock + "]");
-		Long currentMappedHeight = (currentBlockDB.get().getHeight() + BLOCKS_QUEUE.size());
+		Long currentMappedHeight = currentBlockDB.get().getHeight();
 		if (peerCurrentBlock > currentMappedHeight) {
 			LOG.info("[Crypto] Found new block from peer [" + peer + "], requesting block...");
 			BlockMining.pause();
-			long blockNumber = peerCurrentBlock - currentBlockDB.get().getHeight();
-			for (long i = (currentMappedHeight + 1); i <= peerCurrentBlock; i++) {
-				BLOCKS_QUEUE.add(new BlockArguments(i));
-			}
+			PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
+					sender, BlockchainRequest.createBuilder().withService(Service.GET_BLOCK)
+							.withArguments(new BlockArguments(currentMappedHeight + 1, peerCurrentBlock)).build());
 		}
 	}
 
@@ -156,11 +160,20 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getBlock(OutputStream sender, Peer peer, BlockArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event from peer [" + peer + "]");
-		AbstractBlock block = blockDB.get(args.getHeight());
-		LOG.debug("[Crypto] Found block[" + block + "] to be sent");
+		List<AbstractBlock> blocks = new ArrayList<>();
+		for (long i = args.getStartHeight(); i <= args.getPeerHeight(); i++) {
+			blocks.add(blockDB.get(i));
+			try {
+				if (ObjectUtil.sizeof(blocks) > MAX_NETWORK_SIZE_PACKAGE)
+					break;
+			} catch (IOException e) {
+				LOG.error("[Crypto] Could not get blocks to be sent size: " + e.getMessage(), e);
+			}
+		}
+		LOG.debug("[Crypto] Found block[" + blocks + "] to be sent");
 		PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
 				sender, BlockchainRequest.createBuilder().withService(Service.GET_BLOCK_RESPONSE)
-						.withArguments(new BlockResponseArguments(block)).build());
+						.withArguments(new BlockResponseArguments(blocks)).build());
 	}
 
 	/**
@@ -172,38 +185,40 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getBlockResponse(OutputStream sender, Peer peer, BlockResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event from peer [" + peer + "]");
-		AbstractBlock block = args.getBlock();
-		try {
-			if (block instanceof PropertiesBlock) {
-				blockStateManagement.foundBlock((PropertiesBlock) block);
-				return;
-			}
-			blockStateManagement.validateBlock((TransactionsBlock) block);
-			blockStateManagement.foundBlock((TransactionsBlock) block);
-			BLOCKS_QUEUE.poll();
-			if (nodeFork.checkFork(block.getHeight())) {
-				blockStateManagement.foundBlock(nodeFork.pollFork());
-			}
-		} catch (ForkException e) {
-			LOG.info("Fork identified on Block[" + block + "]");
-			switch (e.getMyBlockDiscarded()) {
-			case -1:
-				PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(),
-						blockchainProperties.getNetworkPort(), sender,
-						BlockchainRequest.createBuilder().withService(Service.GET_INVALID_BLOCK)
-								.withArguments(new InvalidBlockArguments(e.getHeightBranchToRemove())).build());
-			case 0:
-			case 1:
-				blockStateManagement.removeBlockBranch(e.getHeightBranchToRemove());
+		Collection<AbstractBlock> blocks = args.getBlocks();
+		for (AbstractBlock block : blocks) {
+			try {
+				if (block instanceof PropertiesBlock) {
+					blockStateManagement.foundBlock((PropertiesBlock) block);
+					return;
+				}
+				blockStateManagement.validateBlock((TransactionsBlock) block);
+				blockStateManagement.foundBlock((TransactionsBlock) block);
+				if (nodeFork.checkFork(block.getHeight())) {
+					blockStateManagement.foundBlock(nodeFork.pollFork());
+				}
+			} catch (ForkException e) {
+				LOG.info("Fork identified on Block[" + block + "]");
+				switch (e.getMyBlockDiscarded()) {
+				case -1:
+					PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(),
+							blockchainProperties.getNetworkPort(), sender,
+							BlockchainRequest.createBuilder().withService(Service.GET_INVALID_BLOCK)
+									.withArguments(new InvalidBlockArguments(e.getHeightBranchToRemove())).build());
+					break;
+				case 0:
+				case 1:
+					blockStateManagement.removeBlockBranch(e.getHeightBranchToRemove());
+					break;
+				}
+				break;
+			} catch (BusinessException e) {
+				LOG.error("[Crypto] Block[" + block + "] was identified as invalid: " + e.getMessage(), e);
+				LOG.info("[Crypto] Discarded block[" + block + "]");
 				break;
 			}
-		} catch (BusinessException e) {
-			LOG.error("Block[" + block + "] was identified as invalid: " + e.getMessage(), e);
-			LOG.info("Discarded block[" + block + "]");
 		}
-		if (BLOCKS_QUEUE.isEmpty()) {
-			BlockMining.resume();
-		}
+		BlockMining.resume();
 	}
 
 	/**

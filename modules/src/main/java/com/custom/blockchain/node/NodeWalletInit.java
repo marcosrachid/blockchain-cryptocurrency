@@ -1,9 +1,9 @@
 package com.custom.blockchain.node;
 
-import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_BLOCKS_DIRECTORY;
-import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
-import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_MEMPOOL_DIRECTORY;
-import static com.custom.blockchain.costants.SystemConstants.LEVEL_DB_PEERS_DIRECTORY;
+import static com.custom.blockchain.constants.SystemConstants.LEVEL_DB_BLOCKS_DIRECTORY;
+import static com.custom.blockchain.constants.SystemConstants.LEVEL_DB_CHAINSTATE_DIRECTORY;
+import static com.custom.blockchain.constants.SystemConstants.LEVEL_DB_MEMPOOL_DIRECTORY;
+import static com.custom.blockchain.constants.SystemConstants.LEVEL_DB_PEERS_DIRECTORY;
 
 import java.io.File;
 import java.security.Security;

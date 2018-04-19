@@ -1,38 +1,38 @@
 package com.custom.blockchain.node.network.server.request.arguments;
 
+import java.util.Collection;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.custom.blockchain.block.AbstractBlock;
-import com.custom.blockchain.block.TransactionsBlock;
 
 public class BlockResponseArguments implements GenericArguments {
 
 	private static final long serialVersionUID = 1L;
 
-	private AbstractBlock block;
+	private Collection<AbstractBlock> blocks;
 
 	public BlockResponseArguments() {
 		super();
 	}
 
-	public BlockResponseArguments(AbstractBlock block) {
-		super();
-		this.block = block;
+	public BlockResponseArguments(Collection<AbstractBlock> blocks) {
+		this.blocks = blocks;
 	}
 
-	public AbstractBlock getBlock() {
-		return block;
+	public Collection<AbstractBlock> getBlocks() {
+		return blocks;
 	}
 
-	public void setBlock(TransactionsBlock block) {
-		this.block = block;
+	public void setBlocks(Collection<AbstractBlock> blocks) {
+		this.blocks = blocks;
 	}
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(block).hashCode();
+		return new HashCodeBuilder().append(blocks).hashCode();
 	}
 
 	@Override
@@ -44,12 +44,12 @@ public class BlockResponseArguments implements GenericArguments {
 		if (getClass() != obj.getClass())
 			return false;
 		BlockResponseArguments other = (BlockResponseArguments) obj;
-		return new EqualsBuilder().append(block, other.block).isEquals();
+		return new EqualsBuilder().append(blocks, other.blocks).isEquals();
 	}
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("block", block).build();
+		return new ToStringBuilder(getClass().getSimpleName()).append("block", blocks).build();
 	}
 
 }

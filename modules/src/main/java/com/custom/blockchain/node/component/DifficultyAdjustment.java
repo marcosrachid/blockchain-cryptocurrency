@@ -1,6 +1,6 @@
 package com.custom.blockchain.node.component;
 
-import static com.custom.blockchain.node.NodeStateManagement.DIFFICULTY_ADJUSTMENT_BLOCK;
+import static com.custom.blockchain.constants.SystemConstants.DIFFICULTY_ADJUSTMENT_BLOCK;
 
 import java.math.BigDecimal;
 import java.math.MathContext;

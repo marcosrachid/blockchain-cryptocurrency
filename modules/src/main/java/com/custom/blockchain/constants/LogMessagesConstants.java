@@ -1,4 +1,4 @@
-package com.custom.blockchain.costants;
+package com.custom.blockchain.constants;
 
 /**
  * 

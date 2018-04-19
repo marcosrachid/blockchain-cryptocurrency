@@ -1,4 +1,4 @@
-package com.custom.blockchain.costants;
+package com.custom.blockchain.constants;
 
 import java.io.File;
 
@@ -21,5 +21,9 @@ public class SystemConstants {
 	public static final String LEVEL_DB_PEERS_DIRECTORY = "peers" + File.separator;
 
 	public static final String LEVEL_DB_MEMPOOL_DIRECTORY = "mempool" + File.separator;
+
+	public static final Integer DIFFICULTY_ADJUSTMENT_BLOCK = 1000;
+
+	public static final Integer MAX_NETWORK_SIZE_PACKAGE = 1000000;
 
 }
