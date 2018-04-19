@@ -152,8 +152,7 @@ public class ServiceDispatcher {
 			PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
 					sender, BlockchainRequest.createBuilder().withService(Service.GET_BLOCK)
 							.withArguments(new BlockArguments(currentBlock.getHeight() + 1, peerCurrentBlock)).build());
-		}
-		if (!currentBlock.getHash().equals(args.getHash())) {
+		} else if (!currentBlock.getHash().equals(args.getHash())) {
 			discardingBlock(sender, currentBlock, currentBlock.getTimeStamp().compareTo(args.getTimestamp()),
 					currentBlock.getHeight());
 		}
@@ -307,7 +306,7 @@ public class ServiceDispatcher {
 	 * @param height
 	 */
 	private void discardingBlock(OutputStream sender, AbstractBlock block, Integer compare, Long height) {
-		LOG.info("Fork identified on Block[" + block + "]");
+		LOG.info("[Crypto] Fork identified on Block[" + block + "]");
 		switch (compare) {
 		case -1:
 			PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
