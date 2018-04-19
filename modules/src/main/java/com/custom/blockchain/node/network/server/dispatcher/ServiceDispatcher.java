@@ -152,7 +152,8 @@ public class ServiceDispatcher {
 			PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
 					sender, BlockchainRequest.createBuilder().withService(Service.GET_BLOCK)
 							.withArguments(new BlockArguments(currentBlock.getHeight() + 1, peerCurrentBlock)).build());
-		} else if (!currentBlock.getHash().equals(args.getHash())) {
+		} else if (peerCurrentBlock.equals(currentBlock.getHeight())
+				&& !currentBlock.getHash().equals(args.getHash())) {
 			discardingBlock(sender, currentBlock, currentBlock.getTimeStamp().compareTo(args.getTimestamp()),
 					currentBlock.getHeight());
 		}
