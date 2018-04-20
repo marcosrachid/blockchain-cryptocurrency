@@ -30,7 +30,7 @@ import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.exception.ForkException;
-import com.custom.blockchain.node.component.BlockMining;
+import com.custom.blockchain.node.NodeStateManagement;
 import com.custom.blockchain.node.component.ForcedNodeFork;
 import com.custom.blockchain.node.network.server.request.BlockchainRequest;
 import com.custom.blockchain.node.network.server.request.arguments.BlockArguments;
@@ -148,7 +148,7 @@ public class ServiceDispatcher {
 		AbstractBlock currentBlock = currentBlockDB.get();
 		if (peerCurrentBlock > currentBlock.getHeight()) {
 			LOG.info("[Crypto] Found new block from peer [" + peer + "], requesting block...");
-			BlockMining.pause();
+			NodeStateManagement.updateIfBigger(peerCurrentBlock);
 			PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
 					sender, BlockchainRequest.createBuilder().withService(Service.GET_BLOCK)
 							.withArguments(new BlockArguments(currentBlock.getHeight() + 1, peerCurrentBlock)).build());
@@ -220,7 +220,6 @@ public class ServiceDispatcher {
 				break;
 			}
 		}
-		BlockMining.resume();
 	}
 
 	/**
@@ -294,6 +293,11 @@ public class ServiceDispatcher {
 	private void getTransactionsResponse(OutputStream sender, Peer peer, TransactionsResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_TRANSACTIONS_RESPONSE.getService() + " event from peer [" + peer
 				+ "]");
+		AbstractBlock currentBlock = currentBlockDB.get();
+		if (!NodeStateManagement.isSynchronized(currentBlock.getHeight())) {
+			LOG.debug("[Crypto] Node is not synchronized to send transactions");
+			return;
+		}
 		for (SimpleTransaction t : args.getTransactions()) {
 			mempoolDB.put(t.getTransactionId(), t);
 		}

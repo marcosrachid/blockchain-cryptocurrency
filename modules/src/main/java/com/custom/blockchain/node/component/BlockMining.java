@@ -30,6 +30,7 @@ import com.custom.blockchain.data.chainstate.CurrentCirculatingSupplyChainstateD
 import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
+import com.custom.blockchain.node.NodeStateManagement;
 import com.custom.blockchain.node.network.server.SocketThread;
 import com.custom.blockchain.node.network.server.dispatcher.Service;
 import com.custom.blockchain.node.network.server.request.BlockchainRequest;
@@ -49,8 +50,6 @@ import com.custom.blockchain.util.WalletUtil;
 public class BlockMining {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BlockMining.class);
-
-	private static boolean PAUSE = false;
 
 	private BlockchainProperties blockchainProperties;
 
@@ -126,14 +125,15 @@ public class BlockMining {
 			Thread.sleep(5000l);
 		} catch (InterruptedException e1) {
 		}
+		AbstractBlock currentBlock = currentBlockDB.get();
 		DBIterator iterator = mempoolDB.iterator();
-		if (PAUSE || !iterator.hasNext()) {
+		if (!NodeStateManagement.isSynchronized(currentBlock.getHeight()) || !iterator.hasNext()) {
 			LOG.info("[Crypto] Skip mining...");
 			mineBlock();
 		}
 		long currentTimeInMillis = System.currentTimeMillis();
 		TransactionsBlock block = blockStateManagement.getNextBlock();
-		AbstractBlock currentBlock = currentBlockDB.get();
+
 		PropertiesBlock propertiesBlock = currentPropertiesBlockDB.get();
 
 		Integer difficulty = null;
@@ -192,16 +192,6 @@ public class BlockMining {
 					.withArguments(new BlockResponseArguments(new ArrayList<>(Arrays.asList(block)))).build());
 		}
 		mineBlock();
-	}
-
-	public static void pause() {
-		LOG.info("[Crypto] Pausing for syncing");
-		PAUSE = true;
-	}
-
-	public static void resume() {
-		LOG.info("[Crypto] Resuming after syncing...");
-		PAUSE = false;
 	}
 
 }
