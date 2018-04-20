@@ -21,6 +21,7 @@ import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.node.network.server.SocketThread;
 import com.custom.blockchain.service.BlockService;
 import com.custom.blockchain.service.TransactionService;
+import com.custom.blockchain.service.WalletService;
 import com.custom.blockchain.transaction.RewardTransaction;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.StringUtil;
@@ -51,6 +52,8 @@ public abstract class AbstractNode {
 	protected MempoolDB mempoolDB;
 
 	protected BlockService blockService;
+
+	protected WalletService walletService;
 
 	protected TransactionService transactionService;
 
@@ -118,6 +121,7 @@ public abstract class AbstractNode {
 			premined.setHash(blockService.calculateHash(premined));
 		}
 		blockStateManagement.foundBlock(premined);
+		walletService.useNewWallet(owner);
 		LOG.info("Premined transaction: {}", premined.getTransactions());
 	}
 

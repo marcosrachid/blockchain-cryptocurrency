@@ -29,6 +29,7 @@ import com.custom.blockchain.node.network.server.Server;
 import com.custom.blockchain.node.network.server.dispatcher.Service;
 import com.custom.blockchain.service.BlockService;
 import com.custom.blockchain.service.TransactionService;
+import com.custom.blockchain.service.WalletService;
 import com.custom.blockchain.util.OsUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,7 +47,7 @@ public class NodeWalletInit extends AbstractNode {
 
 	public NodeWalletInit(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
 			final CurrentBlockChainstateDB currentBlockDB, final CurrentPropertiesChainstateDB currentPropertiesBlockDB,
-			final UTXOChainstateDB utxoChainstateDB, final MempoolDB mempoolDB, final BlockService blockService,
+			final UTXOChainstateDB utxoChainstateDB, final MempoolDB mempoolDB, final BlockService blockService, final WalletService walletService,
 			final TransactionService transactionService, final BlockStateManagement blockStateManagement,
 			final Server server, final @Qualifier("StartingProperties") PropertiesBlock propertiesBlock) {
 		this.objectMapper = objectMapper;
@@ -56,6 +57,7 @@ public class NodeWalletInit extends AbstractNode {
 		this.utxoChainstateDB = utxoChainstateDB;
 		this.mempoolDB = mempoolDB;
 		this.blockService = blockService;
+		this.walletService = walletService;
 		this.transactionService = transactionService;
 		this.blockStateManagement = blockStateManagement;
 		this.server = server;
