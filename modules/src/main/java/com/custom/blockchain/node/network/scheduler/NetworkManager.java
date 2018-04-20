@@ -6,6 +6,7 @@ import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.configuration.properties.BlockchainProperties;
 import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
@@ -22,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author marcosrachid
  *
  */
+@Component
 public class NetworkManager {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NetworkManager.class);
