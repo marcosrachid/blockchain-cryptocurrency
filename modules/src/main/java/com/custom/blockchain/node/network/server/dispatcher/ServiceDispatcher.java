@@ -1,7 +1,6 @@
 package com.custom.blockchain.node.network.server.dispatcher;
 
 import static com.custom.blockchain.constants.SystemConstants.MAX_NETWORK_SIZE_PACKAGE;
-import static com.custom.blockchain.node.NodeStateManagement.SERVICES;
 import static com.custom.blockchain.peer.PeerStateManagement.PEERS;
 
 import java.io.IOException;
@@ -98,11 +97,6 @@ public class ServiceDispatcher {
 		if (ConnectionUtil.isPeerConnectionsFull(blockchainProperties.getNetworkMaximumSeeds())
 				&& !ConnectionUtil.getConnectedPeers().contains(peer)) {
 			LOG.trace("[Crypto] Connections peer pool is full");
-			return;
-		}
-		if (!SERVICES.stream().map(s -> s.getService()).collect(Collectors.toList())
-				.contains(request.getService().getService())) {
-			LOG.trace("[Crypto] Node is not responsible for this service[" + request.getService().getService() + "]");
 			return;
 		}
 		if (request.hasArguments()) {
