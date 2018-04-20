@@ -140,9 +140,9 @@ public class ServiceDispatcher {
 		Long peerCurrentBlock = args.getCurrentBlock();
 		LOG.debug("[Crypto] peer [" + peer + "] current block [" + peerCurrentBlock + "]");
 		AbstractBlock currentBlock = currentBlockDB.get();
+		NodeStateManagement.updateIfBigger(peerCurrentBlock);
 		if (peerCurrentBlock > currentBlock.getHeight()) {
 			LOG.info("[Crypto] Found new block from peer [" + peer + "], requesting block...");
-			NodeStateManagement.updateIfBigger(peerCurrentBlock);
 			PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(), blockchainProperties.getNetworkPort(),
 					sender, BlockchainRequest.createBuilder().withService(Service.GET_BLOCK)
 							.withArguments(new BlockArguments(currentBlock.getHeight() + 1, peerCurrentBlock)).build());
