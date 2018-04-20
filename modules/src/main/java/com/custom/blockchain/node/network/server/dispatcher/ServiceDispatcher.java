@@ -211,6 +211,10 @@ public class ServiceDispatcher {
 			} catch (BusinessException e) {
 				LOG.error("[Crypto] Block[" + block + "] was identified as invalid: " + e.getMessage(), e);
 				LOG.info("[Crypto] Discarded block[" + block + "]");
+				PeerUtil.send(currentPropertiesBlockDB.get().getNetworkSignature(),
+						blockchainProperties.getNetworkPort(), sender,
+						BlockchainRequest.createBuilder().withService(Service.GET_INVALID_BLOCK)
+								.withArguments(new InvalidBlockArguments(block.getHeight())).build());
 				break;
 			}
 		}
