@@ -35,6 +35,7 @@ import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.BlockUtil;
 import com.custom.blockchain.util.StringUtil;
 import com.custom.blockchain.util.TransactionUtil;
+import com.custom.blockchain.util.WalletUtil;
 
 /**
  * 
@@ -92,7 +93,8 @@ public class BlockStateManagement {
 		LOG.debug("[Crypto] Validating if block[{}] from peer was not from the expected height[{}]...",
 				block.getHeight(), currentBlock.getHeight());
 		if (!currentBlock.getHeight().equals(block.getHeight() - 1)) {
-			throw new BusinessException("Block from peer was not from the expected height");
+			throw new BusinessException("Block from peer was not from the expected height. NodeHighestBlock["
+					+ currentBlock.getHeight() + "] != PeerBlock[" + block.getHeight() + "]");
 		}
 		LOG.debug("[Crypto] Validating if block is on a different difficulty from protocol...");
 		TransactionsBlock currentTransactionBlock = BlockUtil.getLastTransactionBlock(blockDB, currentBlock);
@@ -104,28 +106,33 @@ public class BlockStateManagement {
 			difficulty = difficultyAdjustment.adjust();
 		}
 		if (!difficulty.equals(block.getRewardTransaction().getDifficulty())) {
-			throw new BusinessException("Block is on a different difficulty from protocol");
+			throw new BusinessException("Block is on a different difficulty from protocol. NodeDifficulty[" + difficulty
+					+ "] != PeerBlockDifficulty[" + block.getRewardTransaction().getDifficulty() + "]");
 		}
 		LOG.debug("[Crypto] Validating if block was procedurely mined...");
 		String target = StringUtil.getDificultyString(difficulty.intValue());
 		if (!block.getHash().startsWith(target)) {
-			throw new BusinessException("Block was not procedurely mined");
+			throw new BusinessException("Block was not procedurely mined. TargetStartHash[" + target
+					+ "] != PeerBlockHash[" + block.getHash() + "]");
 		}
 		LOG.debug("[Crypto] Validating if block tree does not correspond to its merkle root...");
 		if (!TransactionUtil.getMerkleRoot(block.getTransactions()).equals(block.getMerkleRoot())) {
-			throw new BusinessException("Block tree does not correspond to its merkle root");
+			throw new BusinessException("Block tree does not correspond to its merkle root. MerkleRootFromValidation["
+					+ TransactionUtil.getMerkleRoot(block.getTransactions()) + "] != BlockMerkleRoot["
+					+ block.getMerkleRoot() + "]");
 		}
 		LOG.debug("[Crypto] Validating if block has more then one reward transaction...");
 		List<RewardTransaction> rewardList = block.getTransactions().stream()
 				.filter(t -> t instanceof RewardTransaction).map(t -> (RewardTransaction) t)
 				.collect(Collectors.toList());
 		if (rewardList.size() != 1) {
-			throw new BusinessException("Block has one reward transaction");
+			throw new BusinessException("Block has one reward transaction. RewardListFromBlock[" + rewardList + "]");
 		}
 		LOG.debug("[Crypto] Validating if block has an unexpected reward value...");
 		RewardTransaction reward = rewardList.get(0);
 		if (block.getHeight() > 2 && reward.getValue().compareTo(propertiesBlock.getReward()) != 0) {
-			throw new BusinessException("Block has an unexpected reward value[" + reward.getValue() + "]");
+			throw new BusinessException("Block has an unexpected reward value[" + reward.getValue()
+					+ "]. ExpectedRewardValue[" + propertiesBlock.getReward() + "]");
 		}
 
 		Set<Transaction> transactions = block.getTransactions().stream().filter(t -> t instanceof SimpleTransaction)
@@ -134,8 +141,9 @@ public class BlockStateManagement {
 			SimpleTransaction transaction = (SimpleTransaction) t;
 
 			if (transaction.getValue().compareTo(propertiesBlock.getMinimunTransaction()) < 0) {
-				throw new BusinessException(
-						"Identified transaction[" + transaction.getTransactionId() + "] with low sent funds");
+				throw new BusinessException("Identified transaction[" + transaction.getTransactionId()
+						+ "] with low sent funds. FundsToBeSent[" + transaction.getValue().toPlainString()
+						+ "] < MinimunFundsToBeSent[" + propertiesBlock.getMinimunTransaction() + "]");
 			}
 
 			if (transaction.getInputsValue().compareTo(transaction.getOutputsValue()) != 0) {
@@ -143,6 +151,14 @@ public class BlockStateManagement {
 						+ "] with  Inputs total[" + transaction.getInputsValue().toPlainString()
 						+ "] value that differs from Transaction Outputs total["
 						+ transaction.getOutputsValue().toPlainString() + "] value");
+			}
+
+			List<TransactionOutput> leftOverTransactions = transaction.getOutputs().stream()
+					.filter(o -> o.getReciepient().equals(transaction.getSender())).collect(Collectors.toList());
+			if (leftOverTransactions.size() > 1) {
+				throw new BusinessException("Identified transaction[" + transaction.getTransactionId()
+						+ "] has a transaction with same sender and receiver["
+						+ WalletUtil.getStringFromKey(transaction.getSender()) + "]");
 			}
 
 			Optional<TransactionOutput> leftOverTransaction = transaction.getOutputs().stream()

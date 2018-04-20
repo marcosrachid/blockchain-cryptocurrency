@@ -22,9 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author marcosrachid
  *
  */
-public abstract class AbstractNetworkManager {
+public class NetworkManager {
 
-	private static final Logger LOG = LoggerFactory.getLogger(AbstractNetworkManager.class);
+	private static final Logger LOG = LoggerFactory.getLogger(NetworkManager.class);
 
 	protected ObjectMapper objectMapper;
 
@@ -35,6 +35,16 @@ public abstract class AbstractNetworkManager {
 	protected PeerFinder peerFinder;
 
 	protected Server peerListener;
+
+	public NetworkManager(final ObjectMapper objectMapper, final BlockchainProperties blockchainProperties,
+			final CurrentPropertiesChainstateDB currentPropertiesBlockDB, final PeerFinder peerFinder,
+			final Server peerListener) {
+		this.objectMapper = objectMapper;
+		this.blockchainProperties = blockchainProperties;
+		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
+		this.peerFinder = peerFinder;
+		this.peerListener = peerListener;
+	}
 
 	/**
 	 * 
@@ -64,12 +74,23 @@ public abstract class AbstractNetworkManager {
 	/**
 	 * 
 	 */
-	@Scheduled(fixedRate = 5000)
+	@Scheduled(fixedRate = 2000)
 	public synchronized void getState() {
 		LOG.debug("[Crypto] Getting state from connected peers...");
 		LOG.debug("[Crypto] peers: " + ConnectionUtil.getConnectedPeers());
 		for (SocketThread socketThread : SOCKET_THREADS.values()) {
 			socketThread.send(BlockchainRequest.createBuilder().withService(Service.GET_STATE).build());
+		}
+	}
+
+	/**
+	 * 
+	 */
+	@Scheduled(fixedRate = 10000)
+	public synchronized void getTransactions() {
+		LOG.debug("[Crypto] Getting transactions request from connected peers...");
+		for (SocketThread socketThread : SOCKET_THREADS.values()) {
+			socketThread.send(BlockchainRequest.createBuilder().withService(Service.GET_TRANSACTIONS).build());
 		}
 	}
 

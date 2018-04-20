@@ -61,6 +61,9 @@ public class TransactionService {
 	 */
 	public SimpleTransaction sendFunds(Wallet from, PublicKey to, BigDecimal fromBalance, BigDecimal value)
 			throws Exception {
+		if (from.getPublicKey().equals(to)) {
+			throw new BusinessException("Transaction can't have the same Sender and Receiver");
+		}
 		if (value.compareTo(currentPropertiesBlockDB.get().getMinimunTransaction()) < 0) {
 			throw new BusinessException("Transaction sent funds are too low. Transaction Discarded");
 		}
@@ -89,6 +92,9 @@ public class TransactionService {
 	 */
 	public SimpleTransaction sendFunds(Wallet from, BigDecimal fromBalance, BigDecimal totalSentFunds,
 			RequestSendFundsDTO.RequestSendFundsListDTO funds) throws Exception {
+		if (funds.stream().filter(f -> f.getReciepientPublicKey().equals(from.getPublicKey())).findFirst().isPresent()) {
+			throw new BusinessException("Transaction can't have the same Sender and Receiver");
+		}
 		if (totalSentFunds.compareTo(currentPropertiesBlockDB.get().getMinimunTransaction()) < 0) {
 			throw new BusinessException("Transaction sent funds are too low. Transaction Discarded");
 		}

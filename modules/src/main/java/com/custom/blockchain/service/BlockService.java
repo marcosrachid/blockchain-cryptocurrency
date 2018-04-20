@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import com.custom.blockchain.transaction.TransactionInput;
 import com.custom.blockchain.transaction.TransactionOutput;
 import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.StringUtil;
+import com.custom.blockchain.util.WalletUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -72,7 +74,7 @@ public class BlockService {
 			throw new BusinessException(HttpStatus.NOT_FOUND, "Block not found");
 		return block;
 	}
-	
+
 	/**
 	 * 
 	 * @param hash
@@ -199,6 +201,14 @@ public class BlockService {
 		}
 
 		transaction.getOutputs().add(leftOutput);
+
+		List<TransactionOutput> leftOverTransactions = transaction.getOutputs().stream()
+				.filter(o -> o.getReciepient().equals(transaction.getSender())).collect(Collectors.toList());
+		if (leftOverTransactions.size() > 1) {
+			throw new BusinessException("Identified transaction[" + transaction.getTransactionId()
+					+ "] has a transaction with same sender and receiver["
+					+ WalletUtil.getStringFromKey(transaction.getSender()) + "]");
+		}
 	}
 
 }

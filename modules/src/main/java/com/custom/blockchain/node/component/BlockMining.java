@@ -104,7 +104,7 @@ public class BlockMining {
 			public void run() {
 				try {
 					mineBlock();
-				} catch (BusinessException e) {
+				} catch (Exception e) {
 					LOG.error("[Crypto] Could not mine: " + e.getMessage());
 				}
 			}
@@ -128,7 +128,7 @@ public class BlockMining {
 		AbstractBlock currentBlock = currentBlockDB.get();
 		DBIterator iterator = mempoolDB.iterator();
 		if (!NodeStateManagement.isSynchronized(currentBlock.getHeight()) || !iterator.hasNext()) {
-			LOG.info("[Crypto] Skip mining...");
+			LOG.info("[Crypto] Skip mining due to non synchronized node or no transaction to be mined on pool...");
 			mineBlock();
 		}
 		long currentTimeInMillis = System.currentTimeMillis();
@@ -167,7 +167,11 @@ public class BlockMining {
 		try {
 			do {
 				SimpleTransaction transaction = mempoolDB.next(iterator);
-				blockService.addTransaction(block, transaction);
+				try {
+					blockService.addTransaction(block, transaction);
+				} catch (BusinessException e) {
+					LOG.debug("[Crypto] Jump and pop transaction due invalid transaction: " + e.getMessage());
+				}
 			} while (iterator.hasNext() && !blockService.isBlockFull(block));
 		} catch (IOException e) {
 			throw new BusinessException("Could not validate if block is full of transactions: " + e.getMessage());
