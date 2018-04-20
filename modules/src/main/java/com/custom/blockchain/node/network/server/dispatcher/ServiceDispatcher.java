@@ -272,6 +272,11 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getTransactions(OutputStream sender, Peer peer) {
 		LOG.debug("[Crypto] Found a " + Service.GET_TRANSACTIONS.getService() + " event from peer [" + peer + "]");
+		AbstractBlock currentBlock = currentBlockDB.get();
+		if (!NodeStateManagement.isSynchronized(currentBlock.getHeight())) {
+			LOG.debug("[Crypto] Node is not synchronized to send transactions");
+			return;
+		}
 		Set<SimpleTransaction> mempoolTransactions = new HashSet<>();
 		DBIterator iterator = mempoolDB.iterator();
 		while (iterator.hasNext()) {
@@ -293,11 +298,6 @@ public class ServiceDispatcher {
 	private void getTransactionsResponse(OutputStream sender, Peer peer, TransactionsResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_TRANSACTIONS_RESPONSE.getService() + " event from peer [" + peer
 				+ "]");
-		AbstractBlock currentBlock = currentBlockDB.get();
-		if (!NodeStateManagement.isSynchronized(currentBlock.getHeight())) {
-			LOG.debug("[Crypto] Node is not synchronized to send transactions");
-			return;
-		}
 		for (SimpleTransaction t : args.getTransactions()) {
 			mempoolDB.put(t.getTransactionId(), t);
 		}
