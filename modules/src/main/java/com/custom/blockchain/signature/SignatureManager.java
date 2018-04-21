@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.transaction.SimpleTransaction;
 import com.custom.blockchain.util.DigestUtil;
-import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -36,10 +35,9 @@ public class SignatureManager {
 	 * @throws JsonProcessingException
 	 */
 	public void generateSignature(final SimpleTransaction transaction, Wallet wallet) {
-		String data = transaction.getTransactionId() + WalletUtil.getStringFromKey(transaction.getSender())
-				+ transaction.getValue().toPlainString();
-		LOG.trace("[Crypto] raw data to update: {}", data);
-		transaction.setSignature(applyECDSASig(wallet.getPrivateKey(), DigestUtil.applySha256(data)));
+		LOG.trace("[Crypto] raw data to update: {}", transaction.getTransactionId());
+		transaction.setSignature(
+				applyECDSASig(wallet.getPrivateKey(), DigestUtil.applySha256(transaction.getTransactionId())));
 	}
 
 	/**
@@ -49,10 +47,9 @@ public class SignatureManager {
 	 * @throws JsonProcessingException
 	 */
 	public boolean verifySignature(SimpleTransaction transaction) {
-		String data = transaction.getTransactionId() + WalletUtil.getStringFromKey(transaction.getSender())
-				+ transaction.getValue().toPlainString();
-		LOG.trace("[Crypto] raw data to update: {}", data);
-		return verifyECDSASig(transaction.getSender(), DigestUtil.applySha256(data), transaction.getSignature());
+		LOG.trace("[Crypto] raw data to update: {}", transaction.getTransactionId());
+		return verifyECDSASig(transaction.getSender(), DigestUtil.applySha256(transaction.getTransactionId()),
+				transaction.getSignature());
 	}
 
 	/**

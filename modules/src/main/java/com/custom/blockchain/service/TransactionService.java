@@ -7,6 +7,8 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -72,7 +74,8 @@ public class TransactionService {
 		}
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), value);
-		newTransaction.setTransactionId(calulateHash(newTransaction));
+		newTransaction.setTransactionId(
+				calulateHash(newTransaction, Collections.singletonList(WalletUtil.getStringFromKey(to))));
 		newTransaction.getOutputs().add(new TransactionOutput(to, value, newTransaction.getTransactionId()));
 		signatureManager.generateSignature(newTransaction, from);
 
@@ -92,7 +95,9 @@ public class TransactionService {
 	 */
 	public SimpleTransaction sendFunds(Wallet from, BigDecimal fromBalance, BigDecimal totalSentFunds,
 			RequestSendFundsDTO.RequestSendFundsListDTO funds) throws Exception {
-		if (funds.stream().filter(f -> f.getReciepientPublicKey().equals(from.getPublicKey())).findFirst().isPresent()) {
+		if (funds.stream()
+				.filter(f -> f.getReciepientPublicKey().equals(WalletUtil.getStringFromKey(from.getPublicKey())))
+				.findFirst().isPresent()) {
 			throw new BusinessException("Transaction can't have the same Sender and Receiver");
 		}
 		if (totalSentFunds.compareTo(currentPropertiesBlockDB.get().getMinimunTransaction()) < 0) {
@@ -103,7 +108,8 @@ public class TransactionService {
 		}
 
 		SimpleTransaction newTransaction = new SimpleTransaction(from.getPublicKey(), totalSentFunds);
-		newTransaction.setTransactionId(calulateHash(newTransaction));
+		newTransaction.setTransactionId(calulateHash(newTransaction,
+				funds.stream().map(f -> f.getReciepientPublicKey()).collect(Collectors.toList())));
 		for (RequestSendFundsDTO f : funds) {
 			PublicKey reciepient;
 			try {
@@ -139,11 +145,10 @@ public class TransactionService {
 	 * @return
 	 * @throws JsonProcessingException
 	 */
-	public String calulateHash(SimpleTransaction transaction) {
+	public String calulateHash(SimpleTransaction transaction, List<String> to) {
 		Transaction.sequence++;
-		return DigestUtil.applySha256(
-				DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender()) + transaction.getSignature()
-						+ transaction.getValue().toPlainString() + transaction.getTimeStamp() + Transaction.sequence));
+		return DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender()) + to
+				+ transaction.getValue().toPlainString() + transaction.getTimeStamp() + Transaction.sequence);
 	}
 
 	/**

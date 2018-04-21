@@ -10,6 +10,8 @@
 
 * mutable application.properties
 
+* Transaction leftover and calculations on endpoint send ?
+
 ## Optional
 
 * get DNS from peers
