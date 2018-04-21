@@ -78,7 +78,7 @@ public class SocketThread extends Thread {
 		} catch (IOException | IllegalArgumentException | SecurityException | IllegalAccessException
 				| InvocationTargetException | NoSuchMethodException e) {
 			LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
-			isRunning = false;
+			close();
 		} finally {
 			try {
 				if (peer != null)
@@ -87,7 +87,7 @@ public class SocketThread extends Thread {
 					client.close();
 			} catch (IOException e) {
 				LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
-				isRunning = false;
+				close();
 			}
 		}
 	}
@@ -104,6 +104,7 @@ public class SocketThread extends Thread {
 					client.getOutputStream(), request);
 		} catch (IOException e) {
 			LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
+			close();
 		}
 	}
 
