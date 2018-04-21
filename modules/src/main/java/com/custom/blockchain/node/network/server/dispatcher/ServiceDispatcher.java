@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -187,7 +186,8 @@ public class ServiceDispatcher {
 	@SuppressWarnings("unused")
 	private void getBlockResponse(OutputStream sender, Peer peer, BlockResponseArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK_RESPONSE.getService() + " event from peer [" + peer + "]");
-		Collection<AbstractBlock> blocks = args.getBlocks();
+		List<AbstractBlock> blocks = new ArrayList<>(args.getBlocks());
+		blocks.sort((block1, block2) -> block1.getHeight().compareTo(block2.getHeight()));
 		Long currentMappedHeight = currentBlockDB.get().getHeight();
 		for (AbstractBlock block : blocks) {
 			try {
