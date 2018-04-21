@@ -127,7 +127,7 @@ public class BlockStateManagement {
 				.filter(t -> t instanceof RewardTransaction).map(t -> (RewardTransaction) t)
 				.collect(Collectors.toList());
 		if (rewardList.size() != 1) {
-			throw new BusinessException("Block has one reward transaction. RewardListFromBlock[" + rewardList + "]");
+			throw new BusinessException("Block does not have one reward transaction. RewardListFromBlock[" + rewardList + "]");
 		}
 		LOG.debug("[Crypto] Validating if block has an unexpected reward value...");
 		RewardTransaction reward = rewardList.get(0);

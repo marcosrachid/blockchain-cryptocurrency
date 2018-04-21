@@ -11,7 +11,8 @@ import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.util.Iterator;
+import java.util.List;
 
 import org.iq80.leveldb.DBIterator;
 import org.slf4j.Logger;
@@ -127,9 +128,21 @@ public class BlockMining {
 		} catch (InterruptedException e1) {
 		}
 		AbstractBlock currentBlock = currentBlockDB.get();
-		DBIterator iterator = mempoolDB.iterator();
 		if (!NodeStateManagement.isSynchronized(currentBlock.getHeight())) {
 			LOG.info("[Crypto] Skip mining due to non synchronized node...");
+			mineBlock();
+		}
+		DBIterator iterator = mempoolDB.iterator();
+		if (!iterator.hasNext()) {
+			LOG.info("[Crypto] Skip mining due to no transaction to on pool...");
+			mineBlock();
+		}
+		List<SimpleTransaction> poolTransactions = new ArrayList<>();
+		do {
+			poolTransactions.add(mempoolDB.next(iterator));
+		} while (iterator.hasNext());
+		if (poolTransactions.isEmpty()) {
+			LOG.info("[Crypto] Pool with empty transactions...");
 			mineBlock();
 		}
 		long currentTimeInMillis = System.currentTimeMillis();
@@ -165,24 +178,20 @@ public class BlockMining {
 		block.getTransactions().add(reward);
 
 		// Transactions from pool
+		Iterator<SimpleTransaction> poolIterator = poolTransactions.iterator();
 		try {
 			do {
-				SimpleTransaction transaction = mempoolDB.next(iterator);
+				SimpleTransaction transaction = poolIterator.next();
 				try {
 					blockService.addTransaction(block, transaction);
 				} catch (BusinessException e) {
 					LOG.debug("[Crypto] Jump and pop transaction due invalid transaction: " + e.getMessage());
 				}
-			} while (iterator.hasNext() && !blockService.isBlockFull(block));
+			} while (poolIterator.hasNext() && !blockService.isBlockFull(block));
 		} catch (IOException e) {
 			throw new BusinessException("Could not validate if block is full of transactions: " + e.getMessage());
 		}
 		LOG.trace("[Crypto] Transactions imported on block: " + block.getTransactions());
-		
-		if (block.getTransactions().stream().filter(t -> t instanceof SimpleTransaction).collect(Collectors.toList()).isEmpty()) {
-			LOG.info("[Crypto] Skip mining due to no transaction on pool...");
-			mineBlock();
-		}
 
 		block.setMerkleRoot(TransactionUtil.getMerkleRoot(block.getTransactions()));
 
