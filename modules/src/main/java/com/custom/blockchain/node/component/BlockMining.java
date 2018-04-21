@@ -11,6 +11,7 @@ import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.iq80.leveldb.DBIterator;
 import org.slf4j.Logger;
@@ -127,8 +128,8 @@ public class BlockMining {
 		}
 		AbstractBlock currentBlock = currentBlockDB.get();
 		DBIterator iterator = mempoolDB.iterator();
-		if (!NodeStateManagement.isSynchronized(currentBlock.getHeight()) || !iterator.hasNext()) {
-			LOG.info("[Crypto] Skip mining due to non synchronized node or no transaction to be mined on pool...");
+		if (!NodeStateManagement.isSynchronized(currentBlock.getHeight())) {
+			LOG.info("[Crypto] Skip mining due to non synchronized node...");
 			mineBlock();
 		}
 		long currentTimeInMillis = System.currentTimeMillis();
@@ -177,6 +178,11 @@ public class BlockMining {
 			throw new BusinessException("Could not validate if block is full of transactions: " + e.getMessage());
 		}
 		LOG.trace("[Crypto] Transactions imported on block: " + block.getTransactions());
+		
+		if (block.getTransactions().stream().filter(t -> t instanceof SimpleTransaction).collect(Collectors.toList()).isEmpty()) {
+			LOG.info("[Crypto] Skip mining due to no transaction on pool...");
+			mineBlock();
+		}
 
 		block.setMerkleRoot(TransactionUtil.getMerkleRoot(block.getTransactions()));
 
