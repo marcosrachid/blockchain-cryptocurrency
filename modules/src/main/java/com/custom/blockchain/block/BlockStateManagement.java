@@ -127,7 +127,8 @@ public class BlockStateManagement {
 				.filter(t -> t instanceof RewardTransaction).map(t -> (RewardTransaction) t)
 				.collect(Collectors.toList());
 		if (rewardList.size() != 1) {
-			throw new BusinessException("Block does not have one reward transaction. RewardListFromBlock[" + rewardList + "]");
+			throw new BusinessException(
+					"Block does not have one reward transaction. RewardListFromBlock[" + rewardList + "]");
 		}
 		LOG.debug("[Crypto] Validating if block has an unexpected reward value...");
 		RewardTransaction reward = rewardList.get(0);
@@ -148,10 +149,12 @@ public class BlockStateManagement {
 						+ "] < MinimunFundsToBeSent[" + propertiesBlock.getMinimunTransaction() + "]");
 			}
 
-			if (transaction.getInputsValue().multiply(BigDecimal.valueOf(100L).subtract(propertiesBlock.getFees()))
+			if (transaction.getInputsValue().multiply(BigDecimal.valueOf(1).subtract(propertiesBlock.getFees()))
 					.compareTo(transaction.getOutputsValue()) != 0) {
 				throw new BusinessException("Identified transaction[" + transaction.getTransactionId()
-						+ "] with  Inputs total[" + transaction.getInputsValue().toPlainString()
+						+ "] with  Inputs total["
+						+ transaction.getInputsValue()
+								.multiply(BigDecimal.valueOf(1).subtract(propertiesBlock.getFees())).toPlainString()
 						+ "] value that differs from Transaction Outputs total["
 						+ transaction.getOutputsValue().toPlainString() + "] value");
 			}
