@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.exception.BusinessException;
 import com.custom.blockchain.transaction.SimpleTransaction;
+import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Component
 public class SignatureManager {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(SignatureManager.class);
 
 	private ObjectMapper objectMapper;
@@ -41,9 +42,9 @@ public class SignatureManager {
 	public void generateSignature(final SimpleTransaction transaction, Wallet wallet) throws BusinessException {
 		String data;
 		try {
-			data = WalletUtil.getStringFromKey(transaction.getSender())
+			data = DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender())
 					+ objectMapper.writeValueAsString(transaction.getOutputs())
-					+ transaction.getValue().toPlainString();
+					+ transaction.getValue().toPlainString());
 		} catch (JsonProcessingException e) {
 			LOG.error("[Crypto] Signature error : {}", e.getMessage(), e);
 			throw new BusinessException("Could not read transaction outputs");
@@ -60,9 +61,9 @@ public class SignatureManager {
 	public boolean verifySignature(SimpleTransaction transaction) {
 		String data;
 		try {
-			data = WalletUtil.getStringFromKey(transaction.getSender())
+			data = DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender())
 					+ objectMapper.writeValueAsString(transaction.getOutputs())
-					+ transaction.getValue().toPlainString();
+					+ transaction.getValue().toPlainString());
 		} catch (JsonProcessingException e) {
 			LOG.error("[Crypto] Signature error : {}", e.getMessage(), e);
 			return false;
@@ -77,6 +78,7 @@ public class SignatureManager {
 	 * @return
 	 */
 	public static byte[] applyECDSASig(PrivateKey privateKey, String input) {
+		LOG.debug("[Crypto] data to update: {}", input);
 		Signature dsa;
 		byte[] output = new byte[0];
 		try {
@@ -101,6 +103,7 @@ public class SignatureManager {
 	 * @return
 	 */
 	public static boolean verifyECDSASig(PublicKey publicKey, String data, byte[] signature) {
+		LOG.debug("[Crypto] data to update: {}", data);
 		try {
 			Signature ecdsaVerify = Signature.getInstance("ECDSA", "BC");
 			ecdsaVerify.initVerify(publicKey);
