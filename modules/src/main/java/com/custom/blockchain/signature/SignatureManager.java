@@ -14,7 +14,6 @@ import com.custom.blockchain.util.DigestUtil;
 import com.custom.blockchain.util.WalletUtil;
 import com.custom.blockchain.wallet.Wallet;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -26,10 +25,7 @@ public class SignatureManager {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SignatureManager.class);
 
-	private ObjectMapper objectMapper;
-
-	public SignatureManager(final ObjectMapper objectMapper) {
-		this.objectMapper = objectMapper;
+	public SignatureManager() {
 	}
 
 	/**
@@ -39,17 +35,10 @@ public class SignatureManager {
 	 * @throws BusinessException
 	 * @throws JsonProcessingException
 	 */
-	public void generateSignature(final SimpleTransaction transaction, Wallet wallet) throws BusinessException {
-		String data;
-		try {
-			data = WalletUtil.getStringFromKey(transaction.getSender())
-					+ objectMapper.writeValueAsString(transaction.getOutputs())
-					+ transaction.getValue().toPlainString();
-			LOG.trace("[Crypto] raw data to update: {}", data);
-		} catch (JsonProcessingException e) {
-			LOG.error("[Crypto] Signature error : {}", e.getMessage(), e);
-			throw new BusinessException("Could not read transaction outputs");
-		}
+	public void generateSignature(final SimpleTransaction transaction, Wallet wallet) {
+		String data = transaction.getTransactionId() + WalletUtil.getStringFromKey(transaction.getSender())
+				+ transaction.getValue().toPlainString();
+		LOG.trace("[Crypto] raw data to update: {}", data);
 		transaction.setSignature(applyECDSASig(wallet.getPrivateKey(), DigestUtil.applySha256(data)));
 	}
 
@@ -60,16 +49,9 @@ public class SignatureManager {
 	 * @throws JsonProcessingException
 	 */
 	public boolean verifySignature(SimpleTransaction transaction) {
-		String data;
-		try {
-			data = WalletUtil.getStringFromKey(transaction.getSender())
-					+ objectMapper.writeValueAsString(transaction.getOutputs())
-					+ transaction.getValue().toPlainString();
-			LOG.trace("[Crypto] raw data to update: {}", data);
-		} catch (JsonProcessingException e) {
-			LOG.error("[Crypto] Signature error : {}", e.getMessage(), e);
-			return false;
-		}
+		String data = transaction.getTransactionId() + WalletUtil.getStringFromKey(transaction.getSender())
+				+ transaction.getValue().toPlainString();
+		LOG.trace("[Crypto] raw data to update: {}", data);
 		return verifyECDSASig(transaction.getSender(), DigestUtil.applySha256(data), transaction.getSignature());
 	}
 
