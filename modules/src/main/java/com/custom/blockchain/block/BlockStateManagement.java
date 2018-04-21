@@ -174,12 +174,6 @@ public class BlockStateManagement {
 						+ "] has no left over transaction from sender");
 			}
 
-			if (!leftOverTransaction.get().getValue()
-					.equals(transaction.getInputsValue().subtract(transaction.getOutputsValue()))) {
-				throw new BusinessException("Identified transaction[" + transaction.getTransactionId()
-						+ "] has a unexpected leftOver output value[" + leftOverTransaction.get().getValue() + "]");
-			}
-
 			if (signatureManager.verifySignature(transaction) == false) {
 				throw new BusinessException("Identified transaction[" + transaction.getTransactionId()
 						+ "] with Signature failed to verify");
