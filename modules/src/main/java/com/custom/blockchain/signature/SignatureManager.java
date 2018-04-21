@@ -4,6 +4,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.custom.blockchain.exception.BusinessException;
@@ -20,6 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Component
 public class SignatureManager {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(SignatureManager.class);
 
 	private ObjectMapper objectMapper;
 
@@ -41,6 +45,7 @@ public class SignatureManager {
 					+ objectMapper.writeValueAsString(transaction.getOutputs())
 					+ transaction.getValue().toPlainString();
 		} catch (JsonProcessingException e) {
+			LOG.error("[Crypto] Signature error : {}", e.getMessage(), e);
 			throw new BusinessException("Could not read transaction outputs");
 		}
 		transaction.setSignature(applyECDSASig(wallet.getPrivateKey(), data));
@@ -59,6 +64,7 @@ public class SignatureManager {
 					+ objectMapper.writeValueAsString(transaction.getOutputs())
 					+ transaction.getValue().toPlainString();
 		} catch (JsonProcessingException e) {
+			LOG.error("[Crypto] Signature error : {}", e.getMessage(), e);
 			return false;
 		}
 		return verifyECDSASig(transaction.getSender(), data, transaction.getSignature());
@@ -81,6 +87,7 @@ public class SignatureManager {
 			byte[] realSig = dsa.sign();
 			output = realSig;
 		} catch (Exception e) {
+			LOG.error("[Crypto] Signature error : {}", e.getMessage(), e);
 			throw new RuntimeException(e);
 		}
 		return output;
@@ -100,6 +107,7 @@ public class SignatureManager {
 			ecdsaVerify.update(data.getBytes());
 			return ecdsaVerify.verify(signature);
 		} catch (Exception e) {
+			LOG.error("[Crypto] Signature error : {}", e.getMessage(), e);
 			throw new RuntimeException(e);
 		}
 	}
