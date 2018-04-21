@@ -32,6 +32,7 @@ import com.custom.blockchain.data.chainstate.CurrentCirculatingSupplyChainstateD
 import com.custom.blockchain.data.chainstate.CurrentPropertiesChainstateDB;
 import com.custom.blockchain.data.mempool.MempoolDB;
 import com.custom.blockchain.exception.BusinessException;
+import com.custom.blockchain.exception.ForkException;
 import com.custom.blockchain.node.NodeStateManagement;
 import com.custom.blockchain.node.network.server.SocketThread;
 import com.custom.blockchain.node.network.server.dispatcher.Service;
@@ -120,8 +121,9 @@ public class BlockMining {
 	 * 
 	 * @param block
 	 * @throws BusinessException
+	 * @throws ForkException 
 	 */
-	public void mineBlock() throws BusinessException {
+	public void mineBlock() throws BusinessException, ForkException {
 		try {
 			LOG.info("[Crypto] Preparing to mine new block...");
 			Thread.sleep(5000l);
@@ -202,6 +204,7 @@ public class BlockMining {
 			block.setHash(blockService.calculateHash(block));
 		}
 
+		blockStateManagement.validateBlock(block);
 		blockStateManagement.foundBlock(block);
 		LOG.info("[Crypto] Block Mined in " + (System.currentTimeMillis() - currentTimeInMillis) + " milliseconds: "
 				+ block.getHash());
