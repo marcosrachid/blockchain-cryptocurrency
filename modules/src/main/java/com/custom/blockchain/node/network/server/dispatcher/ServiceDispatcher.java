@@ -162,7 +162,7 @@ public class ServiceDispatcher {
 	private void getBlock(OutputStream sender, Peer peer, BlockArguments args) {
 		LOG.debug("[Crypto] Found a " + Service.GET_BLOCK.getService() + " event from peer [" + peer + "]");
 		List<AbstractBlock> blocks = new ArrayList<>();
-		for (long i = args.getStartHeight(); i <= args.getPeerHeight(); i++) {
+		for (long i = args.getStartHeight() - 1; i <= args.getPeerHeight(); i++) {
 			blocks.add(blockDB.get(i));
 			try {
 				if (ObjectUtil.sizeof(blocks) > MAX_NETWORK_SIZE_PACKAGE)
