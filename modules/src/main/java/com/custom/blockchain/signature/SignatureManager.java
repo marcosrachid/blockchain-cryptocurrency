@@ -42,14 +42,15 @@ public class SignatureManager {
 	public void generateSignature(final SimpleTransaction transaction, Wallet wallet) throws BusinessException {
 		String data;
 		try {
-			data = DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender())
+			data = WalletUtil.getStringFromKey(transaction.getSender())
 					+ objectMapper.writeValueAsString(transaction.getOutputs())
-					+ transaction.getValue().toPlainString());
+					+ transaction.getValue().toPlainString();
+			LOG.trace("[Crypto] raw data to update: {}", data);
 		} catch (JsonProcessingException e) {
 			LOG.error("[Crypto] Signature error : {}", e.getMessage(), e);
 			throw new BusinessException("Could not read transaction outputs");
 		}
-		transaction.setSignature(applyECDSASig(wallet.getPrivateKey(), data));
+		transaction.setSignature(applyECDSASig(wallet.getPrivateKey(), DigestUtil.applySha256(data)));
 	}
 
 	/**
@@ -61,14 +62,15 @@ public class SignatureManager {
 	public boolean verifySignature(SimpleTransaction transaction) {
 		String data;
 		try {
-			data = DigestUtil.applySha256(WalletUtil.getStringFromKey(transaction.getSender())
+			data = WalletUtil.getStringFromKey(transaction.getSender())
 					+ objectMapper.writeValueAsString(transaction.getOutputs())
-					+ transaction.getValue().toPlainString());
+					+ transaction.getValue().toPlainString();
+			LOG.trace("[Crypto] raw data to update: {}", data);
 		} catch (JsonProcessingException e) {
 			LOG.error("[Crypto] Signature error : {}", e.getMessage(), e);
 			return false;
 		}
-		return verifyECDSASig(transaction.getSender(), data, transaction.getSignature());
+		return verifyECDSASig(transaction.getSender(), DigestUtil.applySha256(data), transaction.getSignature());
 	}
 
 	/**
