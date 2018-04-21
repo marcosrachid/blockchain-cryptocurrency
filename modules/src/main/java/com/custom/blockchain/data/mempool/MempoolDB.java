@@ -38,7 +38,7 @@ public class MempoolDB extends AbstractLevelDB<String, SimpleTransaction> {
 			return objectMapper.readValue(StringUtil.decompress(mempoolDB.get(StringUtil.compress(key))),
 					SimpleTransaction.class);
 		} catch (DBException | IOException e) {
-			LOG.debug("[Crypto] MempoolDB Error from key [" + key + "]: " + e.getMessage(), e);
+			LOG.debug("[Crypto] MempoolDB Error from key [" + key + "]: " + e.getMessage());
 			throw new DatabaseException("Could not get data from key " + key + ": " + e.getMessage());
 		}
 	}

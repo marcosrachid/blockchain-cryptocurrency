@@ -42,7 +42,7 @@ public class PeersDB extends AbstractLevelDB<String, Peer> {
 			return objectMapper.readValue(StringUtil.decompress(peersDB.get(StringUtil.compress(KEY_BINDER + key))),
 					Peer.class);
 		} catch (Exception e) {
-			LOG.debug("[Crypto] PeersDB Error from key [" + KEY_BINDER + key + "]: " + e.getMessage(), e);
+			LOG.debug("[Crypto] PeersDB Error from key [" + KEY_BINDER + key + "]: " + e.getMessage());
 			throw new DatabaseException("Could not get data from key " + key + ": " + e.getMessage());
 		}
 	}

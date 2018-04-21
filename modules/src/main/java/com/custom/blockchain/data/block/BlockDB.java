@@ -47,7 +47,7 @@ public class BlockDB extends AbstractDualKeyLevelDB<Long, AbstractBlock> {
 			return objectMapper.readValue(StringUtil.decompress(blockDb.get(StringUtil.compress(KEY_1_BINDER + key))),
 					AbstractBlock.class);
 		} catch (DBException | IOException e) {
-			LOG.debug("[Crypto] BlockDB Error from key [" + KEY_1_BINDER + key + "]: " + e.getMessage(), e);
+			LOG.debug("[Crypto] BlockDB Error from key [" + KEY_1_BINDER + key + "]: " + e.getMessage());
 			return null;
 		}
 	}
@@ -58,7 +58,7 @@ public class BlockDB extends AbstractDualKeyLevelDB<Long, AbstractBlock> {
 			String key = StringUtil.decompress(blockDb.get(StringUtil.compress(KEY_2_BINDER + hash)));
 			return get(Long.valueOf(key));
 		} catch (DBException | IOException e) {
-			LOG.debug("[Crypto] BlockDB Error from key [" + KEY_2_BINDER + hash + "]: " + e.getMessage(), e);
+			LOG.debug("[Crypto] BlockDB Error from key [" + KEY_2_BINDER + hash + "]: " + e.getMessage());
 			return null;
 		}
 	}

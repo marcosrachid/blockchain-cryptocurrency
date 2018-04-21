@@ -3,6 +3,7 @@ package com.custom.blockchain.block;
 import static com.custom.blockchain.constants.SystemConstants.DIFFICULTY_ADJUSTMENT_BLOCK;
 import static com.custom.blockchain.node.NodeStateManagement.SOCKET_THREADS;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -135,6 +136,7 @@ public class BlockStateManagement {
 					+ "]. ExpectedRewardValue[" + propertiesBlock.getReward() + "]");
 		}
 
+		LOG.debug("[Crypto] Validating Transactions...");
 		Set<Transaction> transactions = block.getTransactions().stream().filter(t -> t instanceof SimpleTransaction)
 				.collect(Collectors.toSet());
 		for (Transaction t : transactions) {
@@ -146,7 +148,8 @@ public class BlockStateManagement {
 						+ "] < MinimunFundsToBeSent[" + propertiesBlock.getMinimunTransaction() + "]");
 			}
 
-			if (transaction.getInputsValue().compareTo(transaction.getOutputsValue()) != 0) {
+			if (transaction.getInputsValue().multiply(BigDecimal.valueOf(100L).subtract(propertiesBlock.getFees()))
+					.compareTo(transaction.getOutputsValue()) != 0) {
 				throw new BusinessException("Identified transaction[" + transaction.getTransactionId()
 						+ "] with  Inputs total[" + transaction.getInputsValue().toPlainString()
 						+ "] value that differs from Transaction Outputs total["

@@ -44,7 +44,7 @@ public class CurrentPropertiesChainstateDB extends PropertyAbstractLevelDB<Prope
 			return objectMapper.readValue(StringUtil.decompress(chainstateDb.get(KEY_BINDER.getBytes())),
 					PropertiesBlock.class);
 		} catch (DBException | IOException e) {
-			LOG.debug("[Crypto] ChainStateDB Error from key [" + KEY_BINDER + "]: " + e.getMessage(), e);
+			LOG.debug("[Crypto] ChainStateDB Error from key [" + KEY_BINDER + "]: " + e.getMessage());
 			return null;
 		}
 	}

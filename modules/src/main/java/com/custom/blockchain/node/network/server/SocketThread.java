@@ -41,8 +41,9 @@ public class SocketThread extends Thread {
 
 	private boolean isRunning;
 
-	public SocketThread(BlockchainProperties blockchainProperties, CurrentPropertiesChainstateDB currentPropertiesBlockDB,
-			ServiceDispatcher serviceDispatcher, Socket client) {
+	public SocketThread(BlockchainProperties blockchainProperties,
+			CurrentPropertiesChainstateDB currentPropertiesBlockDB, ServiceDispatcher serviceDispatcher,
+			Socket client) {
 		this.blockchainProperties = blockchainProperties;
 		this.currentPropertiesBlockDB = currentPropertiesBlockDB;
 		this.serviceDispatcher = serviceDispatcher;
@@ -77,6 +78,7 @@ public class SocketThread extends Thread {
 		} catch (IOException | IllegalArgumentException | SecurityException | IllegalAccessException
 				| InvocationTargetException | NoSuchMethodException e) {
 			LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
+			isRunning = false;
 		} finally {
 			try {
 				if (peer != null)
@@ -85,6 +87,7 @@ public class SocketThread extends Thread {
 					client.close();
 			} catch (IOException e) {
 				LOG.error("[Crypto] Client error : {}", e.getMessage(), e);
+				isRunning = false;
 			}
 		}
 	}
@@ -107,7 +110,7 @@ public class SocketThread extends Thread {
 	public static void inactivate() {
 		ACTIVE = false;
 	}
-	
+
 	public static void activate() {
 		ACTIVE = true;
 	}
