@@ -14,4 +14,4 @@
 
 ## Optional
 
-* get DNS from peers
+* get peers from DNS
